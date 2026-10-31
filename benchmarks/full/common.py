@@ -77,6 +77,14 @@ def create_substrate(conv_id: str, records: list[Record], engine: ScopeEngine | 
     ctx = make_ctx()
     for rec in records:
         sub.put(rec, ctx)
+    # P2: apply temporal metadata (date extraction) to all records
+    try:
+        from weft.temporal import apply_temporal_metadata
+        updated = [apply_temporal_metadata(r) for r in records]
+        for rec in updated:
+            sub.put(rec, ctx, overwrite=True)
+    except Exception:
+        pass
     if embedder is not None:
         try:
             texts = [

@@ -325,6 +325,17 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         except Exception:
             pass
 
+        # P2: temporal boost — when the query asks about time, promote records
+        # that contain date expressions (e.g., summaries with anchor dates).
+        temporal_scores = {}
+        try:
+            from weft.temporal import temporal_boost
+            temporal_scores = temporal_boost(sub, ctx, query, candidate_ids)
+            if temporal_scores:
+                candidate_ids.sort(key=lambda rid: (-temporal_scores.get(rid, 0.0), candidate_ids.index(rid)))
+        except Exception:
+            pass
+
         # Confidence tiebreaker for Claims: higher-confidence claims rank higher
         # without overriding strong lexical/vector matches.
         try:
@@ -395,6 +406,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             "query_expansion" if len(expanded_queries) > 1 else None,
             "cross_encoder" if cross_encoder_applied else None,
             "graph_boost" if graph_scores else None,
+            "temporal_boost" if temporal_scores else None,
         ] if layer is not None
     ]
     if ctx is not None:
