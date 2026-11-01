@@ -43,6 +43,7 @@ server = [
   "fastapi>=0.111",
   "uvicorn>=0.29",
   "pydantic>=2",
+  "sentence-transformers>=2.0",
 ]
 
 [project.urls]
@@ -52,6 +53,7 @@ Issues = "https://github.com/ousiaresearch/weft/issues"
 
 [project.scripts]
 weft = "weft.cli:entrypoint"
+weft-server = "weft.server:main"
 
 [tool.setuptools]
 packages = ["weft"]
