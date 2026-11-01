@@ -44,11 +44,23 @@ class MCPCall(BaseModel):
 
 def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
-    if known and scope not in known:
+    if known is not None and scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
     return engine, ctx
+
+
+def _require_api_key(request):
+    api_key = os.environ.get("WEFT_API_KEY", "")
+    if not api_key:
+        return  # no key configured: allow all (dev mode)
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="missing bearer token")
+    token = auth.split(" ", 1)[1].strip()
+    if token != api_key:
+        raise HTTPException(status_code=401, detail="invalid token")
 
 
 def _load_embedder():
@@ -82,7 +94,8 @@ def health() -> dict[str, str]:
 
 
 @app.post("/mcp/ingest")
-def mcp_ingest(req: IngestRequest) -> JSONResponse:
+def mcp_ingest(request, req: IngestRequest) -> JSONResponse:
+    _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
     db_path = os.path.expanduser("~/.weft/weft.sqlite3")
     sub = Substrate(db_path, engine)
@@ -106,7 +119,8 @@ def mcp_ingest(req: IngestRequest) -> JSONResponse:
 
 
 @app.post("/mcp/recall")
-def mcp_recall(req: RecallRequest) -> JSONResponse:
+def mcp_recall(request, req: RecallRequest) -> JSONResponse:
+    _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
     db_path = os.path.expanduser("~/.weft/weft.sqlite3")
     sub = Substrate(db_path, engine)
@@ -122,7 +136,7 @@ def mcp_recall(req: RecallRequest) -> JSONResponse:
             results.append({
                 "record_id": item.record_id,
                 "text": item.text,
-                "score": item.score,
+                
                 "tier": item.tier,
                 "layers": receipt.layers,
             })
@@ -132,7 +146,8 @@ def mcp_recall(req: RecallRequest) -> JSONResponse:
 
 
 @app.post("/mcp/status")
-def mcp_status(req: StatusRequest) -> JSONResponse:
+def mcp_status(request, req: StatusRequest) -> JSONResponse:
+    _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
     db_path = os.path.expanduser("~/.weft/weft.sqlite3")
     sub = Substrate(db_path, engine)
@@ -148,7 +163,8 @@ def mcp_status(req: StatusRequest) -> JSONResponse:
 
 
 @app.post("/mcp/call")
-def mcp_call(req: MCPCall) -> JSONResponse:
+def mcp_call(request, req: MCPCall) -> JSONResponse:
+    _require_api_key(request)
     tool = req.tool
     args = req.arguments or {}
     scope = args.get("scope", "")
@@ -185,7 +201,7 @@ def mcp_call(req: MCPCall) -> JSONResponse:
                 mode=mode, embedder=embedder, use_cross_encoder=False,
             )
             results = [
-                {"record_id": item.record_id, "text": item.text, "score": item.score, "tier": item.tier}
+                {"record_id": item.record_id, "text": item.text,  "tier": item.tier}
                 for item in items
             ]
             return JSONResponse({"results": results, "total": len(results)})

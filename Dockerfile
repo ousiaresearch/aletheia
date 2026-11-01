@@ -9,9 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd --create-home weft
 WORKDIR /home/weft
 
-# Install Weft with server extras
-COPY pyproject.toml .
-COPY README.md .
+# Install Weft with server extras (leverages Docker layer cache)
+COPY pyproject.toml README.md ./
 RUN pip install --no-cache-dir ".[server]"
 
 # Copy source
@@ -24,4 +23,4 @@ USER weft
 EXPOSE 8765
 
 # Default command
-CMD ["weft-server", "--host", "0.0.0.0", "--port", "8765"]
+CMD ["python", "-m", "weft.server", "--host", "0.0.0.0", "--port", "8765"]

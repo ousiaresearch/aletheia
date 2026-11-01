@@ -1016,6 +1016,26 @@ class Substrate:
                     # Round 2 BLOCK: overwrite must not re-point a relied-on Verification.
                     raise KnowledgeRefusal("verification is relied on by a verified claim")
 
+            # Phase 13 gate: ProposedRule status transitions must go through
+            # promote_rule/reject_rule/deprecate_rule, not raw put().
+            if record.record_type == "ProposedRule":
+                new_status = (record.payload or {}).get("status", "proposed")
+                if existing is None:
+                    # New insert: only "proposed" is allowed.
+                    if new_status != "proposed":
+                        raise KnowledgeRefusal("proposed rule must start as proposed")
+                else:
+                    # Overwrite: only valid lifecycle transitions allowed.
+                    old_status = (json.loads(existing[4]) if len(existing) > 4 else {}).get("status", "proposed")
+                    allowed_transitions = {
+                        ("proposed", "active"),
+                        ("proposed", "rejected"),
+                        ("proposed", "deprecated"),
+                        ("active", "deprecated"),
+                    }
+                    if (old_status, new_status) not in allowed_transitions:
+                        raise KnowledgeRefusal("invalid proposed rule transition")
+
             # Review F9: a record's vector describes its text. An overwrite replaces the text,
             # and a correction supersedes the original, so both drop the old vectors.
             if existing is not None:
