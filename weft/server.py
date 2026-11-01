@@ -7,7 +7,7 @@ import logging
 import os
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -35,6 +35,10 @@ class ExportRequest(BaseModel):
 from weft.server_common import known_scopes as _known_scopes
 
 
+def _db_path() -> str:
+    return os.environ.get("WEFT_DB_PATH", os.path.expanduser("~/.weft/weft.sqlite3"))
+
+
 def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
     if known is not None and scope not in known:
@@ -44,15 +48,28 @@ def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeC
     return engine, ctx
 
 
+def _require_api_key(request):
+    api_key = os.environ.get("WEFT_API_KEY", "")
+    if not api_key:
+        return  # no key configured: allow all (dev mode)
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="missing bearer token")
+    token = auth.split(" ", 1)[1].strip()
+    if token != api_key:
+        raise HTTPException(status_code=401, detail="invalid token")
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.post("/query")
-def query(req: QueryRequest) -> JSONResponse:
+def query(request: Request, req: QueryRequest) -> JSONResponse:
+    _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
-    sub = Substrate(os.path.expanduser("~/.weft/weft.sqlite3"), engine)
+    sub = Substrate(_db_path(), engine)
     try:
         readable, _ = sub.query(ctx)
         # naive lexical filter for alpha
@@ -73,9 +90,10 @@ def query(req: QueryRequest) -> JSONResponse:
 
 
 @app.post("/export")
-def export_scope(req: ExportRequest) -> JSONResponse:
+def export_scope(request: Request, req: ExportRequest) -> JSONResponse:
+    _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
-    sub = Substrate(os.path.expanduser("~/.weft/weft.sqlite3"), engine)
+    sub = Substrate(_db_path(), engine)
     try:
         data = sub.export_scope(req.scope, ctx)
         return JSONResponse(data)
@@ -84,9 +102,10 @@ def export_scope(req: ExportRequest) -> JSONResponse:
 
 
 @app.get("/record/{record_id}")
-def get_record(record_id: str, scope: str, actor: str = "local-user") -> JSONResponse:
+def get_record(request: Request, record_id: str, scope: str, actor: str = "local-user") -> JSONResponse:
+    _require_api_key(request)
     engine, ctx = _ctx_for(scope, actor)
-    sub = Substrate(os.path.expanduser("~/.weft/weft.sqlite3"), engine)
+    sub = Substrate(_db_path(), engine)
     try:
         rec = sub.get(record_id, ctx)
         if rec is None:

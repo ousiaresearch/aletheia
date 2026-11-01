@@ -7,7 +7,7 @@ import json
 import os
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -94,7 +94,7 @@ def health() -> dict[str, str]:
 
 
 @app.post("/mcp/ingest")
-def mcp_ingest(request, req: IngestRequest) -> JSONResponse:
+def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
     _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
     db_path = os.path.expanduser("~/.weft/weft.sqlite3")
@@ -119,7 +119,7 @@ def mcp_ingest(request, req: IngestRequest) -> JSONResponse:
 
 
 @app.post("/mcp/recall")
-def mcp_recall(request, req: RecallRequest) -> JSONResponse:
+def mcp_recall(request: Request, req: RecallRequest) -> JSONResponse:
     _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
     db_path = os.path.expanduser("~/.weft/weft.sqlite3")
@@ -146,7 +146,7 @@ def mcp_recall(request, req: RecallRequest) -> JSONResponse:
 
 
 @app.post("/mcp/status")
-def mcp_status(request, req: StatusRequest) -> JSONResponse:
+def mcp_status(request: Request, req: StatusRequest) -> JSONResponse:
     _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
     db_path = os.path.expanduser("~/.weft/weft.sqlite3")
@@ -163,7 +163,7 @@ def mcp_status(request, req: StatusRequest) -> JSONResponse:
 
 
 @app.post("/mcp/call")
-def mcp_call(request, req: MCPCall) -> JSONResponse:
+def mcp_call(request: Request, req: MCPCall) -> JSONResponse:
     _require_api_key(request)
     tool = req.tool
     args = req.arguments or {}
