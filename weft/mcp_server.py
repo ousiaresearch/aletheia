@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from weft.substrate import Substrate, Record
 from weft.scope import ScopeEngine, ScopeContext
-from weft.server_common import known_scopes as _known_scopes
+from weft.server_common import known_scopes as _known_scopes, _db_path
 
 logger = __import__("logging").getLogger("weft.mcp_server")
 app = FastAPI(title="Weft MCP", version="0.1.0a0")
@@ -54,7 +54,7 @@ def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeC
 def _require_api_key(request):
     api_key = os.environ.get("WEFT_API_KEY", "")
     if not api_key:
-        return  # no key configured: allow all (dev mode)
+        raise HTTPException(status_code=401, detail="missing bearer token")
     auth = request.headers.get("authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="missing bearer token")
@@ -97,7 +97,7 @@ def health() -> dict[str, str]:
 def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
     _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
-    db_path = os.path.expanduser("~/.weft/weft.sqlite3")
+    db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
         inserted = 0
@@ -122,7 +122,7 @@ def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
 def mcp_recall(request: Request, req: RecallRequest) -> JSONResponse:
     _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
-    db_path = os.path.expanduser("~/.weft/weft.sqlite3")
+    db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
         embedder = _load_embedder()
@@ -149,7 +149,7 @@ def mcp_recall(request: Request, req: RecallRequest) -> JSONResponse:
 def mcp_status(request: Request, req: StatusRequest) -> JSONResponse:
     _require_api_key(request)
     engine, ctx = _ctx_for(req.scope, req.actor)
-    db_path = os.path.expanduser("~/.weft/weft.sqlite3")
+    db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
         readable, _ = sub.query(ctx)
@@ -172,7 +172,7 @@ def mcp_call(request: Request, req: MCPCall) -> JSONResponse:
     if not scope:
         raise HTTPException(status_code=400, detail="scope is required")
     engine, ctx = _ctx_for(scope, actor)
-    db_path = os.path.expanduser("~/.weft/weft.sqlite3")
+    db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
         if tool == "ingest":

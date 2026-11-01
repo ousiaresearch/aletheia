@@ -22,6 +22,7 @@ def _seed(sub, scope):
 
 
 def _env_with_known_scopes(monkeypatch, tmp_path):
+    monkeypatch.setenv("WEFT_API_KEY", "test-key")
     monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
     monkeypatch.setenv("HOME", str(tmp_path))
     os.makedirs(tmp_path / ".weft", exist_ok=True)
@@ -49,7 +50,7 @@ def test_query_endpoint_returns_matches(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.post("/query", json={"scope": "s", "query": "hello", "limit": 5})
+    resp = client.post("/query", json={"scope": "s", "query": "hello", "limit": 5}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     data = resp.json()
     assert len(data["matches"]) == 1
@@ -59,7 +60,7 @@ def test_query_endpoint_returns_matches(tmp_path, monkeypatch):
 def test_query_endpoint_rejects_unknown_scope(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     client = TestClient(app)
-    resp = client.post("/query", json={"scope": "unknown", "query": "hello"})
+    resp = client.post("/query", json={"scope": "unknown", "query": "hello"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 403
     assert resp.json()["detail"] == "scope not permitted"
 
@@ -79,7 +80,7 @@ def test_get_record_returns_detail(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.get("/record/r1", params={"scope": "s"})
+    resp = client.get("/record/r1", params={"scope": "s"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     assert resp.json()["payload"]["text"] == "detail"
 
@@ -91,7 +92,7 @@ def test_get_record_missing_returns_404(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.get("/record/nonexistent", params={"scope": "s"})
+    resp = client.get("/record/nonexistent", params={"scope": "s"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 404
 
 
@@ -110,7 +111,7 @@ def test_export_endpoint_returns_payload(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.post("/export", json={"scope": "s"})
+    resp = client.post("/export", json={"scope": "s"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     data = resp.json()
     assert data["scope"] == "s"
@@ -132,7 +133,7 @@ def test_shadow_recall_returns_matches(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.post("/shadow/recall", json={"scope": "s", "query": "hello"})
+    resp = client.post("/shadow/recall", json={"scope": "s", "query": "hello"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     data = resp.json()
     assert data["actor"] == "shadow"
@@ -156,7 +157,7 @@ def test_shadow_reason_returns_evidence(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.post("/shadow/reason", json={"scope": "s", "query": "lighthouse"})
+    resp = client.post("/shadow/reason", json={"scope": "s", "query": "lighthouse"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     data = resp.json()
     assert data["actor"] == "shadow"
@@ -179,7 +180,7 @@ def test_shadow_compare_diffs_active_and_shadow(tmp_path, monkeypatch):
     _env_with_known_scopes(monkeypatch, tmp_path)
     os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
     client = TestClient(app)
-    resp = client.post("/shadow/compare", json={"scope": "s", "query": "visible"})
+    resp = client.post("/shadow/compare", json={"scope": "s", "query": "visible"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     data = resp.json()
     assert "diff" in data

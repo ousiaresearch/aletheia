@@ -5,6 +5,10 @@ from __future__ import annotations
 import os
 
 
+def _db_path() -> str:
+    return os.environ.get("WEFT_DB_PATH", os.path.expanduser("~/.weft/weft.sqlite3"))
+
+
 def known_scopes() -> frozenset[str] | None:
     raw = os.environ.get("WEFT_KNOWN_SCOPES")
     if raw is None:

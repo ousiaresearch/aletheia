@@ -1028,13 +1028,19 @@ class Substrate:
                 else:
                     # Overwrite: only valid lifecycle transitions allowed.
                     old_status = (incumbent.payload or {}).get("status", "proposed")
+                    new_status = (record.payload or {}).get("status", "proposed")
+                    # proposed -> active requires user attribution (enforced by
+                    # promote_rule's _check_user_only); direct writes without
+                    # user attribution must not bypass the promotion gate.
+                    if (old_status, new_status) == ("proposed", "active") and not (ctx and ctx.user_authored):
+                        raise KnowledgeRefusal("promotion requires user attribution")
                     allowed_transitions = {
                         ("proposed", "active"),
                         ("proposed", "rejected"),
                         ("proposed", "deprecated"),
                         ("active", "deprecated"),
                     }
-                    if (old_status, (record.payload or {}).get("status", "proposed")) not in allowed_transitions:
+                    if (old_status, new_status) not in allowed_transitions:
                         raise KnowledgeRefusal("invalid proposed rule transition")
 
             # Review F9: a record's vector describes its text. An overwrite replaces the text,
@@ -1369,6 +1375,9 @@ class Substrate:
                             continue
                     else:
                         old_status = (old.payload or {}).get("status", "proposed")
+                        # proposed -> active requires user attribution.
+                        if (old_status, new_status) == ("proposed", "active") and not (ctx and ctx.user_authored):
+                            continue
                         allowed = {
                             ("proposed", "active"),
                             ("proposed", "rejected"),

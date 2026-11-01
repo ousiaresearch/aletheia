@@ -32,11 +32,7 @@ class ExportRequest(BaseModel):
     actor: str = "local-user"
 
 
-from weft.server_common import known_scopes as _known_scopes
-
-
-def _db_path() -> str:
-    return os.environ.get("WEFT_DB_PATH", os.path.expanduser("~/.weft/weft.sqlite3"))
+from weft.server_common import known_scopes as _known_scopes, _db_path
 
 
 def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
@@ -51,7 +47,7 @@ def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeC
 def _require_api_key(request):
     api_key = os.environ.get("WEFT_API_KEY", "")
     if not api_key:
-        return  # no key configured: allow all (dev mode)
+        raise HTTPException(status_code=401, detail="missing bearer token")
     auth = request.headers.get("authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="missing bearer token")
