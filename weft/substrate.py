@@ -993,6 +993,7 @@ class Substrate:
                 "SELECT scope, record_type, epistemic_status FROM records WHERE record_id=?",
                 (record.record_id,),
             ).fetchone()
+            incumbent = None
             if existing is not None:
                 # Review G5: check authority over the incumbent BEFORE reporting a
                 # conflict, so a caller without the scope cannot learn the id exists.
@@ -1018,23 +1019,22 @@ class Substrate:
 
             # Phase 13 gate: ProposedRule status transitions must go through
             # promote_rule/reject_rule/deprecate_rule, not raw put().
-            if record.record_type == "ProposedRule":
-                new_status = (record.payload or {}).get("status", "proposed")
-                if existing is None:
-                    # New insert: only "proposed" is allowed.
-                    if new_status != "proposed":
-                        raise KnowledgeRefusal("proposed rule must start as proposed")
-                else:
-                    # Overwrite: only valid lifecycle transitions allowed.
-                    old_status = (json.loads(existing[4]) if len(existing) > 4 else {}).get("status", "proposed")
-                    allowed_transitions = {
-                        ("proposed", "active"),
-                        ("proposed", "rejected"),
-                        ("proposed", "deprecated"),
-                        ("active", "deprecated"),
-                    }
-                    if (old_status, new_status) not in allowed_transitions:
-                        raise KnowledgeRefusal("invalid proposed rule transition")
+            if record.record_type == "ProposedRule" and existing is not None:
+                # Overwrite: only valid lifecycle transitions allowed.
+                if incumbent is None:
+                    raise KnowledgeRefusal("write not permitted")
+                old_status = (incumbent.payload or {}).get("status", "proposed")
+                allowed_transitions = {
+                    ("proposed", "active"),
+                    ("proposed", "rejected"),
+                    ("proposed", "deprecated"),
+                    ("active", "deprecated"),
+                }
+                if (old_status, (record.payload or {}).get("status", "proposed")) not in allowed_transitions:
+                    raise KnowledgeRefusal("invalid proposed rule transition")
+                # New inserts are handled by knowledge.py (ProposedRule requires
+                # stated/epistemic_status with user/agent/system attribution),
+                # which defaults to "proposed" lifecycle status in the payload.
 
             # Review F9: a record's vector describes its text. An overwrite replaces the text,
             # and a correction supersedes the original, so both drop the old vectors.
@@ -1357,6 +1357,20 @@ class Substrate:
                 )
                 if reason is not None:
                     continue
+                # ProposedRule gate: imports must respect the same lifecycle
+                # transitions as direct writes (no bypass via import path).
+                if rec.record_type == "ProposedRule":
+                    old = self._lookup_record(rec.record_id)
+                    old_status = (old.payload or {}).get("status", "proposed") if old else "proposed"
+                    new_status = (rec.payload or {}).get("status", "proposed")
+                    allowed = {
+                        ("proposed", "active"),
+                        ("proposed", "rejected"),
+                        ("proposed", "deprecated"),
+                        ("active", "deprecated"),
+                    }
+                    if (old_status, new_status) not in allowed:
+                        continue
                 own = False
                 try:
                     own = self._begin_write("weft_write")
