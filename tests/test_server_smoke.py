@@ -29,6 +29,16 @@ class TestServerSmoke:
         )
         assert resp.status_code == 200
 
+    def test_query_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(server_app)
+        resp = client.post(
+            "/query",
+            json={"scope": "s", "query": "foo"},
+        )
+        assert resp.status_code == 401
+
     def test_query_rejects_invalid_api_key(self, monkeypatch):
         monkeypatch.setenv("WEFT_API_KEY", "test-key")
         monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
@@ -47,6 +57,17 @@ class TestServerSmoke:
         resp = client.post(
             "/query",
             json={"scope": "unknown", "query": "foo"},
+            headers={"Authorization": "Bearer test-key"},
+        )
+        assert resp.status_code == 403
+
+    def test_query_fails_closed_without_known_scopes(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.delenv("WEFT_KNOWN_SCOPES", raising=False)
+        client = TestClient(server_app)
+        resp = client.post(
+            "/query",
+            json={"scope": "s", "query": "foo"},
             headers={"Authorization": "Bearer test-key"},
         )
         assert resp.status_code == 403
@@ -90,6 +111,38 @@ class TestMCPsmoke:
             headers={"Authorization": "Bearer test-key"},
         )
         assert resp.status_code == 200
+
+    def test_ingest_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post(
+            "/mcp/ingest",
+            json={"scope": "s", "records": []},
+        )
+        assert resp.status_code == 401
+
+    def test_ingest_rejects_invalid_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post(
+            "/mcp/ingest",
+            json={"scope": "s", "records": []},
+            headers={"Authorization": "Bearer wrong"},
+        )
+        assert resp.status_code == 401
+
+    def test_ingest_rejects_unknown_scope(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post(
+            "/mcp/ingest",
+            json={"scope": "unknown", "records": []},
+            headers={"Authorization": "Bearer test-key"},
+        )
+        assert resp.status_code == 403
 
     def test_recall_with_api_key(self, monkeypatch):
         monkeypatch.setenv("WEFT_API_KEY", "test-key")

@@ -41,7 +41,7 @@ def _db_path() -> str:
 
 def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
-    if known is not None and scope not in known:
+    if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)

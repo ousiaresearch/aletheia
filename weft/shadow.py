@@ -7,7 +7,7 @@ import json
 import os
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -31,11 +31,23 @@ class ShadowReasonRequest(BaseModel):
 
 def _shadow_ctx(scope: str, actor: str = "shadow") -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
-    if known and scope not in known:
+    if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor=actor)
     return engine, ctx
+
+
+def _require_api_key(request):
+    api_key = os.environ.get("WEFT_API_KEY", "")
+    if not api_key:
+        return  # no key configured: allow all (dev mode)
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="missing bearer token")
+    token = auth.split(" ", 1)[1].strip()
+    if token != api_key:
+        raise HTTPException(status_code=401, detail="invalid token")
 
 
 def _diff_records(active: list[dict], shadow: list[dict]) -> dict[str, Any]:
@@ -55,7 +67,8 @@ def _diff_records(active: list[dict], shadow: list[dict]) -> dict[str, Any]:
 
 def _append(app: FastAPI) -> None:
     @app.post("/shadow/recall")
-    def shadow_recall(req: ShadowRecallRequest) -> JSONResponse:
+    def shadow_recall(request: Request, req: ShadowRecallRequest) -> JSONResponse:
+        _require_api_key(request)
         engine, ctx = _shadow_ctx(req.scope, req.actor)
         sub = Substrate(os.path.expanduser("~/.weft/weft.sqlite3"), engine)
         try:
@@ -83,7 +96,8 @@ def _append(app: FastAPI) -> None:
             sub.close()
 
     @app.post("/shadow/reason")
-    def shadow_reason(req: ShadowReasonRequest) -> JSONResponse:
+    def shadow_reason(request: Request, req: ShadowReasonRequest) -> JSONResponse:
+        _require_api_key(request)
         engine, ctx = _shadow_ctx(req.scope, req.actor)
         sub = Substrate(os.path.expanduser("~/.weft/weft.sqlite3"), engine)
         try:
@@ -110,7 +124,8 @@ def _append(app: FastAPI) -> None:
             sub.close()
 
     @app.post("/shadow/compare")
-    def shadow_compare(req: ShadowRecallRequest) -> JSONResponse:
+    def shadow_compare(request: Request, req: ShadowRecallRequest) -> JSONResponse:
+        _require_api_key(request)
         engine_active, ctx_active = _ctx_for(req.scope, req.actor)
         engine_shadow, ctx_shadow = _shadow_ctx(req.scope, req.actor)
         sub_active = Substrate(os.path.expanduser("~/.weft/weft.sqlite3"), engine_active)
@@ -148,6 +163,9 @@ def _append(app: FastAPI) -> None:
 
 
 def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
+    known = _known_scopes()
+    if known is None or scope not in known:
+        raise HTTPException(status_code=403, detail="scope not permitted")
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
     return engine, ctx
