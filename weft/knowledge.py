@@ -50,6 +50,11 @@ RULES: dict[str, Rule] = {
     "Deletion": Rule({"user": _s("stated")}),
     "Summary": Rule({"system": _s("derived")}),
     "RecallReceipt": Rule({"system": _s("stated")}),
+    "ProposedRule": Rule({
+        "agent": _s("stated"),
+        "user": _s("stated"),
+        "system": _s("stated"),
+    }),
 }
 
 

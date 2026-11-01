@@ -58,6 +58,16 @@ def _parser() -> argparse.ArgumentParser:
     temporal = commands.add_parser("temporal", help="query records valid at a given timestamp")
     temporal.add_argument("--scope", required=True)
     temporal.add_argument("--at", type=float, required=True, help="Unix timestamp")
+
+    propose_rule = commands.add_parser("propose-rule", help="propose a new procedural rule")
+    propose_rule.add_argument("--scope", required=True)
+    propose_rule.add_argument("--rule-id", required=True, help="unique rule identifier")
+    propose_rule.add_argument("--name", required=True, help="human-readable rule name")
+    propose_rule.add_argument("--description", default="", help="rule description")
+    propose_rule.add_argument("--rule-type", default="procedural", choices=["procedural", "prompt_refinement", "retrieval_tweak"])
+
+    active_rules = commands.add_parser("active-rules", help="list active procedural rules in a scope")
+    active_rules.add_argument("--scope", required=True)
     return parser
 
 
@@ -224,8 +234,9 @@ def _run_temporal(args) -> int:
     if not db_path.is_file():
         raise FileNotFoundError(f"Weft database not found: {db_path}")
     engine, ctx = _context(args.scope)
-    sub = Substrate(db_path, engine)
+    sub = None
     try:
+        sub = Substrate(db_path, engine)
         records = effective_at(sub, ctx, args.scope, args.at)
         print(json.dumps({
             "status": "effective_at",
@@ -239,7 +250,70 @@ def _run_temporal(args) -> int:
         }, ensure_ascii=False))
         return 0
     finally:
-        sub.close()
+        if sub is not None:
+            sub.close()
+
+
+def _run_propose_rule(args) -> int:
+    from weft.procedural import ProposedRule, propose_rule
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Weft database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = None
+    try:
+        sub = Substrate(db_path, engine)
+        rule = ProposedRule(
+            rule_id=args.rule_id,
+            scope=args.scope,
+            name=args.name,
+            description=args.description,
+            rule_type=args.rule_type,
+        )
+        record = propose_rule(sub, ctx, rule)
+        print(json.dumps({
+            "status": "proposed",
+            "rule_id": record.record_id,
+            "scope": record.scope,
+            "name": record.payload["name"],
+            "rule_type": record.payload["rule_type"],
+        }, ensure_ascii=False))
+        return 0
+    finally:
+        if sub is not None:
+            sub.close()
+
+
+def _run_active_rules(args) -> int:
+    from weft.procedural import list_active_rules
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Weft database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = None
+    try:
+        sub = Substrate(db_path, engine)
+        records = list_active_rules(sub, ctx, args.scope)
+        print(json.dumps({
+            "status": "active_rules",
+            "scope": args.scope,
+            "count": len(records),
+            "rules": [
+                {
+                    "rule_id": r.record_id,
+                    "name": r.payload.get("name", ""),
+                    "description": r.payload.get("description", ""),
+                    "rule_type": r.payload.get("rule_type", ""),
+                    "promoted_by": r.payload.get("promoted_by"),
+                    "promoted_at": r.payload.get("promoted_at"),
+                }
+                for r in records
+            ],
+        }, ensure_ascii=False))
+        return 0
+    finally:
+        if sub is not None:
+            sub.close()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -260,6 +334,10 @@ def main(argv: list[str] | None = None) -> int:
             return _run_link_entities(args)
         if args.command == "temporal":
             return _run_temporal(args)
+        if args.command == "propose-rule":
+            return _run_propose_rule(args)
+        if args.command == "active-rules":
+            return _run_active_rules(args)
         return _run_recall(args)
     except (OSError, RuntimeError, ValueError, ImportError, sqlite3.Error, SubstrateError) as exc:
         print(f"weft: {exc}", file=sys.stderr)
