@@ -158,6 +158,20 @@ class TestServerSmoke:
         )
         assert resp.status_code == 401
 
+    def test_shadow_reason_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(server_app)
+        resp = client.post("/shadow/reason", json={"scope": "s", "query": "foo"})
+        assert resp.status_code == 401
+
+    def test_shadow_compare_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(server_app)
+        resp = client.post("/shadow/compare", json={"scope": "s", "query": "foo"})
+        assert resp.status_code == 401
+
 
 class TestMCPsmoke:
     def test_health(self):
@@ -229,6 +243,13 @@ class TestMCPsmoke:
         )
         assert resp.status_code == 401
 
+    def test_recall_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post("/mcp/recall", json={"scope": "s", "query": "foo", "limit": 5})
+        assert resp.status_code == 401
+
     def test_recall_with_api_key(self, monkeypatch):
         monkeypatch.setenv("WEFT_API_KEY", "test-key")
         monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
@@ -240,6 +261,13 @@ class TestMCPsmoke:
         )
         assert resp.status_code == 200
 
+    def test_status_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post("/mcp/status", json={"scope": "s"})
+        assert resp.status_code == 401
+
     def test_status_with_api_key(self, monkeypatch):
         monkeypatch.setenv("WEFT_API_KEY", "test-key")
         monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
@@ -250,6 +278,13 @@ class TestMCPsmoke:
             headers={"Authorization": "Bearer test-key"},
         )
         assert resp.status_code == 200
+
+    def test_call_rejects_missing_api_key(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post("/mcp/call", json={"tool": "recall", "arguments": {"scope": "s", "query": "foo", "limit": 5}})
+        assert resp.status_code == 401
 
     def test_call_with_api_key(self, monkeypatch):
         monkeypatch.setenv("WEFT_API_KEY", "test-key")
