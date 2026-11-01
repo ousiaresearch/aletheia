@@ -5,9 +5,11 @@ __pycache__
 .gitignore
 docker-compose.yml
 Dockerfile
-*.md
 .tmp
 benchmarks
 scripts
 tests
 docs
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE.md

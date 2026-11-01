@@ -6,6 +6,7 @@ services:
     ports:
       - "8765:8765"
     environment:
+      - WEFT_API_KEY=changeme
       - WEFT_KNOWN_SCOPES=default,benchmark
       - WEFT_DB_PATH=/home/weft/.weft/weft.sqlite3
     volumes:

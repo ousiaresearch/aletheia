@@ -1025,6 +1025,9 @@ class Substrate:
                     new_status = (record.payload or {}).get("status", "proposed")
                     if new_status != "proposed":
                         raise KnowledgeRefusal("proposed rule must start as proposed")
+                elif incumbent.record_type != "ProposedRule":
+                    # Cannot convert a non-ProposedRule into a ProposedRule.
+                    raise KnowledgeRefusal("cannot change record type to ProposedRule")
                 else:
                     # Overwrite: only valid lifecycle transitions allowed.
                     old_status = (incumbent.payload or {}).get("status", "proposed")
@@ -1373,6 +1376,9 @@ class Substrate:
                         # New insert via import: must start as proposed.
                         if new_status != "proposed":
                             continue
+                    elif old.record_type != "ProposedRule":
+                        # Cannot convert a non-ProposedRule into a ProposedRule.
+                        continue
                     else:
                         old_status = (old.payload or {}).get("status", "proposed")
                         # proposed -> active requires user attribution.
