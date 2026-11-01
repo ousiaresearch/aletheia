@@ -16,8 +16,37 @@ from weft.scope import ScopeEngine, ScopeContext
 from weft.shadow import _append as _append_shadow
 
 logger = logging.getLogger("weft.server")
-
 app = FastAPI(title="Weft Memory", version="0.1.0a0", docs_url=None, openapi_url=None)
+
+
+class _AuthMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        api_key = os.environ.get("WEFT_API_KEY", "")
+        if not api_key:
+            from starlette.responses import Response
+            await Response("missing bearer token", status_code=401)(scope, receive, send)
+            return
+        headers = dict(scope.get("headers", []))
+        auth = headers.get(b"authorization", b"").decode()
+        if not auth.startswith("Bearer "):
+            from starlette.responses import Response
+            await Response("missing bearer token", status_code=401)(scope, receive, send)
+            return
+        token = auth.split(" ", 1)[1].strip()
+        if token != api_key:
+            from starlette.responses import Response
+            await Response("invalid token", status_code=401)(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(_AuthMiddleware)
 
 
 class QueryRequest(BaseModel):
@@ -37,10 +66,8 @@ def _ctx_for(scope: str) -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
     if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
-    actor = os.environ.get("WEFT_HTTP_ACTOR")
-    if not actor:
-        api_key = os.environ.get("WEFT_API_KEY", "")
-        actor = "http-client-" + api_key[:8] if api_key else "http-client"
+    api_key = os.environ.get("WEFT_API_KEY", "")
+    actor = "http-client-" + api_key[:8] if api_key else "http-client"
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
     return engine, ctx
