@@ -9,12 +9,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd --create-home weft
 WORKDIR /home/weft
 
-# Install Weft with server extras (leverages Docker layer cache)
-COPY pyproject.toml README.md ./
-RUN pip install --no-cache-dir ".[server]"
-
-# Copy source
+# Copy source first so pip can install the local package
 COPY weft/ weft/
+COPY pyproject.toml README.md ./
+
+# Install Weft with server extras (leverages Docker layer cache)
+RUN pip install --no-cache-dir ".[server]"
 
 # Create data directory
 RUN mkdir -p /home/weft/.weft && chown -R weft:weft /home/weft

@@ -1361,6 +1361,16 @@ class Substrate:
                 decision = self.scope_engine.authorize_write(rec, ctx)
                 if not decision.allowed:
                     continue
+                # Import must also have authority over any incumbent record
+                # with the same ID; otherwise a cross-scope write can replace
+                # an existing record by ID collision.
+                incumbent = self._lookup_record(rec.record_id)
+                if incumbent is not None:
+                    if (ctx is None or incumbent.scope not in ctx.granted_scopes
+                            or not self.scope_engine.authorize_write(incumbent, ctx).allowed
+                            or not self.scope_engine.authorize_read(
+                                incumbent.scope, ctx, self.scope_engine._payload_text(incumbent)).allowed):
+                        continue
                 self._validate(rec)
                 reason = check_record(
                     rec, ctx, is_verifier=self._is_verifier, lookup=self._lookup_record

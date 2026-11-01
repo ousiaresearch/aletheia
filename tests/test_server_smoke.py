@@ -137,6 +137,27 @@ class TestServerSmoke:
         )
         assert resp.status_code == 403
 
+    def test_shadow_recall_fails_closed_without_known_scopes(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "")
+        client = TestClient(server_app)
+        resp = client.post(
+            "/shadow/recall",
+            json={"scope": "s", "query": "foo"},
+            headers={"Authorization": "Bearer test-key"},
+        )
+        assert resp.status_code == 403
+
+    def test_shadow_recall_fails_closed_when_api_key_unset(self, monkeypatch):
+        monkeypatch.delenv("WEFT_API_KEY", raising=False)
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(server_app)
+        resp = client.post(
+            "/shadow/recall",
+            json={"scope": "s", "query": "foo"},
+        )
+        assert resp.status_code == 401
+
 
 class TestMCPsmoke:
     def test_health(self):
@@ -186,6 +207,27 @@ class TestMCPsmoke:
             headers={"Authorization": "Bearer test-key"},
         )
         assert resp.status_code == 403
+
+    def test_ingest_fails_closed_without_known_scopes(self, monkeypatch):
+        monkeypatch.setenv("WEFT_API_KEY", "test-key")
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "")
+        client = TestClient(mcp_app)
+        resp = client.post(
+            "/mcp/ingest",
+            json={"scope": "s", "records": []},
+            headers={"Authorization": "Bearer test-key"},
+        )
+        assert resp.status_code == 403
+
+    def test_ingest_fails_closed_when_api_key_unset(self, monkeypatch):
+        monkeypatch.delenv("WEFT_API_KEY", raising=False)
+        monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+        client = TestClient(mcp_app)
+        resp = client.post(
+            "/mcp/ingest",
+            json={"scope": "s", "records": []},
+        )
+        assert resp.status_code == 401
 
     def test_recall_with_api_key(self, monkeypatch):
         monkeypatch.setenv("WEFT_API_KEY", "test-key")
