@@ -87,7 +87,8 @@ def _load_embedder():
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
+def health(request: Request) -> dict[str, str]:
+    _require_api_key(request)
     return {"status": "ok"}
 
 
@@ -107,7 +108,7 @@ def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
                 epistemic_status=rec.get("epistemic_status", "observed"),
                 payload=rec.get("payload", {}),
                 provenance=rec.get("provenance", {"source": "mcp"}),
-                attribution=rec.get("attribution", {"actor": ctx.actor}),
+                attribution=ctx.actor,
             )
             sub.put(record, ctx)
             inserted += 1
@@ -183,7 +184,7 @@ def mcp_call(request: Request, req: MCPCall) -> JSONResponse:
                     epistemic_status=rec.get("epistemic_status", "observed"),
                     payload=rec.get("payload", {}),
                     provenance=rec.get("provenance", {"source": "mcp"}),
-                    attribution=rec.get("attribution", {"actor": ctx.actor}),
+                    attribution=ctx.actor,
                 )
                 sub.put(record, ctx)
                 inserted += 1
