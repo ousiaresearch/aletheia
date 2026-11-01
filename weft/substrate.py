@@ -1029,14 +1029,13 @@ class Substrate:
                     # Cannot convert a non-ProposedRule into a ProposedRule.
                     raise KnowledgeRefusal("cannot change record type to ProposedRule")
                 else:
-                    # Overwrite: only valid lifecycle transitions allowed.
+                    # Overwrite: only valid lifecycle transitions allowed,
+                    # and all require user attribution (enforced by the
+                    # procedural module's _check_user_only).
+                    if not (ctx and ctx.user_authored):
+                        raise KnowledgeRefusal("proposed rule transition requires user attribution")
                     old_status = (incumbent.payload or {}).get("status", "proposed")
                     new_status = (record.payload or {}).get("status", "proposed")
-                    # proposed -> active requires user attribution (enforced by
-                    # promote_rule's _check_user_only); direct writes without
-                    # user attribution must not bypass the promotion gate.
-                    if (old_status, new_status) == ("proposed", "active") and not (ctx and ctx.user_authored):
-                        raise KnowledgeRefusal("promotion requires user attribution")
                     allowed_transitions = {
                         ("proposed", "active"),
                         ("proposed", "rejected"),
@@ -1045,6 +1044,9 @@ class Substrate:
                     }
                     if (old_status, new_status) not in allowed_transitions:
                         raise KnowledgeRefusal("invalid proposed rule transition")
+            elif incumbent is not None and incumbent.record_type == "ProposedRule":
+                # Cannot change a ProposedRule into another record type.
+                raise KnowledgeRefusal("cannot change ProposedRule record type")
 
             # Review F9: a record's vector describes its text. An overwrite replaces the text,
             # and a correction supersedes the original, so both drop the old vectors.
@@ -1390,10 +1392,10 @@ class Substrate:
                         # Cannot convert a non-ProposedRule into a ProposedRule.
                         continue
                     else:
-                        old_status = (old.payload or {}).get("status", "proposed")
-                        # proposed -> active requires user attribution.
-                        if (old_status, new_status) == ("proposed", "active") and not (ctx and ctx.user_authored):
+                        # All lifecycle transitions require user attribution.
+                        if not (ctx and ctx.user_authored):
                             continue
+                        old_status = (old.payload or {}).get("status", "proposed")
                         allowed = {
                             ("proposed", "active"),
                             ("proposed", "rejected"),
@@ -1402,6 +1404,9 @@ class Substrate:
                         }
                         if (old_status, new_status) not in allowed:
                             continue
+                elif incumbent is not None and incumbent.record_type == "ProposedRule":
+                    # Cannot change a ProposedRule into another record type.
+                    continue
                 own = False
                 try:
                     own = self._begin_write("weft_write")
