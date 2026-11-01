@@ -43,7 +43,10 @@ def _ctx_for(scope: str) -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
     if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
-    actor = os.environ.get("WEFT_HTTP_ACTOR", "http-client")
+    actor = os.environ.get("WEFT_HTTP_ACTOR")
+    if not actor:
+        api_key = os.environ.get("WEFT_API_KEY", "")
+        actor = "http-client-" + api_key[:8] if api_key else "http-client"
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
     return engine, ctx
