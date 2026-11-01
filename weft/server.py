@@ -17,7 +17,7 @@ from weft.shadow import _append as _append_shadow
 
 logger = logging.getLogger("weft.server")
 
-app = FastAPI(title="Weft Memory", version="0.1.0a0")
+app = FastAPI(title="Weft Memory", version="0.1.0a0", docs_url=None, openapi_url=None)
 
 
 class QueryRequest(BaseModel):

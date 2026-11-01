@@ -16,7 +16,7 @@ from weft.scope import ScopeEngine, ScopeContext
 from weft.server_common import known_scopes as _known_scopes, _db_path
 
 logger = __import__("logging").getLogger("weft.mcp_server")
-app = FastAPI(title="Weft MCP", version="0.1.0a0")
+app = FastAPI(title="Weft MCP", version="0.1.0a0", docs_url=None, openapi_url=None)
 
 
 class IngestRequest(BaseModel):
