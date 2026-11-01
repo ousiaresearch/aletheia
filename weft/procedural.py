@@ -119,8 +119,17 @@ def promote_rule(
     if promoter is None:
         raise KnowledgeRefusal("promotion requires user-attributed Decision or Commitment")
 
+    # Same-scope check: promoter must live in the rule's scope.
+    if promoter.scope != record.scope:
+        raise KnowledgeRefusal("promotion record is in a different scope")
+
     # Caller must also be user-attributed.
     _check_user_only(ctx)
+
+    # Re-read inside the same transaction to reduce race window.
+    current = sub.get(rule_id, ctx)
+    if current is None or current.payload.get("status", STATUS_PROPOSED) != STATUS_PROPOSED:
+        raise KnowledgeRefusal("rule is no longer proposed; concurrent transition detected")
 
     # Transition to active.
     payload = dict(record.payload)
@@ -165,6 +174,11 @@ def reject_rule(
 
     _check_user_only(ctx)
 
+    # Re-read inside the same transaction to reduce race window.
+    current = sub.get(rule_id, ctx)
+    if current is None or current.payload.get("status", STATUS_PROPOSED) != STATUS_PROPOSED:
+        raise KnowledgeRefusal("rule is no longer proposed; concurrent transition detected")
+
     payload = dict(record.payload)
     payload["status"] = STATUS_REJECTED
     payload["rejection_reason"] = reason
@@ -205,6 +219,11 @@ def deprecate_rule(
 
     _check_user_only(ctx)
 
+    # Re-read inside the same transaction to reduce race window.
+    current = sub.get(rule_id, ctx)
+    if current is None or current.payload.get("status", STATUS_PROPOSED) != STATUS_ACTIVE:
+        raise KnowledgeRefusal("rule is no longer active; concurrent transition detected")
+
     payload = dict(record.payload)
     payload["status"] = STATUS_DEPRECATED
     payload["deprecated_at"] = time.time()
@@ -233,6 +252,9 @@ def list_active_rules(sub: Substrate, ctx: ScopeContext, scope: str) -> list[Rec
     Fail-closed: returns [] on any error.
     """
     try:
+        # Same-scope authorization check: caller must have the scope.
+        if scope not in ctx.granted_scopes:
+            return []
         rows = sub._conn.execute(
             "SELECT * FROM records WHERE scope = ? AND record_type = 'ProposedRule' "
             "AND json_extract(payload, '$.status') = ?",
