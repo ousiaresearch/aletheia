@@ -22,19 +22,16 @@ app = FastAPI(title="Weft MCP", version="0.1.0a0")
 class IngestRequest(BaseModel):
     scope: str
     records: list[dict[str, Any]]
-    actor: str = "local-user"
 
 
 class RecallRequest(BaseModel):
     scope: str
     query: str
     limit: int = 5
-    actor: str = "local-user"
 
 
 class StatusRequest(BaseModel):
     scope: str
-    actor: str = "local-user"
 
 
 class MCPCall(BaseModel):
@@ -42,10 +39,11 @@ class MCPCall(BaseModel):
     arguments: dict[str, Any] = {}
 
 
-def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
+def _ctx_for(scope: str) -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
     if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
+    actor = os.environ.get("WEFT_HTTP_ACTOR", "http-client")
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
     return engine, ctx
@@ -96,7 +94,7 @@ def health() -> dict[str, str]:
 @app.post("/mcp/ingest")
 def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
     _require_api_key(request)
-    engine, ctx = _ctx_for(req.scope, req.actor)
+    engine, ctx = _ctx_for(req.scope)
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
@@ -109,7 +107,7 @@ def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
                 epistemic_status=rec.get("epistemic_status", "observed"),
                 payload=rec.get("payload", {}),
                 provenance=rec.get("provenance", {"source": "mcp"}),
-                attribution=rec.get("attribution", {"actor": req.actor}),
+                attribution=rec.get("attribution", {"actor": ctx.actor}),
             )
             sub.put(record, ctx)
             inserted += 1
@@ -121,7 +119,7 @@ def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
 @app.post("/mcp/recall")
 def mcp_recall(request: Request, req: RecallRequest) -> JSONResponse:
     _require_api_key(request)
-    engine, ctx = _ctx_for(req.scope, req.actor)
+    engine, ctx = _ctx_for(req.scope)
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
@@ -148,7 +146,7 @@ def mcp_recall(request: Request, req: RecallRequest) -> JSONResponse:
 @app.post("/mcp/status")
 def mcp_status(request: Request, req: StatusRequest) -> JSONResponse:
     _require_api_key(request)
-    engine, ctx = _ctx_for(req.scope, req.actor)
+    engine, ctx = _ctx_for(req.scope)
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
@@ -168,10 +166,9 @@ def mcp_call(request: Request, req: MCPCall) -> JSONResponse:
     tool = req.tool
     args = req.arguments or {}
     scope = args.get("scope", "")
-    actor = args.get("actor", "local-user")
     if not scope:
         raise HTTPException(status_code=400, detail="scope is required")
-    engine, ctx = _ctx_for(scope, actor)
+    engine, ctx = _ctx_for(scope)
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
@@ -186,7 +183,7 @@ def mcp_call(request: Request, req: MCPCall) -> JSONResponse:
                     epistemic_status=rec.get("epistemic_status", "observed"),
                     payload=rec.get("payload", {}),
                     provenance=rec.get("provenance", {"source": "mcp"}),
-                    attribution=rec.get("attribution", {"actor": actor}),
+                    attribution=rec.get("attribution", {"actor": ctx.actor}),
                 )
                 sub.put(record, ctx)
                 inserted += 1

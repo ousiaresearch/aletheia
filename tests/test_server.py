@@ -28,9 +28,11 @@ def _env_with_known_scopes(monkeypatch, tmp_path):
     os.makedirs(tmp_path / ".weft", exist_ok=True)
 
 
-def test_health_endpoint():
+def test_health_endpoint(tmp_path, monkeypatch):
+    monkeypatch.setenv("WEFT_API_KEY", "test-key")
+    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
     client = TestClient(app)
-    resp = client.get("/health")
+    resp = client.get("/health", headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 

@@ -20,21 +20,19 @@ class ShadowRecallRequest(BaseModel):
     scope: str
     query: str
     limit: int = 5
-    actor: str = "shadow"
 
 
 class ShadowReasonRequest(BaseModel):
     scope: str
     query: str
-    actor: str = "shadow"
 
 
-def _shadow_ctx(scope: str, actor: str = "shadow") -> tuple[ScopeEngine, ScopeContext]:
+def _shadow_ctx(scope: str) -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
     if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
     engine = ScopeEngine(known_scopes={scope})
-    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor=actor)
+    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor="shadow")
     return engine, ctx
 
 
@@ -69,7 +67,7 @@ def _append(app: FastAPI) -> None:
     @app.post("/shadow/recall")
     def shadow_recall(request: Request, req: ShadowRecallRequest) -> JSONResponse:
         _require_api_key(request)
-        engine, ctx = _shadow_ctx(req.scope, req.actor)
+        engine, ctx = _shadow_ctx(req.scope)
         sub = Substrate(_db_path(), engine)
         try:
             readable, _ = sub.query(ctx)
@@ -89,7 +87,7 @@ def _append(app: FastAPI) -> None:
             return JSONResponse({
                 "matches": matches,
                 "total": len(matches),
-                "actor": req.actor,
+                "actor": "shadow",
                 "user_authored": False,
             })
         finally:
@@ -98,7 +96,7 @@ def _append(app: FastAPI) -> None:
     @app.post("/shadow/reason")
     def shadow_reason(request: Request, req: ShadowReasonRequest) -> JSONResponse:
         _require_api_key(request)
-        engine, ctx = _shadow_ctx(req.scope, req.actor)
+        engine, ctx = _shadow_ctx(req.scope)
         sub = Substrate(_db_path(), engine)
         try:
             readable, _ = sub.query(ctx)
@@ -116,7 +114,7 @@ def _append(app: FastAPI) -> None:
             return JSONResponse({
                 "query": req.query,
                 "evidence": evidence,
-                "actor": req.actor,
+                "actor": "shadow",
                 "user_authored": False,
                 "note": "shadow reasoning does not write to the active session journal",
             })
@@ -126,8 +124,8 @@ def _append(app: FastAPI) -> None:
     @app.post("/shadow/compare")
     def shadow_compare(request: Request, req: ShadowRecallRequest) -> JSONResponse:
         _require_api_key(request)
-        engine_active, ctx_active = _ctx_for(req.scope, req.actor)
-        engine_shadow, ctx_shadow = _shadow_ctx(req.scope, req.actor)
+        engine_active, ctx_active = _ctx_for(req.scope)
+        engine_shadow, ctx_shadow = _shadow_ctx(req.scope)
         sub_active = Substrate(_db_path(), engine_active)
         sub_shadow = Substrate(_db_path(), engine_shadow)
         try:

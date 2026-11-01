@@ -24,21 +24,20 @@ class QueryRequest(BaseModel):
     scope: str
     query: str
     limit: int = 5
-    actor: str = "local-user"
 
 
 class ExportRequest(BaseModel):
     scope: str
-    actor: str = "local-user"
 
 
 from weft.server_common import known_scopes as _known_scopes, _db_path
 
 
-def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
+def _ctx_for(scope: str) -> tuple[ScopeEngine, ScopeContext]:
     known = _known_scopes()
     if known is None or scope not in known:
         raise HTTPException(status_code=403, detail="scope not permitted")
+    actor = os.environ.get("WEFT_HTTP_ACTOR", "http-client")
     engine = ScopeEngine(known_scopes={scope})
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
     return engine, ctx
@@ -57,14 +56,15 @@ def _require_api_key(request):
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
+def health(request: Request) -> dict[str, str]:
+    _require_api_key(request)
     return {"status": "ok"}
 
 
 @app.post("/query")
 def query(request: Request, req: QueryRequest) -> JSONResponse:
     _require_api_key(request)
-    engine, ctx = _ctx_for(req.scope, req.actor)
+    engine, ctx = _ctx_for(req.scope)
     sub = Substrate(_db_path(), engine)
     try:
         readable, _ = sub.query(ctx)
@@ -88,7 +88,7 @@ def query(request: Request, req: QueryRequest) -> JSONResponse:
 @app.post("/export")
 def export_scope(request: Request, req: ExportRequest) -> JSONResponse:
     _require_api_key(request)
-    engine, ctx = _ctx_for(req.scope, req.actor)
+    engine, ctx = _ctx_for(req.scope)
     sub = Substrate(_db_path(), engine)
     try:
         data = sub.export_scope(req.scope, ctx)
@@ -98,9 +98,9 @@ def export_scope(request: Request, req: ExportRequest) -> JSONResponse:
 
 
 @app.get("/record/{record_id}")
-def get_record(request: Request, record_id: str, scope: str, actor: str = "local-user") -> JSONResponse:
+def get_record(request: Request, record_id: str, scope: str) -> JSONResponse:
     _require_api_key(request)
-    engine, ctx = _ctx_for(scope, actor)
+    engine, ctx = _ctx_for(scope)
     sub = Substrate(_db_path(), engine)
     try:
         rec = sub.get(record_id, ctx)
