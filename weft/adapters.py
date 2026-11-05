@@ -16,12 +16,17 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-_SCRATCH = Path(os.path.expanduser("~/.hermes/profiles/arien/cache/scratch"))
-
-
 def _scratch_dir() -> str:
-    _SCRATCH.mkdir(parents=True, exist_ok=True)
-    return str(_SCRATCH)
+    """Scratch directory for adapter temp files: WEFT_SCRATCH_DIR, else the system temp dir.
+
+    Resolved and created lazily at call time, never at import.
+    """
+    override = os.environ.get("WEFT_SCRATCH_DIR", "").strip()
+    if not override:
+        return tempfile.gettempdir()
+    path = Path(override).expanduser()
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)
 
 
 def _image_suffix(data: bytes) -> str:

@@ -70,7 +70,7 @@ def test_promote_rule_with_user_decision(substrate):
         record_type="Decision",
         scope="test",
         epistemic_status="stated",
-        payload={"decision": "approve rule r1", "rule_id": "r1"},
+        payload={"approved": True, "rule_id": "r1"},
         attribution="user",
     )
     sub.put(decision, _user_ctx())
@@ -88,7 +88,7 @@ def test_promote_rule_rejects_non_user_attribution(substrate):
         record_type="Decision",
         scope="test",
         epistemic_status="stated",
-        payload={"decision": "approve rule r1", "rule_id": "r1"},
+        payload={"approved": True, "rule_id": "r1"},
         attribution="user",
     )
     sub.put(decision, _user_ctx())
@@ -114,7 +114,7 @@ def test_deprecate_active_rule(substrate):
         record_type="Decision",
         scope="test",
         epistemic_status="stated",
-        payload={"decision": "approve rule r1", "rule_id": "r1"},
+        payload={"approved": True, "rule_id": "r1"},
         attribution="user",
     )
     sub.put(decision, _user_ctx())
@@ -133,7 +133,7 @@ def test_list_active_rules(substrate):
         record_type="Decision",
         scope="test",
         epistemic_status="stated",
-        payload={"decision": "approve rule r1", "rule_id": "r1"},
+        payload={"approved": True, "rule_id": "r1"},
         attribution="user",
     )
     sub.put(decision, _user_ctx())
@@ -156,6 +156,11 @@ def test_promote_rule_via_source_ids(substrate):
         attribution="user",
     )
     sub.put(decision, _user_ctx())
+    # A source link alone is not affirmative authorization.
+    with pytest.raises(KnowledgeRefusal):
+        promote_rule(sub, _user_ctx(), "r1")
+    decision.payload = {"approved": True, "rule_id": "r1"}
+    sub.put(decision, _user_ctx(), overwrite=True)
     promoted = promote_rule(sub, _user_ctx(), "r1")
     assert promoted.payload["status"] == STATUS_ACTIVE
 

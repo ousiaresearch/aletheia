@@ -255,6 +255,7 @@ def test_contradict_raises_abstention_on_malformed_json(sub):
             return "not json at all"
     layer = ModelLayer(local_factory=lambda _: FakeModel())
     sub_obj, ctx = sub
+    sub_obj.put(Record(record_id="r1", record_type="Source", scope="s", payload={"text": "evidence"}, attribution="document"), ctx)
     claim = Record(record_id="c1", record_type="Claim", scope="s", payload={"text": "x"}, attribution="agent", source_ids=["r1"], epistemic_status="derived")
     sub_obj.put(claim, ctx)
     sub_obj.rebuild_fts("s", ctx)
@@ -408,6 +409,7 @@ def test_contradict_raises_abstention_on_non_list_json(sub):
             return json.dumps({"not": "a list"})
     layer = ModelLayer(local_factory=lambda _: FakeModel())
     sub_obj, ctx = sub
+    sub_obj.put(Record(record_id="r1", record_type="Source", scope="s", payload={"text": "evidence"}, attribution="document"), ctx)
     claim = Record(record_id="c1", record_type="Claim", scope="s", payload={"text": "x"}, attribution="agent", source_ids=["r1"], epistemic_status="derived")
     sub_obj.put(claim, ctx)
     sub_obj.rebuild_fts("s", ctx)

@@ -14,7 +14,7 @@ WORKDIR /home/weft
 COPY weft/ weft/
 COPY pyproject.toml README.md ./
 
-# Install Weft with server extras (leverages Docker layer cache)
+# Install Weft with server extras; source changes invalidate this layer.
 RUN pip install --no-cache-dir ".[server]"
 
 # Create data directory

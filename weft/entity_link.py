@@ -61,52 +61,54 @@ def link_entities(sub: Substrate, ctx: ScopeContext, scope: str, limit: int = 10
     (record -> entity) links. Returns {records_scanned, links_created}.
     Fail-closed: returns {} on any error.
     """
-    try:
-        rows = sub._conn.execute(
-            "SELECT record_id, payload FROM records WHERE scope = ? AND record_type IN ('Observation', 'Claim', 'Source')",
-            (scope,),
-        ).fetchall()
-    except Exception:
+    if ctx is None or scope not in ctx.granted_scopes or not sub.scope_engine.authorize_read(scope, ctx, '').allowed:
         return {}
-
-    now = time.time()
-    links_created = 0
-    records_scanned = 0
-    existing = {
-        (r[0], r[1], r[2])
-        for r in sub._conn.execute(
-            "SELECT source_id, target_id, relation FROM entity_links WHERE scope = ?", (scope,)
-        ).fetchall()
-    }
-
-    try:
-        for record_id, payload_json in rows[:limit]:
-            payload = _load_payload(payload_json)
-            text = payload.get("text", "")
-            if not text:
-                continue
-            entities = extract_entities(text)
-            records_scanned += 1
-            for entity in entities:
-                key = (record_id, entity, "mentions")
-                if key in existing:
+    # A savepoint participates in caller-owned transactions; a standalone call
+    # owns the surrounding transaction. Never commit a caller's work.
+    with sub._lock:
+        own = None
+        try:
+            own = sub._begin_write("weft_entity_link")
+            rows = sub._conn.execute(
+                "SELECT record_id, payload FROM records WHERE scope = ? AND record_type IN ('Observation', 'Claim', 'Source')",
+                (scope,),
+            ).fetchall()
+            existing = {
+                (r[0], r[1], r[2])
+                for r in sub._conn.execute(
+                    "SELECT source_id, target_id, relation FROM entity_links WHERE scope = ?", (scope,)
+                ).fetchall()
+            }
+            now = time.time()
+            links_created = records_scanned = 0
+            for record_id, payload_json in rows:
+                record = sub.get(record_id, ctx)
+                if record is None or not sub.scope_engine.authorize_write(record, ctx).allowed:
                     continue
-                sub._conn.execute(
-                    "INSERT INTO entity_links (source_id, target_id, relation, valid_from, valid_to, scope) "
-                    "VALUES (?, ?, ?, ?, ?, ?)",
-                    (record_id, entity, "mentions", now, None, scope),
-                )
-                existing.add(key)
-                links_created += 1
-    except Exception:
-        pass
-
-    try:
-        sub._conn.commit()
-    except Exception:
-        pass
-
-    return {"records_scanned": records_scanned, "links_created": links_created}
+                if records_scanned >= limit:
+                    break
+                text = _load_payload(payload_json).get("text", "")
+                if not text:
+                    continue
+                entities = extract_entities(text)
+                records_scanned += 1
+                for entity in entities:
+                    key = (record_id, entity, "mentions")
+                    if key in existing:
+                        continue
+                    sub._conn.execute(
+                        "INSERT INTO entity_links (source_id, target_id, relation, valid_from, valid_to, scope) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (record_id, entity, "mentions", now, None, scope),
+                    )
+                    existing.add(key)
+                    links_created += 1
+            sub._finish_write("weft_entity_link", own)
+            return {"records_scanned": records_scanned, "links_created": links_created}
+        except Exception:
+            if own is not None:
+                sub._abort_write("weft_entity_link", own)
+            return {}
 
 
 def _load_payload(raw: Any) -> dict[str, Any]:
@@ -118,7 +120,7 @@ def _load_payload(raw: Any) -> dict[str, Any]:
     return {}
 
 
-def entity_boost(sub: Substrate, ctx: ScopeContext, query: str, candidate_ids: list[str], boost: float = 0.1, min_doc_freq: int = 3) -> dict[str, float]:
+def entity_boost(sub: Substrate, ctx: ScopeContext, query: str, candidate_ids: list[str], boost: float = 0.1, min_doc_freq: int = 3, *, scopes: list[str] | None = None) -> dict[str, float]:
     """Score candidate records by how many query entities they mention.
 
     Uses the precomputed entity_links table instead of re-parsing text.
@@ -129,29 +131,30 @@ def entity_boost(sub: Substrate, ctx: ScopeContext, query: str, candidate_ids: l
         query_entities = set(extract_entities(query))
         if not query_entities:
             return {}
-        # Filter entities to those appearing in at least min_doc_freq records
-        # to reduce noise from common words extracted from sentence-initial text.
+        # Count only links whose source is presently readable in the requested
+        # scope set. Historical links may outlive a content-policy change.
+        allowed = set(scopes) if scopes is not None else set(sub.scope_engine.known_scopes)
         placeholders = ",".join("?" for _ in query_entities)
-        freq_rows = sub._conn.execute(
-            f"SELECT target_id, COUNT(DISTINCT source_id) FROM entity_links "
-            f"WHERE target_id IN ({placeholders}) "
-            f"GROUP BY target_id",
+        rows = sub._conn.execute(
+            f"SELECT source_id, target_id, scope FROM entity_links WHERE target_id IN ({placeholders})",
             tuple(query_entities),
         ).fetchall()
-        freq = {row[0]: row[1] for row in freq_rows}
+        readable_links = set()
+        for source_id, target_id, scope in rows:
+            if scope not in allowed:
+                continue
+            rec = sub.get(source_id, ctx)
+            if rec is not None and rec.scope == scope:
+                readable_links.add((source_id, target_id))
+        freq = {entity: sum(target == entity for _, target in readable_links) for entity in query_entities}
         kept = {e for e, cnt in freq.items() if cnt >= min_doc_freq}
         if not kept:
             return {}
-        src_placeholders = ",".join("?" for _ in candidate_ids)
-        tgt_placeholders = ",".join("?" for _ in kept)
-        rows = sub._conn.execute(
-            f"SELECT source_id, target_id FROM entity_links "
-            f"WHERE source_id IN ({src_placeholders}) "
-            f"AND target_id IN ({tgt_placeholders})",
-            tuple(candidate_ids) + tuple(kept),
-        ).fetchall()
+        candidates = set(candidate_ids)
         scores: dict[str, float] = {}
-        for source_id, target_id in rows:
+        for source_id, target_id in readable_links:
+            if source_id not in candidates or target_id not in kept:
+                continue
             if source_id in scores:
                 scores[source_id] += boost / len(kept)
             else:

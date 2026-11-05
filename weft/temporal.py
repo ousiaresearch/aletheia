@@ -63,22 +63,23 @@ def close_window(sub: Substrate, ctx: ScopeContext, record_id: str, close_at: fl
 
 
 def effective_at(sub: Substrate, ctx: ScopeContext, scope: str, when: float) -> list[Record]:
-    """Return all records in *scope* that were valid at timestamp *when*.
+    """Return all records in *scope* readable by *ctx* that were valid at timestamp *when*.
 
     A record is valid when:
       valid_from is None OR valid_from <= when
       AND
       valid_to is None OR valid_to > when
+    The caller's scope grant and the substrate read gate decide what is returned: a caller with
+    no grant for *scope* (or no context) reads nothing.
     Fail-closed: returns [] on any error.
     """
     try:
-        rows = sub._conn.execute(
-            "SELECT * FROM records WHERE scope = ? AND "
-            "(valid_from IS NULL OR valid_from <= ?) AND "
-            "(valid_to IS NULL OR valid_to > ?)",
-            (scope, when, when),
-        ).fetchall()
-        return [Record.from_row(r) for r in rows]
+        if ctx is None or not sub.scope_engine.authorize_read(scope, ctx, "").allowed:
+            return []
+        readable, _ = sub.query(ctx, scope=scope)
+        return [r for r in readable
+                if (r.valid_from is None or r.valid_from <= when)
+                and (r.valid_to is None or r.valid_to > when)]
     except Exception:
         return []
 
@@ -187,12 +188,18 @@ def temporal_boost(
     try:
         if not is_temporal_query(query):
             return {}
+        if ctx is None or not candidate_ids:
+            return {}
         placeholders = ",".join("?" for _ in candidate_ids)
         rows = sub._conn.execute(
-            f"SELECT record_id, payload FROM records "
-            f"WHERE record_id IN ({placeholders})",
+            f"SELECT * FROM records WHERE record_id IN ({placeholders})",
             tuple(candidate_ids),
         ).fetchall()
+        # Only records the caller may read take part: a score must not reveal that an
+        # unreadable record exists or carries dates.
+        rows = [(rec.record_id, json.dumps(rec.payload)) for rec in map(Record.from_row, rows)
+                if sub.scope_engine.authorize_read(
+                    rec.scope, ctx, sub.scope_engine._payload_text(rec)).allowed]
         scores: dict[str, float] = {}
         for record_id, payload_json in rows:
             try:

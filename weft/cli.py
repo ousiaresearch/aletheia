@@ -47,6 +47,9 @@ def _parser() -> argparse.ArgumentParser:
     extract = commands.add_parser("extract", help="extract facts from Observations into Claims")
     extract.add_argument("--scope", required=True)
     extract.add_argument("--limit", type=int, default=100, help="max Observations to process")
+    extract.add_argument("--allow-external", action="store_true",
+                         help="REQUIRED: send scope text to the external TokenHarbor endpoint "
+                              "(credential from TOKENHARBOR_API_KEY); also WEFT_EXTRACT_ALLOW_EXTERNAL=1")
     
     consolidate = commands.add_parser("consolidate", help="deduplicate Claims in a scope")
     consolidate.add_argument("--scope", required=True)
@@ -68,6 +71,10 @@ def _parser() -> argparse.ArgumentParser:
 
     active_rules = commands.add_parser("active-rules", help="list active procedural rules in a scope")
     active_rules.add_argument("--scope", required=True)
+
+    reembed = commands.add_parser("reembed", help="embed records in a scope that lack vectors (repairs hybrid recall)")
+    reembed.add_argument("--scope", required=True)
+    reembed.add_argument("--limit", type=int, default=None, help="max records to embed this run")
     return parser
 
 
@@ -161,8 +168,28 @@ def _run_rebuild_fts(args) -> int:
         sub.close()
 
 
+def _prepare_serve_env(args) -> None:
+    """Make ``--db`` effective for the server process and print fail-closed notices.
+
+    The server reads WEFT_DB_PATH. An already-set variable wins (warned if it
+    differs). Never prints secret values.
+    """
+    env_db = os.environ.get("WEFT_DB_PATH")
+    if env_db is None:
+        os.environ["WEFT_DB_PATH"] = args.db
+    elif (args.db != os.path.expanduser("~/.weft/weft.sqlite3")
+          and os.path.abspath(os.path.expanduser(env_db)) != os.path.abspath(os.path.expanduser(args.db))):
+        print(f"weft: warning: WEFT_DB_PATH is set and differs from --db; the server will use WEFT_DB_PATH ({env_db})",
+              file=sys.stderr)
+    for name in ("WEFT_API_KEY", "WEFT_KNOWN_SCOPES"):
+        if not os.environ.get(name):
+            print(f"weft: warning: {name} is not set; the server fails closed and will refuse requests until it is set",
+                  file=sys.stderr)
+
+
 def _run_serve(args) -> int:
     import uvicorn
+    _prepare_serve_env(args)
     from weft.server import app
     print(json.dumps({"status": "serving", "host": args.host, "port": args.port}))
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
@@ -170,7 +197,15 @@ def _run_serve(args) -> int:
 
 
 def _run_extract(args) -> int:
-    from weft.extraction import extract_facts, write_claims
+    from weft.extraction import destination_host, extract_facts, external_allowed, write_claims
+    if args.allow_external:
+        os.environ["WEFT_EXTRACT_ALLOW_EXTERNAL"] = "1"
+    if not external_allowed():
+        print("weft extract sends scope text to an external service and is disabled by default; "
+              "pass --allow-external (or set WEFT_EXTRACT_ALLOW_EXTERNAL=1) to proceed",
+              file=sys.stderr)
+        return 2
+    print(f"weft extract: sending scope text to external host {destination_host()}", file=sys.stderr)
     db_path = Path(args.db).expanduser()
     if not db_path.is_file():
         raise FileNotFoundError(f"Weft database not found: {db_path}")
@@ -178,12 +213,21 @@ def _run_extract(args) -> int:
     sub = Substrate(db_path, engine)
     try:
         claims = extract_facts(sub, ctx, args.scope, limit=args.limit)
-        written = write_claims(sub, ctx, claims)
+        # Claims are embeddable records: without vectors they would leave the scope's vector
+        # index incomplete and disable hybrid recall (the only CLI recall).
+        embedder = default_text_embedder() if claims else None
+        written = write_claims(sub, ctx, claims, embedder=embedder)
+        vectorized = 0
+        if embedder is not None:
+            vectorized = sum(
+                1 for c in claims
+                if sub.vector_has_record(c.record_id, args.scope, ctx, model_id=embedder.model_id))
         print(json.dumps({
             "status": "extracted",
             "scope": args.scope,
             "claims_generated": len(claims),
             "claims_written": written,
+            "claims_vectorized": vectorized,
         }))
         return 0
     finally:
@@ -316,6 +360,23 @@ def _run_active_rules(args) -> int:
             sub.close()
 
 
+def _run_reembed(args) -> int:
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Weft database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    embedder = default_text_embedder()
+    sub = Substrate(db_path, engine)
+    try:
+        result = sub.reembed_missing(args.scope, ctx, embedder, limit=args.limit)
+        complete = sub.vector_index_complete(args.scope, ctx, model_id=embedder.model_id)
+        print(json.dumps({"status": "reembedded", "scope": args.scope, "model_id": embedder.model_id,
+                          "index_complete": complete, **result}))
+        return 0
+    finally:
+        sub.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
@@ -338,6 +399,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run_propose_rule(args)
         if args.command == "active-rules":
             return _run_active_rules(args)
+        if args.command == "reembed":
+            return _run_reembed(args)
         return _run_recall(args)
     except (OSError, RuntimeError, ValueError, ImportError, sqlite3.Error, SubstrateError) as exc:
         print(f"weft: {exc}", file=sys.stderr)

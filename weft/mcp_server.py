@@ -1,4 +1,4 @@
-"""Phase 10/14: MCP server wrapping Weft recall/ingest/status."""
+"""Custom HTTP tool routes for Weft; not an MCP protocol server."""
 
 from __future__ import annotations
 
@@ -9,41 +9,17 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from weft.substrate import Substrate, Record
+from weft.substrate import Substrate, Record, ScopeViolation, SchemaViolation, RecordConflict
 from weft.scope import ScopeEngine, ScopeContext
-from weft.server_common import known_scopes as _known_scopes, _db_path
+from weft.server_common import known_scopes as _known_scopes, scope_engine_for as _scope_engine_for, _db_path
 
 logger = __import__("logging").getLogger("weft.mcp_server")
 app = FastAPI(title="Weft MCP", version="0.1.0a0", docs_url=None, openapi_url=None)
 
 
-class _AuthMiddleware:
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-        api_key = os.environ.get("WEFT_API_KEY", "")
-        if not api_key:
-            from starlette.responses import Response
-            await Response("missing bearer token", status_code=401)(scope, receive, send)
-            return
-        headers = dict(scope.get("headers", []))
-        auth = headers.get(b"authorization", b"").decode()
-        if not auth.startswith("Bearer "):
-            from starlette.responses import Response
-            await Response("missing bearer token", status_code=401)(scope, receive, send)
-            return
-        token = auth.split(" ", 1)[1].strip()
-        if token != api_key:
-            from starlette.responses import Response
-            await Response("invalid token", status_code=401)(scope, receive, send)
-            return
-        await self.app(scope, receive, send)
+from weft.server_common import AuthMiddleware as _AuthMiddleware, require_api_key as _require_api_key, MAX_RECALL_LIMIT  # noqa: E402
 
 
 app.add_middleware(_AuthMiddleware)
@@ -57,7 +33,7 @@ class IngestRequest(BaseModel):
 class RecallRequest(BaseModel):
     scope: str
     query: str
-    limit: int = 5
+    limit: int = Field(default=5, ge=1, le=MAX_RECALL_LIMIT)
 
 
 class StatusRequest(BaseModel):
@@ -70,57 +46,59 @@ class MCPCall(BaseModel):
 
 
 def _ctx_for(scope: str) -> tuple[ScopeEngine, ScopeContext]:
-    known = _known_scopes()
-    if known is None or scope not in known:
-        raise HTTPException(status_code=403, detail="scope not permitted")
-    api_key = os.environ.get("WEFT_API_KEY", "")
-    actor = "http-client-" + api_key[:8] if api_key else "http-client"
-    engine = ScopeEngine(known_scopes={scope})
-    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
+    engine = _scope_engine_for(scope)
+    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor="http-client")
     return engine, ctx
-
-
-def _require_api_key(request):
-    api_key = os.environ.get("WEFT_API_KEY", "")
-    if not api_key:
-        raise HTTPException(status_code=401, detail="missing bearer token")
-    auth = request.headers.get("authorization", "")
-    if not auth.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="missing bearer token")
-    token = auth.split(" ", 1)[1].strip()
-    if token != api_key:
-        raise HTTPException(status_code=401, detail="invalid token")
-
-
-def _load_embedder():
-    try:
-        from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer("intfloat/e5-large-v2")
-        model_id = f"SentenceTransformer({model.tokenizer.name_or_path})"
-
-        class _ST:
-            def __init__(self, model, model_id):
-                self._model = model
-                self.model_id = model_id
-
-            def embed_query(self, text: str) -> list:
-                return self._model.encode(text, normalize_embeddings=True).tolist()
-
-            def embed_document(self, text: str) -> list:
-                return self._model.encode(text, normalize_embeddings=True).tolist()
-
-            def embed_documents(self, texts: list[str]) -> list:
-                return self._model.encode(texts, normalize_embeddings=True).tolist()
-
-        return _ST(model, model_id)
-    except Exception:
-        return None
 
 
 @app.get("/health")
 def health(request: Request) -> dict[str, str]:
     _require_api_key(request)
     return {"status": "ok"}
+
+
+def _recall_http(sub: Substrate, scope: str, ctx: ScopeContext, query: str, limit: int):
+    """Lexical recall with a documented HTTP error contract."""
+    retrieval = importlib.import_module("weft.retrieval")
+    try:
+        return retrieval.recall(
+            sub, query, ctx, scope_hint=scope, limit=limit,
+            mode="lexical", embedder=None, use_cross_encoder=False,
+        )
+    except retrieval.IndexIncompleteError:
+        raise HTTPException(
+            status_code=503,
+            detail=(f"full-text index for scope {scope!r} is incomplete or stale; "
+                    f"an operator must run: weft --db <path> rebuild-fts --scope {scope}"),
+        ) from None
+
+
+def _ingest_records(sub: Substrate, scope: str, ctx: ScopeContext, records: list[dict[str, Any]]) -> JSONResponse:
+    try:
+        with sub.ingestion_transaction():
+            for rec in records:
+                try:
+                    # JSON responses and SQLite require finite numbers and valid UTF-8.
+                    json.dumps(rec, ensure_ascii=False, allow_nan=False).encode("utf-8")
+                except (ValueError, TypeError, UnicodeEncodeError, RecursionError):
+                    raise HTTPException(status_code=400, detail="invalid record") from None
+                payload = rec.get("payload", {})
+                if (not isinstance(payload, dict) or not isinstance(rec.get("provenance", {}), dict)
+                        or not isinstance(payload.get("text", ""), str)):
+                    raise HTTPException(status_code=400, detail="invalid record")
+                record = Record(
+                    record_id=str(rec.get("record_id") or ""),
+                    record_type=str(rec.get("record_type", "Source")),
+                    scope=scope,
+                    epistemic_status=rec.get("epistemic_status", "stated"),
+                    payload=rec.get("payload", {}),
+                    provenance=rec.get("provenance", {"source": "mcp"}),
+                    attribution="agent",
+                )
+                sub.put(record, ctx)
+    except (ScopeViolation, SchemaViolation, RecordConflict):
+        raise HTTPException(status_code=403, detail="write not permitted") from None
+    return JSONResponse({"status": "ok", "inserted": len(records)})
 
 
 @app.post("/mcp/ingest")
@@ -130,20 +108,7 @@ def mcp_ingest(request: Request, req: IngestRequest) -> JSONResponse:
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
-        inserted = 0
-        for rec in req.records:
-            record = Record(
-                record_id=str(rec.get("record_id") or ""),
-                record_type=str(rec.get("record_type", "Observation")),
-                scope=req.scope,
-                epistemic_status=rec.get("epistemic_status", "observed"),
-                payload=rec.get("payload", {}),
-                provenance=rec.get("provenance", {"source": "mcp"}),
-                attribution=ctx.actor,
-            )
-            sub.put(record, ctx)
-            inserted += 1
-        return JSONResponse({"status": "ok", "inserted": inserted})
+        return _ingest_records(sub, req.scope, ctx, req.records)
     finally:
         sub.close()
 
@@ -155,12 +120,7 @@ def mcp_recall(request: Request, req: RecallRequest) -> JSONResponse:
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
-        embedder = _load_embedder()
-        mode = "hybrid" if embedder else "lexical"
-        items, receipt = importlib.import_module("weft.retrieval").recall(
-            sub, req.query, ctx, scope_hint=req.scope, limit=req.limit,
-            mode=mode, embedder=embedder, use_cross_encoder=False,
-        )
+        items, receipt = _recall_http(sub, req.scope, ctx, req.query, req.limit)
         results = []
         for item in items:
             results.append({
@@ -198,37 +158,26 @@ def mcp_call(request: Request, req: MCPCall) -> JSONResponse:
     tool = req.tool
     args = req.arguments or {}
     scope = args.get("scope", "")
-    if not scope:
-        raise HTTPException(status_code=400, detail="scope is required")
+    if not isinstance(scope, str) or not scope:
+        raise HTTPException(status_code=400, detail="invalid arguments")
+    if tool == "ingest":
+        records = args.get("records", [])
+        if not isinstance(records, list) or any(not isinstance(rec, dict) for rec in records):
+            raise HTTPException(status_code=400, detail="invalid arguments")
+    if tool == "recall":
+        if not isinstance(args.get("query", ""), str) or type(args.get("limit", 5)) is not int \
+                or not 1 <= args.get("limit", 5) <= MAX_RECALL_LIMIT:
+            raise HTTPException(status_code=400, detail="invalid arguments")
     engine, ctx = _ctx_for(scope)
     db_path = _db_path()
     sub = Substrate(db_path, engine)
     try:
         if tool == "ingest":
-            records = args.get("records", [])
-            inserted = 0
-            for rec in records:
-                record = Record(
-                    record_id=str(rec.get("record_id") or ""),
-                    record_type=str(rec.get("record_type", "Observation")),
-                    scope=scope,
-                    epistemic_status=rec.get("epistemic_status", "observed"),
-                    payload=rec.get("payload", {}),
-                    provenance=rec.get("provenance", {"source": "mcp"}),
-                    attribution=ctx.actor,
-                )
-                sub.put(record, ctx)
-                inserted += 1
-            return JSONResponse({"status": "ok", "inserted": inserted})
+            return _ingest_records(sub, scope, ctx, args.get("records", []))
         elif tool == "recall":
             query = args.get("query", "")
             limit = int(args.get("limit", 5))
-            embedder = _load_embedder()
-            mode = "hybrid" if embedder else "lexical"
-            items, receipt = importlib.import_module("weft.retrieval").recall(
-                sub, query, ctx, scope_hint=scope, limit=limit,
-                mode=mode, embedder=embedder, use_cross_encoder=False,
-            )
+            items, receipt = _recall_http(sub, scope, ctx, query, limit)
             results = [
                 {"record_id": item.record_id, "text": item.text,  "tier": item.tier}
                 for item in items

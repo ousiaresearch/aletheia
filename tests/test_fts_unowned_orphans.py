@@ -15,7 +15,10 @@ class Embedder:
     embed_query = embed_document
 
 
-@pytest.mark.parametrize('orphan_scope', [None, 'unknown'])
+# Round 5: ownership comes from the row's own scope column. A row naming no scope is
+# unattributable and fails every scope; a row naming another scope is that scope's problem
+# (see tests/test_phase14_round5_substrate.py).
+@pytest.mark.parametrize('orphan_scope', [None])
 @pytest.mark.parametrize('mode', ['lexical', 'hybrid'])
 def test_recall_refuses_orphan_with_unowned_scope(tmp_path, orphan_scope, mode):
     sub = Substrate(tmp_path / 'db', ScopeEngine(known_scopes={'coast'}))

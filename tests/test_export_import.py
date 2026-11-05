@@ -25,7 +25,7 @@ def test_export_scope_returns_portable_dict(tmp_path):
                           source_ids=["src-1-s"], payload={"text": "v1"}, effective_at=100.0),
                     ctx, validate_schema=True, overwrite=False)
         data = sub.export_scope("s", ctx)
-        assert data["schema_version"] == 6
+        assert data["schema_version"] == 7
         assert data["scope"] == "s"
         assert len(data["records"]) == 2  # Source + Observation
         texts = {r["payload"]["text"] for r in data["records"]}
@@ -119,10 +119,11 @@ def test_import_scope_rejects_unverified_claim_without_verification(tmp_path):
                 },
             ],
         }
-        # Without a Verification that names c1, import must refuse the Claim.
+        # Refusing the invalid Claim rolls back the entire import, including v1.
         imported = sub.import_scope(data, ctx)
-        assert imported == 1  # only the Verification imports
+        assert imported == 0
         assert sub.get("c1", ctx) is None
+        assert sub.get("v1", ctx) is None
     finally:
         sub.close()
 

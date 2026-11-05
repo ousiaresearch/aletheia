@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from weft.knowledge import KnowledgeRefusal, check_record
@@ -113,9 +113,11 @@ def promote_rule(
     current_status = record.payload.get("status", STATUS_PROPOSED)
     if current_status != STATUS_PROPOSED:
         raise KnowledgeRefusal(f"rule is {current_status}, not proposed")
+    if not _rule_is_live(sub, record):
+        raise KnowledgeRefusal("rule is not live")
 
     # Find the promotion gate: user-attributed Decision/Commitment naming this rule.
-    promoter = _find_promoter(sub, ctx, rule_id, promotion_record_id)
+    promoter = _find_promoter(sub, ctx, record, promotion_record_id)
     if promoter is None:
         raise KnowledgeRefusal("promotion requires user-attributed Decision or Commitment")
 
@@ -246,6 +248,17 @@ def deprecate_rule(
     return updated
 
 
+def _rule_is_live(sub: Substrate, record: Record) -> bool:
+    """Evaluate rule validity and supersession in the current DB snapshot."""
+    now = time.time()
+    return (not (record.valid_from is not None and record.valid_from > now)
+            and not (record.effective_at is not None and record.effective_at > now)
+            and not (record.valid_to is not None and record.valid_to <= now)
+            and not sub._conn.execute(
+                "SELECT 1 FROM records WHERE supersedes=? LIMIT 1", (record.record_id,)
+            ).fetchone())
+
+
 def list_active_rules(sub: Substrate, ctx: ScopeContext, scope: str) -> list[Record]:
     """Return all ProposedRule records with `active` status in *scope*.
 
@@ -255,12 +268,16 @@ def list_active_rules(sub: Substrate, ctx: ScopeContext, scope: str) -> list[Rec
         # Same-scope authorization check: caller must have the scope.
         if scope not in ctx.granted_scopes:
             return []
-        rows = sub._conn.execute(
-            "SELECT * FROM records WHERE scope = ? AND record_type = 'ProposedRule' "
-            "AND json_extract(payload, '$.status') = ?",
-            (scope, STATUS_ACTIVE),
-        ).fetchall()
-        return [Record.from_row(r) for r in rows]
+        with sub._read_transaction():
+            rows = sub._conn.execute(
+                "SELECT record_id FROM records WHERE scope = ? AND record_type = 'ProposedRule' "
+                "AND json_extract(payload, '$.status') = ?",
+                (scope, STATUS_ACTIVE),
+            ).fetchall()
+            return [rec for row in rows if (rec := sub.get(row[0], ctx)) is not None
+                    and rec.scope == scope and rec.record_type == 'ProposedRule'
+                    and rec.payload.get('status') == STATUS_ACTIVE
+                    and _rule_is_live(sub, rec) and sub._valid_rule_promoter(rec, ctx)]
     except Exception:
         return []
 
@@ -305,7 +322,7 @@ def _check_user_only(ctx: ScopeContext) -> None:
 def _find_promoter(
     sub: Substrate,
     ctx: ScopeContext,
-    rule_id: str,
+    rule: Record,
     promotion_record_id: str | None = None,
 ) -> Record | None:
     """Find a user-attributed Decision/Commitment that names this rule.
@@ -315,8 +332,6 @@ def _find_promoter(
     2. Any Decision/Commitment in scope with `user` attribution that
        references rule_id in record_id, source_ids, or payload.
     """
-    scope = next(iter(ctx.granted_scopes)) if ctx.granted_scopes else (sub.scope_engine.known_scopes and next(iter(sub.scope_engine.known_scopes)))
-
     candidates: list[Record] = []
     if promotion_record_id:
         rec = sub.get(promotion_record_id, ctx)
@@ -324,14 +339,17 @@ def _find_promoter(
             candidates.append(rec)
     else:
         rows = sub._conn.execute(
-            "SELECT * FROM records WHERE scope = ? AND record_type IN ('Decision', 'Commitment') "
+            "SELECT record_id FROM records WHERE scope = ? AND record_type IN ('Decision', 'Commitment') "
             "AND attribution = 'user'",
-            (scope,),
+            (rule.scope,),
         ).fetchall()
-        candidates = [Record.from_row(r) for r in rows]
+        candidates = [rec for row in rows if (rec := sub.get(row[0], ctx)) is not None]
 
     for rec in candidates:
-        if _names_rule(rec, rule_id):
+        # Use the same authority check as the transactional write; put() checks
+        # again under its write transaction if an approval changes meanwhile.
+        proposed = replace(rule, payload={**rule.payload, 'promoted_by': rec.record_id})
+        if sub._valid_rule_promoter(proposed, ctx):
             return rec
     return None
 

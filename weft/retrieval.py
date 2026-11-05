@@ -32,7 +32,15 @@ STOPWORDS = frozenset({
 })
 
 
-def _neighbor_expand(sub, candidate_ids: list[str], limit: int) -> list[str]:
+def _chain_stamp(value) -> float:
+    """Writer-controlled created_at -> a finite number; anything else sorts as 0."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return 0.0
+    value = float(value)
+    return value if value == value and value not in (float("inf"), float("-inf")) else 0.0
+
+
+def _neighbor_expand(sub, candidate_ids: list[str], limit: int, scopes: list[str]) -> list[str]:
     """P1: add adjacent-turn neighbors from the same conversation.
     
     For each candidate that has a conversation_id in provenance, find the
@@ -64,7 +72,7 @@ def _neighbor_expand(sub, candidate_ids: list[str], limit: int) -> list[str]:
     
     # P1 perf: build one in-memory index per scope instead of N LIKE queries.
     conv_chain: dict[str, list[tuple[str, float]]] = {}
-    for scope in sub.scope_engine.known_scopes:
+    for scope in scopes:
         try:
             rows = sub._conn.execute(
                 "SELECT record_id, payload FROM records WHERE scope = ?", (scope,)
@@ -76,12 +84,12 @@ def _neighbor_expand(sub, candidate_ids: list[str], limit: int) -> list[str]:
                 payload = json.loads(payload_json)
                 conv_id = (payload.get("provenance") or {}).get("conversation_id")
                 if conv_id and conv_id in conv_to_rids:
-                    conv_chain.setdefault(conv_id, []).append((rid, payload.get("created_at") or 0))
+                    conv_chain.setdefault(conv_id, []).append((rid, _chain_stamp(payload.get("created_at"))))
             except Exception:
                 continue
     
-    for conv_id, chain in conv_chain.items():
-        chain.sort(key=lambda x: x[1])
+    for conv_id, chain in sorted(conv_chain.items()):
+        chain.sort(key=lambda x: (x[1], x[0]))
         rid_to_idx = {rid: i for i, (rid, _) in enumerate(chain)}
         neighbors: set[str] = set()
         for rid, _ in chain:
@@ -93,7 +101,7 @@ def _neighbor_expand(sub, candidate_ids: list[str], limit: int) -> list[str]:
                 if 0 <= nidx < len(chain):
                     neighbors.add(chain[nidx][0])
         
-        new_neighbors = [n for n in neighbors if n not in seen]
+        new_neighbors = sorted(n for n in neighbors if n not in seen)
         expanded = expanded + new_neighbors
         seen.update(new_neighbors)
         
@@ -111,6 +119,7 @@ class Item:
     tier: str
     derived: bool = False  # R-P3-12: machine-derived text (OCR, transcript, description)
     is_summary: bool = False
+    neighbor: bool = False  # adjacent-turn context, not a query match; ranked after matches
 
     def render(self) -> str:
         """The only form recalled text may take when handed back to a model (D3-5).
@@ -145,14 +154,64 @@ def _pick_tier(text: str, terms: list) -> tuple[str, str]:
     return "L0", tiers[0][1]
 
 
-def _fuse(ranked_lists: list, limit: int) -> list:
-    """Reciprocal-rank fusion: each list contributes 1 / (RRF_K + rank)."""
+def _fuse_scores(ranked_lists: list) -> dict:
+    """Reciprocal-rank fusion scores: each list contributes 1 / (RRF_K + rank)."""
     scores: dict = {}
     for ranked in ranked_lists:
         for rank, rid in enumerate(ranked):
             scores[rid] = scores.get(rid, 0.0) + 1.0 / (RRF_K + rank + 1)
+    return scores
+
+
+def _fuse(ranked_lists: list, limit: int) -> list:
+    """Reciprocal-rank fusion: each list contributes 1 / (RRF_K + rank)."""
+    scores = _fuse_scores(ranked_lists)
     order = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))
     return [rid for rid, _ in order[:limit]]
+
+
+class IndexIncompleteError(ValueError):
+    """A readable scope's full-text or vector index is incomplete or stale."""
+
+
+def _bm25_scores(sub, match, ctx, scopes, ids):
+    """{record_id: bm25} from the same FTS5 corpus and ``bm25(corpus)`` that
+    ``fts_candidates`` ranks by (lower is better). Ranks are corpus-level, so asking
+    for a subset of ids returns the identical values the candidate query ordered by.
+    """
+    if not ids:
+        return {}
+    placeholders = ",".join("?" * len(scopes))
+    where = f" WHERE records.scope IN ({placeholders})"
+    local = sub._fts_visible_corpus(ctx, scopes, where, tuple(scopes))
+    marks = ",".join("?" * len(ids))
+    rows = local.execute(
+        f"SELECT record_id, bm25(corpus) FROM corpus WHERE corpus MATCH ? AND record_id IN ({marks})",
+        (match, *ids)).fetchall()
+    return {rid: score for rid, score in rows}
+
+
+def _boost_adjacent_pairs(candidate_ids, scores, tied=None):
+    """Tiebreak only: swap an adjacent pair (fixed bands 0-1, 2-3, ...) when the
+    boost favours the lower one AND ``tied(a, b)`` says base relevance is equal.
+
+    Base relevance is BM25 in lexical mode and the fused (RRF) score in hybrid
+    mode; equal BM25 alone does not tie in hybrid. A boost therefore can never
+    lift a candidate over a strictly more relevant one, so agent-controlled
+    metadata cannot pin rank 1. ``tied=None``
+    treats every pair as tied (unit-test hook only).
+    """
+    import math
+    result = list(candidate_ids)
+    for i in range(0, len(result) - 1, 2):
+        a, b = result[i:i + 2]
+        left = float(scores.get(a, 0.0))
+        right = float(scores.get(b, 0.0))
+        if not math.isfinite(left) or not math.isfinite(right):
+            raise ValueError("non-finite boost")
+        if right > left and (tied is None or tied(a, b)):
+            result[i:i + 2] = [b, a]
+    return result
 
 
 def _cosine(a, b):
@@ -252,6 +311,9 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             sub.record_receipt("recall", readable, {"selected": 0, "excluded": 0}, ctx)
         return [], receipt
 
+    lex_scores: list = []  # one {record_id: bm25} per lexical query, in query order
+    query_lists: list = []  # per query, the ranked lists that were fused (hybrid)
+
     def _recall_one(q: str):
         """Core recall for a single query string. Returns candidate_ids list."""
         q_terms = re.findall(r"\w+", (q or "").lower())
@@ -275,9 +337,15 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
                 # syntax error that was silently swallowed, leaving candidates
                 # empty for 2-3 term queries.
                 match = " OR ".join(f'"{t}"' for t in q_content)
-            ranked.append(sub.fts_candidates(match, ctx, q_pool, scopes=readable))
+            lex = sub.fts_candidates(match, ctx, q_pool, scopes=readable)
+            try:
+                lex_scores.append(_bm25_scores(sub, match, ctx, readable, lex))
+            except Exception:
+                lex_scores.append({})  # no true rank available: nothing counts as tied
+            ranked.append(lex)
         if q_vector and embedder is not None:
             ranked.append(sub.vector_candidates(q_embedding, ctx, q_pool, scopes=readable, model_id=embedder.model_id))
+        query_lists.append(ranked)
         return ranked[0] if len(ranked) == 1 else _fuse(ranked, q_pool)
 
     # D3-1: embedding computed outside the database transaction so long-running
@@ -290,12 +358,12 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         if use_lexical and not use_vector:
             for scope in readable:
                 if not sub.fts_index_complete(scope, ctx):
-                    raise ValueError("lexical recall requires a complete full-text index for every readable scope")
+                    raise IndexIncompleteError("lexical recall requires a complete full-text index for every readable scope")
         if use_vector:
             assert embedder is not None
             for scope in readable:
                 if not sub.vector_index_complete(scope, ctx, model_id=embedder.model_id):
-                    raise ValueError("hybrid/vector recall requires a complete vector index for every readable scope")
+                    raise IndexIncompleteError("hybrid/vector recall requires a complete vector index for every readable scope")
         
         # Run recall for each expanded query and fuse candidate IDs.
         all_ranked = []
@@ -316,48 +384,76 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         else:
             candidate_ids = []
 
-        # Phase 12: graph boost — reorder candidates by entity overlap with query.
-        graph_scores = {}
+        # Boosts are bounded to fixed adjacent rank bands. They cannot stack
+        # to move a weak candidate arbitrarily far above the base retrieval.
+        graph_applied = temporal_applied = False
+        fused = None
+        if mode == "hybrid" and query_lists:
+            if len(all_ranked) > 1:
+                fused = _fuse_scores(all_ranked)
+            elif len(query_lists) == 1:
+                fused = _fuse_scores(query_lists[0])
+
+        def _tied(a, b):
+            """Tied only when both hold a true BM25 under every lexical query and the
+            values are equal. Anything unranked (vector-only, missing) is never tied.
+            In hybrid mode the pair must also have equal FUSED relevance."""
+            if not lex_scores:
+                return False
+            if mode == "hybrid":
+                if fused is None or a not in fused or b not in fused or fused[a] != fused[b]:
+                    return False
+            for scores in lex_scores:
+                if a not in scores or b not in scores or scores[a] != scores[b]:
+                    return False
+            return True
+
         try:
-            graph_scores = entity_boost(sub, ctx, query, candidate_ids)
-            if graph_scores:
-                candidate_ids.sort(key=lambda rid: (-graph_scores.get(rid, 0.0), candidate_ids.index(rid)))
+            graph_scores = entity_boost(sub, ctx, query, candidate_ids, scopes=readable)
+            reordered = _boost_adjacent_pairs(candidate_ids, graph_scores, _tied)
+            graph_applied = reordered != candidate_ids
+            candidate_ids = reordered
         except Exception:
             pass
 
-        # P2: temporal boost — when the query asks about time, promote records
-        # that contain date expressions (e.g., summaries with anchor dates).
-        temporal_scores = {}
         try:
             from weft.temporal import temporal_boost
             temporal_scores = temporal_boost(sub, ctx, query, candidate_ids)
-            if temporal_scores:
-                candidate_ids.sort(key=lambda rid: (-temporal_scores.get(rid, 0.0), candidate_ids.index(rid)))
+            reordered = _boost_adjacent_pairs(candidate_ids, temporal_scores, _tied)
+            temporal_applied = reordered != candidate_ids
+            candidate_ids = reordered
         except Exception:
             pass
 
-        # Confidence tiebreaker for Claims: higher-confidence claims rank higher
-        # without overriding strong lexical/vector matches.
-        try:
-            conf_scores: dict[str, float] = {}
-            for rid in candidate_ids:
-                rec = sub._lookup_record(rid)
-                if rec and rec.record_type == "Claim" and isinstance(rec.payload, dict):
-                    try:
-                        conf_scores[rid] = float(rec.payload.get("confidence", 0.5))
-                    except (TypeError, ValueError):
-                        pass
-            if conf_scores:
-                candidate_ids.sort(key=lambda rid: (-conf_scores.get(rid, 0.0), candidate_ids.index(rid)))
-        except Exception:
-            pass
-        
+        # Confidence compares only adjacent lexically tied Claims, never a Claim to a Source.
+        import math
+        for i in range(0, len(candidate_ids) - 1, 2):
+            try:
+                left, right = (sub._lookup_record(rid) for rid in candidate_ids[i:i + 2])
+                if not left or not right or left.record_type != "Claim" or right.record_type != "Claim":
+                    continue
+                if not _tied(*candidate_ids[i:i + 2]):
+                    continue
+                a = float(left.payload.get("confidence", 0.5))
+                b = float(right.payload.get("confidence", 0.5))
+                if math.isfinite(a) and math.isfinite(b) and max(0.0, min(1.0, b)) > max(0.0, min(1.0, a)):
+                    candidate_ids[i:i + 2] = candidate_ids[i:i + 2][::-1]
+            except (TypeError, ValueError, AttributeError):
+                continue
+
         # P1: neighbor expansion — add adjacent-turn neighbors from the same
         # conversation to give the ranker more context.
+        # Neighbors are context, not matches: they are capped and always ranked after every
+        # record that matched, so writer-controlled conversation_id/created_at cannot push
+        # a non-matching record ahead of a matching one.
+        neighbor_ids: set = set()
         try:
-            candidate_ids = _neighbor_expand(sub, candidate_ids, limit)
+            matched = list(candidate_ids)
+            expanded_ids = _neighbor_expand(sub, matched, limit, readable)
+            neighbor_ids = set(expanded_ids) - set(matched)
+            candidate_ids = matched + [n for n in expanded_ids if n in neighbor_ids]
         except Exception:
-            pass
+            neighbor_ids = set()
 
         items: list[Item] = []
         seen_record_ids: set = set()
@@ -368,7 +464,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
                 continue
             seen_record_ids.add(rid)
             rec = sub.get(rid, ctx)  # gated again: defence in depth
-            if rec is None:
+            if rec is None or rec.scope not in readable:
                 receipt.exclusions.append("withheld by content rule")
                 continue
             if rec.record_type in ("Summary", "RecallReceipt"):
@@ -378,35 +474,49 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             tier, shown = _pick_tier(text, terms)
             derived = bool(isinstance(rec.provenance, dict) and rec.provenance.get("machine_derived"))
             is_summary = rec.record_type == "Summary" or "-ss-" in rid or "summary" in rid.lower()
-            items.append(Item(rid, rec.scope, text, tier, derived, is_summary=is_summary))
+            items.append(Item(rid, rec.scope, text, tier, derived, is_summary=is_summary,
+                              neighbor=rid in neighbor_ids))
             receipt.selected.append(rid)
             if _TIER_ORDER[tier] > _TIER_ORDER[receipt.tier]:
                 receipt.tier = tier
 
-        # Cross-encoder rerank on the pooled candidates before truncation.
-        # Run before bi-encoder rerank so the cross-encoder sees the full pool.
-        cross_encoder_applied = False
-        if use_cross_encoder and cross_encoder is not None and len(items) > limit:
-            cross_encoder_applied = True
-            items = cross_encoder.rerank(query, items, top_k=len(items))
+        # Matches-first partition BEFORE any rerank or truncation: neighbors are context only
+        # and must never displace a matching record at any stage. Matches keep their ranked
+        # slots (reranked only among themselves); neighbors fill the remaining slots and are
+        # reranked only among themselves.
+        matches = [it for it in items if not it.neighbor]
+        neighbors = [it for it in items if it.neighbor]
 
-        # Rerank over the full pool before truncation to limit.
-        # Skip when cross-encoder already reranked the same pool — it is more
-        # accurate than bi-encoder cosine, and both would hit the same latency.
-        if rerank and len(items) > limit and not cross_encoder_applied:
-            items = _rerank(query, items, embedder, limit)
+        def _order(group, slots):
+            """Cross-encoder (when available) or bi-encoder rerank of one group, cut to slots."""
+            applied = False
+            if slots <= 0 or not group:
+                return [], applied
+            if use_cross_encoder and cross_encoder is not None and len(group) > slots:
+                applied = True
+                return cross_encoder.rerank(query, group, top_k=len(group))[:slots], applied
+            # Skip bi-encoder when the cross-encoder already reranked: it is more accurate.
+            if rerank and len(group) > slots:
+                return _rerank(query, group, embedder, slots), applied
+            return group[:slots], applied
+
+        matches, cross_encoder_applied = _order(matches, limit)
+        neighbors, ce_neighbors = _order(neighbors, limit - len(matches))
+        cross_encoder_applied = cross_encoder_applied or ce_neighbors
+        items = matches + neighbors
 
     # Final truncation + receipt recording happens outside the read transaction.
     selected = items[:limit]
     receipt.selected = [it.record_id for it in selected]
+    receipt.tier = max((it.tier for it in selected), key=lambda tier: _TIER_ORDER[tier], default="L0")
     receipt.layers = [
         layer for layer in [
             "lexical" if use_lexical else None,
             "vector" if use_vector else None,
             "query_expansion" if len(expanded_queries) > 1 else None,
             "cross_encoder" if cross_encoder_applied else None,
-            "graph_boost" if graph_scores else None,
-            "temporal_boost" if temporal_scores else None,
+            "graph_boost" if graph_applied else None,
+            "temporal_boost" if temporal_applied else None,
         ] if layer is not None
     ]
     if ctx is not None:

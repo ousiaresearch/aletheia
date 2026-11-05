@@ -9,7 +9,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from weft.substrate import Substrate, Record
 from weft.scope import ScopeEngine, ScopeContext
@@ -19,31 +19,7 @@ logger = logging.getLogger("weft.server")
 app = FastAPI(title="Weft Memory", version="0.1.0a0", docs_url=None, openapi_url=None)
 
 
-class _AuthMiddleware:
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-        api_key = os.environ.get("WEFT_API_KEY", "")
-        if not api_key:
-            from starlette.responses import Response
-            await Response("missing bearer token", status_code=401)(scope, receive, send)
-            return
-        headers = dict(scope.get("headers", []))
-        auth = headers.get(b"authorization", b"").decode()
-        if not auth.startswith("Bearer "):
-            from starlette.responses import Response
-            await Response("missing bearer token", status_code=401)(scope, receive, send)
-            return
-        token = auth.split(" ", 1)[1].strip()
-        if token != api_key:
-            from starlette.responses import Response
-            await Response("invalid token", status_code=401)(scope, receive, send)
-            return
-        await self.app(scope, receive, send)
+from weft.server_common import AuthMiddleware as _AuthMiddleware, require_api_key as _require_api_key, MAX_RECALL_LIMIT  # noqa: E402
 
 
 app.add_middleware(_AuthMiddleware)
@@ -52,37 +28,20 @@ app.add_middleware(_AuthMiddleware)
 class QueryRequest(BaseModel):
     scope: str
     query: str
-    limit: int = 5
+    limit: int = Field(default=5, ge=1, le=MAX_RECALL_LIMIT)
 
 
 class ExportRequest(BaseModel):
     scope: str
 
 
-from weft.server_common import known_scopes as _known_scopes, _db_path
+from weft.server_common import known_scopes as _known_scopes, scope_engine_for as _scope_engine_for, _db_path
 
 
 def _ctx_for(scope: str) -> tuple[ScopeEngine, ScopeContext]:
-    known = _known_scopes()
-    if known is None or scope not in known:
-        raise HTTPException(status_code=403, detail="scope not permitted")
-    api_key = os.environ.get("WEFT_API_KEY", "")
-    actor = "http-client-" + api_key[:8] if api_key else "http-client"
-    engine = ScopeEngine(known_scopes={scope})
-    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
+    engine = _scope_engine_for(scope)
+    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor="http-client")
     return engine, ctx
-
-
-def _require_api_key(request):
-    api_key = os.environ.get("WEFT_API_KEY", "")
-    if not api_key:
-        raise HTTPException(status_code=401, detail="missing bearer token")
-    auth = request.headers.get("authorization", "")
-    if not auth.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="missing bearer token")
-    token = auth.split(" ", 1)[1].strip()
-    if token != api_key:
-        raise HTTPException(status_code=401, detail="invalid token")
 
 
 @app.get("/health")
@@ -153,6 +112,10 @@ def get_record(request: Request, record_id: str, scope: str) -> JSONResponse:
 
 
 _append_shadow(app)
+
+# The deployment serves both the desktop API and the custom HTTP tool routes.
+from weft.mcp_server import app as _tool_app
+app.include_router(_tool_app.router)
 
 
 def main(argv: list[str] | None = None) -> int:

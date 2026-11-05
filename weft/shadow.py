@@ -9,17 +9,17 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from weft.substrate import Substrate, Record
 from weft.scope import ScopeEngine, ScopeContext
-from weft.server_common import known_scopes as _known_scopes, _db_path
+from weft.server_common import known_scopes as _known_scopes, scope_engine_for as _scope_engine_for, _db_path, require_api_key as _require_api_key, MAX_RECALL_LIMIT
 
 
 class ShadowRecallRequest(BaseModel):
     scope: str
     query: str
-    limit: int = 5
+    limit: int = Field(default=5, ge=1, le=MAX_RECALL_LIMIT)
 
 
 class ShadowReasonRequest(BaseModel):
@@ -28,24 +28,9 @@ class ShadowReasonRequest(BaseModel):
 
 
 def _shadow_ctx(scope: str) -> tuple[ScopeEngine, ScopeContext]:
-    known = _known_scopes()
-    if known is None or scope not in known:
-        raise HTTPException(status_code=403, detail="scope not permitted")
-    engine = ScopeEngine(known_scopes={scope})
+    engine = _scope_engine_for(scope)
     ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor="shadow")
     return engine, ctx
-
-
-def _require_api_key(request):
-    api_key = os.environ.get("WEFT_API_KEY", "")
-    if not api_key:
-        raise HTTPException(status_code=401, detail="missing bearer token")
-    auth = request.headers.get("authorization", "")
-    if not auth.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="missing bearer token")
-    token = auth.split(" ", 1)[1].strip()
-    if token != api_key:
-        raise HTTPException(status_code=401, detail="invalid token")
 
 
 def _diff_records(active: list[dict], shadow: list[dict]) -> dict[str, Any]:
@@ -160,10 +145,7 @@ def _append(app: FastAPI) -> None:
             sub_shadow.close()
 
 
-def _ctx_for(scope: str, actor: str = "local-user") -> tuple[ScopeEngine, ScopeContext]:
-    known = _known_scopes()
-    if known is None or scope not in known:
-        raise HTTPException(status_code=403, detail="scope not permitted")
-    engine = ScopeEngine(known_scopes={scope})
-    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=True, actor=actor)
+def _ctx_for(scope: str, actor: str = "http-client") -> tuple[ScopeEngine, ScopeContext]:
+    engine = _scope_engine_for(scope)
+    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor=actor)
     return engine, ctx

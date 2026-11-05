@@ -13,6 +13,7 @@ from contextlib import contextmanager
 
 import hashlib
 import json
+import logging
 import math
 import os
 import re
@@ -115,8 +116,23 @@ class Record:
         )
 
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
+# Export bundles from these schema versions can be restored. Version 6 bundles carry the same
+# record shape; they never carry approval bindings (approvals are never restored, see import_scope).
+_IMPORTABLE_SCHEMA_VERSIONS = (6, 7)
+# Payload keys a lifecycle transition (propose -> active/rejected/deprecated) may change.
+# Everything else in the rule, including all record-level fields, must stay identical.
+_RULE_LIFECYCLE_KEYS = ('status', 'promoted_by', 'promoted_at', 'rejection_reason', 'deprecated_at')
+# What a journal row's record_id / reason become when the record is erased: the audit row stays
+# (type, time, scope), the identifier and free text do not.
+_ERASED = "[erased]"
+_GENERIC_DELETE_REFUSAL = "delete not permitted"
+_DEFAULT_SCRUB_RETRY_SECONDS = 2.0
 VEC_DIM = 1024  # embedding dimension of the alpha embedding adapter
+# Record types the ingest pipelines embed. A scope's vector index must cover these; procedural and
+# decision-type records (ProposedRule, Decision, Commitment, Correction, ...) are lexical-only, so a
+# missing vector for them never makes a scope's vector index incomplete.
+EMBEDDABLE_TYPES = frozenset({"Source", "Observation", "Claim"})
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS records (
@@ -134,11 +150,26 @@ CREATE TABLE IF NOT EXISTS records (
     valid_from       REAL,
     valid_to         REAL
 );
+-- Legacy rows that fail the record integrity rules (non-string payload text, non-finite
+-- timestamps, ...), moved out of `records` by the schema-7 migration so no read path can see them.
+-- Columns are untyped on purpose: the original values (e.g. an infinite timestamp) are preserved.
+CREATE TABLE IF NOT EXISTS quarantined_records (
+    record_id TEXT PRIMARY KEY, reason TEXT NOT NULL, record_type, scope, epistemic_status, payload,
+    created_at, effective_at, supersedes, source_ids, provenance, attribution, valid_from, valid_to
+);
+-- A Correction whose original was erased is marked here (the Correction's own id only; NO id of
+-- the erased original is stored anywhere), so an export of the scope can still be restored.
+-- See delete() and import_scope().
+CREATE TABLE IF NOT EXISTS lineage_erased (record_id TEXT PRIMARY KEY);
 CREATE TABLE IF NOT EXISTS verifiers (
     actor_id      TEXT PRIMARY KEY,
     registered_at REAL NOT NULL
 );
 CREATE VIRTUAL TABLE IF NOT EXISTS fts USING fts5(record_id UNINDEXED, scope UNINDEXED, text, tokenize='porter unicode61');
+-- record_id is UNINDEXED in fts, so a lookup by it scans the whole index. This maps a record to the
+-- rowid of its fts row so a write replaces its row with a point lookup. Derived data: a row here is
+-- only ever a hint, deletes re-check record_id, and integrity checks never trust it.
+CREATE TABLE IF NOT EXISTS fts_rowmap (record_id TEXT PRIMARY KEY, fts_rowid INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS jobs (
     job_id       INTEGER PRIMARY KEY AUTOINCREMENT,
     scope        TEXT NOT NULL,
@@ -158,6 +189,13 @@ CREATE TABLE IF NOT EXISTS receipts (
 );
 CREATE INDEX IF NOT EXISTS idx_records_scope ON records(scope);
 CREATE INDEX IF NOT EXISTS idx_records_type  ON records(record_type);
+CREATE TABLE IF NOT EXISTS rule_incarnations (
+    rule_id TEXT PRIMARY KEY, token TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS rule_approvals (
+    promoter_id TEXT NOT NULL, rule_id TEXT NOT NULL, token TEXT NOT NULL,
+    proposal_hash TEXT NOT NULL, PRIMARY KEY (promoter_id, rule_id)
+);
 
 CREATE TABLE IF NOT EXISTS journal (
     seq             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -177,8 +215,12 @@ CREATE TABLE IF NOT EXISTS meta (
 
 
 def _check_id(record_id: Any) -> None:
-    if not isinstance(record_id, str) or not _ID_RE.match(record_id):
+    if not isinstance(record_id, str) or not _ID_RE.fullmatch(record_id):
         raise SchemaViolation(f"invalid record_id: {record_id!r}")
+
+
+class _StaleVector(Exception):
+    """The record text changed after it was embedded (internal to reembed_missing)."""
 
 
 def _sha256(text: str) -> str:
@@ -206,12 +248,31 @@ class Substrate:
         scope_engine: ScopeEngine | None = None,
         *,
         busy_timeout: float = 5.0,
+        scrub_retry_seconds: float = _DEFAULT_SCRUB_RETRY_SECONDS,
     ):
         self.db_path = Path(db_path)
+        self._busy_ms = int(busy_timeout * 1000)
+        self.scrub_retry_seconds = max(0.0, float(scrub_retry_seconds))
+        self._scrub_deferred = 0
+        self._scrub_dirty = False
+        self._optimize_pending = False
+        self._fts_rows_erased = False
+        self._fts_residual_ids: set[str] = set()
+        self._fts_erased_ids: set[str] = set()
+        self._scrub_flag = False
+        self.last_refusal: str | None = None
         # Fail closed: never operate without a gate.
         self.scope_engine = scope_engine if scope_engine is not None else ScopeEngine()
         self._lock = threading.RLock()
         self._ingestion_audits = None
+        self._fts_epoch = 0
+        self._fts_corpus = None  # (key, in-memory connection) for the last lexical query
+        self._fts_corpus_builds = 0
+        self.last_import_refusal: str | None = None
+        self.last_scrub_complete: bool | None = None
+        self.migration_reapproval: list[str] = []
+        self.migration_quarantined: list[str] = []
+        self.migration_cascaded: list[str] = []
         self._conn: sqlite3.Connection
         # The store holds plaintext memory. Create new path components owner-only, and
         # keep the restrictive umask active while SQLite creates its sidecar files.
@@ -226,21 +287,47 @@ class Substrate:
                 timeout=busy_timeout,
                 check_same_thread=False,
             )
-            self._conn.execute("PRAGMA journal_mode=WAL")
+            # A store written by a newer release may carry invariants this code does not know.
+            # Refuse before anything is created or written (the read below changes nothing).
+            found = self._conn.execute("PRAGMA user_version").fetchone()[0]
+            if found > SCHEMA_VERSION:
+                raise SubstrateError(
+                    f"database schema version {found} is newer than the supported version "
+                    f"{SCHEMA_VERSION}; refusing to open (upgrade Weft)")
+            # Switching a brand-new file to WAL needs an exclusive lock that busy_timeout does not
+            # cover, so concurrent first opens can fail at once with 'database is locked'.
+            self._retry_locked(lambda: self._conn.execute("PRAGMA journal_mode=WAL"), busy_timeout)
+            self._conn.execute("PRAGMA secure_delete=ON")  # erased plaintext must not linger in free pages
             # Explicit, not the library default (ADR 0001 durability claim).
             self._conn.execute("PRAGMA synchronous=FULL")
             self._conn.execute("PRAGMA foreign_keys=ON")
-            self._conn.executescript(_SCHEMA)
+            self._retry_locked(lambda: self._conn.executescript(_SCHEMA), busy_timeout)
+            self._drop_legacy_tombstones()
+            if self._conn.execute("PRAGMA user_version").fetchone()[0] >= 6:
+                # The schema-7 migration reindexes rules; it needs the rowid hints first or it
+                # cannot find (and so duplicates) the rows an older store already holds.
+                self._backfill_fts_rowmap()
             self._migrate()
+            self._backfill_fts_rowmap()
+            self._repair_targetless_corrections()
             self._conn.execute(
                 "INSERT OR IGNORE INTO meta(key, value) VALUES('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
+            )
+            self._conn.execute(
+                "UPDATE meta SET value=? WHERE key='schema_version' AND CAST(value AS INTEGER) < ?",
+                (str(SCHEMA_VERSION), SCHEMA_VERSION),
             )
             self._conn.execute("INSERT OR IGNORE INTO meta(key, value) VALUES('store_version', '0')")
             for suffix in ("", "-wal", "-shm"):
                 path = str(self.db_path) + suffix
                 if os.path.exists(path):
                     os.chmod(path, 0o600)
+            if self.scrub_pending():
+                # An earlier erase could not finish its WAL scrub: finish it now.
+                self._optimize_pending = self._scrub_needs_optimize()
+                self._fts_rows_erased = False
+                self._finish_scrub(self.scrub_retry_seconds)
         except Exception:
             if hasattr(self, "_conn"):
                 self._conn.close()
@@ -248,15 +335,292 @@ class Substrate:
         finally:
             os.umask(old_umask)
 
+    def _drop_legacy_tombstones(self) -> None:
+        """Dev-schema cleanup: the round-7 ``erased_supersedes`` table kept the erased original's id.
+
+        Keep only the boolean fact (the Correction's own id goes into ``lineage_erased``), drop the
+        table and scrub it. No erased id is retained.
+        """
+        if self._conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='erased_supersedes'"
+                              ).fetchone() is None:
+            return
+        self._conn.execute("BEGIN IMMEDIATE")
+        try:
+            self._conn.execute(
+                "INSERT OR IGNORE INTO lineage_erased(record_id) SELECT e.record_id FROM erased_supersedes e "
+                "JOIN records r ON r.record_id=e.record_id "
+                "WHERE r.record_type='Correction' AND r.supersedes IS NULL")
+            self._conn.execute("DROP TABLE erased_supersedes")
+            self._set_scrub_flag(True)
+            self._conn.execute("COMMIT")
+        except Exception:
+            self._rollback_if_open()
+            raise
+        self._scrub()
+
+    def _scrub(self) -> None:
+        """Push deleted plaintext out of the live DB files, once per outermost erase.
+
+        FTS5 only marks removed rows; 'optimize' merges the segments so the deleted terms leave
+        fts_data (skipped when the erase touched no FTS row), and a TRUNCATE checkpoint moves the
+        WAL into the main file and empties it. With secure_delete=ON freed pages are zeroed.
+
+        This never fails open silently: the logical erase is already committed, and if the
+        checkpoint cannot finish inside ``scrub_retry_seconds`` (a reader holds a snapshot) a
+        ``scrub_pending`` flag is persisted in ``meta``, a warning is logged,
+        ``last_scrub_complete`` is False, and the scrub is retried at the start of the next
+        write/open or by ``complete_scrub()``. Inside ``deferred_scrub()`` it is postponed to exit.
+        Backups, snapshots and storage-media remanence are out of scope.
+        """
+        self._drop_fts_corpus()
+        if self._conn.in_transaction:
+            return
+        if self._fts_rows_erased:
+            self._optimize_pending = True
+            self._fts_rows_erased = False
+        if self._scrub_deferred:
+            self._scrub_dirty = True
+            self.last_scrub_complete = False
+            if self._scrub_token() is None:
+                self._set_scrub_flag(True)  # durable even if the process dies before the deferred scrub
+            else:
+                self._scrub_flag = True
+            return
+        self._finish_scrub(self.scrub_retry_seconds)
+
+    def _set_scrub_flag(self, pending: bool, expected_value: str | None = None, *, fts: bool | None = None) -> bool:
+        try:
+            if pending:
+                need_fts = fts if fts is not None else (
+                    self._fts_rows_erased or self._optimize_pending or self._scrub_needs_optimize()
+                )
+                prefix = "fts:" if need_fts else "wal:"
+                token = prefix + os.urandom(16).hex()
+                self._conn.execute(
+                    "INSERT OR REPLACE INTO meta(key, value) VALUES('scrub_pending', ?)", (token,)
+                )
+                self._scrub_flag = True
+                return True
+            if expected_value is not None:
+                cur = self._conn.execute(
+                    "DELETE FROM meta WHERE key='scrub_pending' AND value=?", (expected_value,)
+                )
+                cleared = (cur.rowcount if cur is not None else 0) > 0
+                self._scrub_flag = not cleared and self.scrub_pending()
+                return cleared
+            self._conn.execute("DELETE FROM meta WHERE key='scrub_pending'")
+            self._scrub_flag = False
+            return True
+        except sqlite3.Error:
+            self._scrub_flag = pending or self._scrub_flag
+            return not pending
+
+    def _scrub_token(self) -> str | None:
+        try:
+            cur = self._conn.execute("SELECT value FROM meta WHERE key='scrub_pending'")
+            row = cur.fetchone() if cur is not None else None
+            return str(row[0]) if row is not None else None
+        except sqlite3.Error:
+            return None
+
+    def _scrub_needs_optimize(self) -> bool:
+        tok = self._scrub_token()
+        return tok is not None and not tok.startswith("wal:")
+
+    def _fts_ids_remaining(self, ids) -> list[str]:
+        """Which of ``ids`` still have an orphaned FTS row (no live record in ``records``)."""
+        ids = list(ids)
+        left: list[str] = []
+        for i in range(0, len(ids), 400):  # one index scan per chunk, not per id
+            chunk = ids[i:i + 400]
+            marks = ",".join("?" * len(chunk))
+            left.extend(r[0] for r in self._conn.execute(
+                f"SELECT DISTINCT f.record_id FROM fts f "
+                f"WHERE f.record_id IN ({marks}) "
+                f"AND NOT EXISTS (SELECT 1 FROM records r WHERE r.record_id = f.record_id)", chunk))
+        return left
+
+    def _scrub_attempts(self, window: float) -> bool:
+        """optimize (if owed) + TRUNCATE checkpoint, retried with bounded backoff. True if complete."""
+        deadline = time.monotonic() + max(window, 0.0)
+        delay = 0.01
+        self._conn.execute("PRAGMA busy_timeout = 0")  # the loop below owns the waiting
+        try:
+            while True:
+                try:
+                    if self._optimize_pending:
+                        self._conn.execute("INSERT INTO fts(fts) VALUES('optimize')")
+                        self._optimize_pending = False
+                    row = self._conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+                    if row and row[0] == 0:
+                        return True
+                except sqlite3.OperationalError:
+                    pass
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return False
+                time.sleep(min(delay, remaining))
+                delay = min(delay * 2, 0.25)
+        finally:
+            self._conn.execute(f"PRAGMA busy_timeout = {self._busy_ms}")
+
+    def _finish_scrub(self, window: float) -> bool:
+        token_before = self._scrub_token()
+        if token_before is not None and not token_before.startswith("wal:"):
+            self._optimize_pending = True
+        to_check = self._fts_residual_ids | self._fts_erased_ids
+        self._fts_erased_ids = set()
+        self._fts_residual_ids = to_check  # unverified ids keep the scrub incomplete
+        try:
+            if to_check:
+                # Ids a previous scrub still found orphaned are erased again, then all are verified.
+                self._fts_residual_ids = set(self._fts_ids_remaining(to_check))
+                for rid in self._fts_residual_ids:
+                    if self._conn.execute("SELECT 1 FROM records WHERE record_id=?", (rid,)).fetchone() is not None:
+                        continue
+                    self._conn.execute("DELETE FROM fts WHERE record_id=?", (rid,))
+                    self._conn.execute("DELETE FROM fts_rowmap WHERE record_id=?", (rid,))
+                    self._optimize_pending = True
+                if self._fts_residual_ids:
+                    self._fts_residual_ids = set(self._fts_ids_remaining(self._fts_residual_ids))
+        except sqlite3.Error:
+            pass  # the checkpoint below still runs; the residual set keeps the scrub incomplete
+        try:
+            done = self._scrub_attempts(window) and not self._fts_residual_ids
+        except sqlite3.Error:
+            done = False
+        if done and token_before is not None:
+            if not self._set_scrub_flag(False, expected_value=token_before):
+                # A newer erase committed on another connection while we were scrubbing;
+                # keep scrub_pending set and report that the store still has a pending scrub.
+                done = False
+        elif done:
+            if self.scrub_pending():
+                # An erase occurred after token_before was read (when it was None)
+                done = False
+            else:
+                self._scrub_flag = False
+        self.last_scrub_complete = done
+        if not done:
+            was = self._scrub_flag
+            if self._scrub_token() is None:
+                self._set_scrub_flag(True)
+            else:
+                self._scrub_flag = True
+            logging.getLogger("weft.substrate").warning(
+                "erase committed but the WAL/FTS scrub is incomplete (a concurrent reader or an "
+                "index row remains); deleted text may still be in %s-wal. scrub_pending is set; it "
+                "is retried at the next write/open or by Substrate.complete_scrub()%s",
+                self.db_path, " (already pending)" if was else "")
+        return done
+
+    def scrub_pending(self) -> bool:
+        """True while an erase has committed but its WAL/FTS scrub has not completed."""
+        with self._lock:
+            cur = self._conn.execute("SELECT 1 FROM meta WHERE key='scrub_pending'")
+            row = cur.fetchone() if cur is not None else None
+            self._scrub_flag = row is not None
+            return self._scrub_flag
+
+    def complete_scrub(self) -> bool:
+        """Retry a pending scrub now (bounded by ``scrub_retry_seconds``). True once nothing is pending."""
+        with self._lock:
+            if self._conn.in_transaction or self._scrub_deferred:
+                return False
+            if not self.scrub_pending():
+                return True
+            self._optimize_pending = True
+            return self._finish_scrub(self.scrub_retry_seconds)
+
+    def _auto_retry_scrub(self) -> None:
+        """Start of a write: one non-blocking attempt at a pending scrub (never waits on a reader)."""
+        if not self._scrub_deferred and not self._conn.in_transaction and (self._scrub_flag or self.scrub_pending()):
+            self._finish_scrub(0.0)
+
+    @contextmanager
+    def deferred_scrub(self):
+        """Bulk erase: postpone the optimize + checkpoint to one run when the outermost block exits."""
+        with self._lock:
+            self._scrub_deferred += 1
+        try:
+            yield
+        finally:
+            with self._lock:
+                self._scrub_deferred -= 1
+                if self._scrub_deferred == 0 and self._scrub_dirty:
+                    self._scrub_dirty = False
+                    self._scrub()
+
+    def _redact_journal(self, record_id: str) -> None:
+        """An erased record keeps its audit rows (op, scope, time) but not its id or free text."""
+        self._conn.execute(
+            "UPDATE journal SET detail=? WHERE record_id=? AND op IN ('quarantine', 'delete', "
+            "'delete_quarantined', 'prune_derived')", (f"reason={_ERASED}", record_id))
+        self._conn.execute("UPDATE journal SET record_id=? WHERE record_id=?", (_ERASED, record_id))
+
+    def _repair_targetless_corrections(self) -> None:
+        """A Correction with no supersedes can only come from an erased original (v6 delete() made them).
+
+        Mark such rows lineage_erased so the scope export restores. Idempotent; writes only if needed.
+        """
+        sql = ("SELECT record_id FROM records WHERE record_type='Correction' AND supersedes IS NULL "
+               "AND record_id NOT IN (SELECT record_id FROM lineage_erased)")
+        if self._conn.execute(sql).fetchone() is None:
+            return
+        self._conn.execute("BEGIN IMMEDIATE")
+        try:
+            self._conn.execute(f"INSERT OR IGNORE INTO lineage_erased(record_id) {sql}")
+            self._conn.execute("COMMIT")
+        except Exception:
+            self._rollback_if_open()
+            raise
+
     # ---- transaction helpers ------------------------------------------
+
+    @staticmethod
+    def _retry_locked(operation, timeout: float):
+        """Run a connection-setup step, retrying 'database is locked' for up to ``timeout`` seconds."""
+        deadline = time.monotonic() + max(timeout, 1.0)
+        delay = 0.005
+        while True:
+            try:
+                return operation()
+            except sqlite3.OperationalError as exc:
+                if "locked" not in str(exc).lower() or time.monotonic() >= deadline:
+                    raise
+                time.sleep(delay)
+                delay = min(delay * 2, 0.1)
+
+    def _drop_fts_corpus(self) -> None:
+        cached, self._fts_corpus = self._fts_corpus, None
+        if cached is not None:
+            cached[1].close()
+
+    def _backfill_fts_rowmap(self) -> None:
+        """One-time (per store) fill of fts_rowmap for stores written before it existed."""
+        if self._conn.execute("SELECT 1 FROM meta WHERE key='fts_rowmap_ready'").fetchone():
+            return
+        self._conn.execute("BEGIN IMMEDIATE")
+        try:
+            self._conn.execute("DELETE FROM fts_rowmap")
+            self._conn.execute(
+                "INSERT INTO fts_rowmap(record_id, fts_rowid) "
+                "SELECT record_id, max(rowid) FROM fts GROUP BY record_id")
+            self._conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('fts_rowmap_ready','1')")
+            self._conn.execute("COMMIT")
+        except Exception:
+            self._rollback_if_open()
+            raise
 
     def _rollback_if_open(self) -> None:
         # Review fix F14: only roll back a transaction that actually exists.
+        self._drop_fts_corpus()
         if self._conn.in_transaction:
             self._conn.execute("ROLLBACK")
 
     def _rollback_savepoint(self, name: str) -> None:
         # A SQLite RAISE(ROLLBACK) may already have ended the whole transaction.
+        self._drop_fts_corpus()
         if self._conn.in_transaction:
             try:
                 self._conn.execute(f"ROLLBACK TO {name}")
@@ -270,6 +634,7 @@ class Substrate:
         if own and self._ingestion_audits is not None:
             raise sqlite3.OperationalError("ingestion transaction was rolled back")
         if own:
+            self._auto_retry_scrub()
             self._conn.execute("BEGIN IMMEDIATE")
         try:
             self._conn.execute(f"SAVEPOINT {name}")
@@ -294,6 +659,7 @@ class Substrate:
     def ingestion_transaction(self):
         """Atomically publish ingestion records, indexes, and completion marker."""
         with self._lock:
+            self._auto_retry_scrub()
             self._conn.execute("BEGIN IMMEDIATE")
             self._ingestion_audits = []
             try:
@@ -374,6 +740,11 @@ class Substrate:
             return
         self._conn.execute("BEGIN IMMEDIATE")
         try:
+            # Another opener may have migrated between the read above and this write lock;
+            # rerunning (notably the rule re-approval step) would undo work done since.
+            if self._conn.execute("PRAGMA user_version").fetchone()[0] >= SCHEMA_VERSION:
+                self._conn.execute("ROLLBACK")
+                return
             if version < 2:
                 cols = {r[1] for r in self._conn.execute("PRAGMA table_info(records)")}
                 if "attribution" not in cols:
@@ -411,23 +782,189 @@ class Substrate:
                 self._conn.execute("CREATE INDEX IF NOT EXISTS idx_entity_links_source ON entity_links(source_id)")
                 self._conn.execute("CREATE INDEX IF NOT EXISTS idx_entity_links_target ON entity_links(target_id)")
                 self._conn.execute("CREATE INDEX IF NOT EXISTS idx_entity_links_scope ON entity_links(scope)")
+            if version < 7:
+                self._quarantine_invalid_records()
             if version < 3:
                 self._conn.execute("DELETE FROM fts")
+                self._conn.execute("DELETE FROM fts_rowmap")
                 for row in self._conn.execute("SELECT * FROM records").fetchall():
                     self._fts_index(Record.from_row(row))
             if version < 6:
                 # Version 6: switch FTS5 to porter stemming tokenizer.
                 self._conn.execute("DROP TABLE IF EXISTS fts")
+                self._conn.execute("DELETE FROM fts_rowmap")
                 self._conn.execute(
                     "CREATE VIRTUAL TABLE fts USING fts5(record_id UNINDEXED, scope UNINDEXED, text, tokenize='porter unicode61')"
                 )
                 for row in self._conn.execute("SELECT * FROM records").fetchall():
                     self._fts_index(Record.from_row(row))
+            if version < 7:
+                self._migrate_rule_approvals()
             self._conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
             self._conn.execute("COMMIT")
         except Exception:
             self._rollback_if_open()
             raise
+
+    def _quarantine_invalid_records(self) -> None:
+        """Version 7: move legacy rows that violate the integrity rules into ``quarantined_records``.
+
+        Earlier versions accepted records whose payload text is not a string or whose timestamps
+        are not finite. Reads (HTTP /query, /shadow/*, recall) assume the rules new writes obey,
+        so one such row would make every read of its scope fail. The row is preserved verbatim,
+        its index rows are dropped, and each is journalled and listed in ``migration_quarantined``
+        (and logged). Nothing reads it meanwhile. It is erasable: ``delete(id)`` (and
+        ``prune_derived``) remove the quarantined copy under the usual delete authority, and
+        ``list_quarantined`` / ``purge_quarantined`` enumerate and erase quarantined rows.
+        """
+        moved = []
+        for row in self._conn.execute("SELECT * FROM records").fetchall():
+            try:
+                self._validate_integrity(Record.from_row(row))
+                continue
+            except (SchemaViolation, ValueError, TypeError, KeyError, IndexError, RecursionError) as exc:
+                reason = f"invalid legacy record: {exc}"
+            moved.append((row, reason))
+        cascaded = 0
+        for row, reason in moved:
+            rid = row[0]
+            if self._conn.execute("SELECT 1 FROM records WHERE record_id=?", (rid,)).fetchone() is None:
+                continue  # already erased by an earlier row's lineage cascade
+            # A Correction of the quarantined original must not dangle (same repair as delete()).
+            for dep_id, dep_scope in self._conn.execute(
+                    "SELECT record_id, scope FROM records WHERE supersedes=?", (rid,)).fetchall():
+                self._unlink_supersedes(dep_id)
+                self._journal("unlink_supersedes", dep_id, dep_scope,
+                              "cleared dangling supersedes link (target quarantined)")
+            # Derived records citing the quarantined original go with it (delete()'s lineage
+            # cascade), so no citation dangles. A retained non-derived citer cannot be changed here.
+            try:
+                members, _blocked = self._lineage(rid, row[2]) if isinstance(row[2], str) else ([], False)
+            except SubstrateError:
+                members = []  # corrupt source_ids somewhere: leave lineage alone rather than refuse to open
+            for sid, sscope in members:
+                for dep_id, dep_scope in self._conn.execute(
+                        "SELECT record_id, scope FROM records WHERE supersedes=?", (sid,)).fetchall():
+                    self._unlink_supersedes(dep_id)
+                    self._journal("unlink_supersedes", dep_id, dep_scope,
+                                  "cleared dangling supersedes link (target deleted)")
+                self._remove_lineage_member(sid, sscope)
+                self._journal("unlink_summary", None, sscope, "removed derived artifact (cascade; source quarantined)")
+                self.migration_cascaded.append(sid)
+                cascaded += 1
+            self._conn.execute(
+                "INSERT OR REPLACE INTO quarantined_records(record_id, reason, record_type, scope, "
+                "epistemic_status, payload, created_at, effective_at, supersedes, source_ids, provenance, "
+                "attribution, valid_from, valid_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (rid, reason) + tuple(row[1:14]),
+            )
+            self._conn.execute("DELETE FROM records WHERE record_id=?", (rid,))
+            self._fts_drop_row(rid)
+            if self._conn.execute("SELECT 1 FROM fts WHERE record_id=? LIMIT 1", (rid,)).fetchone() is not None:
+                self._conn.execute("DELETE FROM fts WHERE record_id=?", (rid,))
+            self._fts_rows_erased = True
+            self._conn.execute("DELETE FROM entity_links WHERE source_id=? OR target_id=?", (rid, rid))
+            for table in self._vec_tables_for(row[2]) if isinstance(row[2], str) else []:
+                self._conn.execute(f"DELETE FROM {table} WHERE record_id = ?", (rid,))
+            self._journal("quarantine", rid, row[2] if isinstance(row[2], str) else None, reason)
+            self.migration_quarantined.append(rid)
+        if self.migration_quarantined:
+            qset = set(self.migration_quarantined) | set(self.migration_cascaded)
+            while True:
+                changed = False
+                for r_id, r_type, r_status, r_scope, r_src in self._conn.execute(
+                        "SELECT record_id, record_type, epistemic_status, scope, source_ids FROM records").fetchall():
+                    try:
+                        src_list = json.loads(r_src)
+                    except (TypeError, ValueError):
+                        continue
+                    if not isinstance(src_list, list) or not any(s in qset for s in src_list):
+                        continue
+                    kept = [s for s in src_list if s not in qset]
+                    if not kept and (r_status in ("derived", "verified") or r_type == "Observation"):
+                        for dep_id, dep_scope in self._conn.execute(
+                                "SELECT record_id, scope FROM records WHERE supersedes=?", (r_id,)).fetchall():
+                            self._unlink_supersedes(dep_id)
+                            self._journal("unlink_supersedes", dep_id, dep_scope,
+                                          "cleared dangling supersedes link (target deleted)")
+                        self._remove_lineage_member(r_id, r_scope if isinstance(r_scope, str) else "")
+                        self._journal("unlink_summary", None, r_scope if isinstance(r_scope, str) else None,
+                                      "removed artifact whose only cited source was quarantined")
+                        self.migration_cascaded.append(r_id)
+                        qset.add(r_id)
+                        cascaded += 1
+                        changed = True
+                    else:
+                        self._conn.execute("UPDATE records SET source_ids=? WHERE record_id=?",
+                                           (json.dumps(kept), r_id))
+                        self._journal("unlink_citation", r_id, r_scope if isinstance(r_scope, str) else None,
+                                      "removed dangling citation to quarantined legacy record")
+                        changed = True
+                if not changed:
+                    break
+        if moved or cascaded:
+            self._set_scrub_flag(True)  # erased or quarantined text: the open-time scrub completes it
+        if cascaded:
+            logging.getLogger("weft.substrate").warning(
+                "schema-7 migration also removed %d derived record(s) citing a quarantined source "
+                "(listed in migration_cascaded)", cascaded)
+        if moved:
+            logging.getLogger("weft.substrate").warning(
+                "schema-7 migration quarantined %d invalid legacy record(s) in %s "
+                "(table quarantined_records); they are hidden from every read", len(moved), self.db_path)
+
+    def _migrate_rule_approvals(self) -> None:
+        """Version 7: approval bindings (rule_incarnations / rule_approvals).
+
+        Stores written before this version have no incarnation or binding for any rule, so no
+        stored approval can be verified. Fail closed, but not silently: every ProposedRule
+        without an incarnation gets one, and a formerly active rule goes back to 'proposed'
+        (promotion fields removed) so it is visible and re-approvable instead of stranded as
+        'active' yet inert. Old Decisions are never trusted; a fresh structured approval
+        ({"rule_id": ..., "approved": true}) is required. Each demotion is journalled and listed
+        in ``migration_reapproval``. This holds even when the store already has incarnation and
+        approval rows: those came from the unversioned implementation and are discarded.
+        """
+        # Bindings written before this version (by the unversioned implementation, or none at all)
+        # are untrusted: drop them all and re-token every rule, so each rule needs a fresh approval.
+        self._conn.execute("DELETE FROM rule_approvals")
+        rows = self._conn.execute("SELECT * FROM records WHERE record_type='ProposedRule'").fetchall()
+        for row in rows:
+            rule = Record.from_row(row)
+            payload = rule.payload if isinstance(rule.payload, dict) else {}
+            superseded = self._conn.execute(
+                "SELECT 1 FROM records WHERE supersedes=? AND record_type='Correction'",
+                (rule.record_id,)).fetchone() is not None
+            if payload.get("status") == "active" and superseded:
+                # An active rule a Correction supersedes is inert; it cannot go back to 'proposed'
+                # (its export would be refused: a Correction of a live rule).
+                payload = {k: v for k, v in payload.items() if k not in ("promoted_by", "promoted_at")}
+                payload["status"] = "deprecated"
+                self._conn.execute("UPDATE records SET payload=? WHERE record_id=?",
+                                   (json.dumps(payload, sort_keys=True), rule.record_id))
+                self._fts_index(self._lookup_record(rule.record_id))
+                self._journal("migrate_rule_deprecate", rule.record_id, rule.scope,
+                              "active rule superseded by a Correction deprecated in schema 7")
+            elif payload.get("status") == "active":
+                payload = {k: v for k, v in payload.items() if k not in ("status", "promoted_by", "promoted_at")}
+                payload["status"] = "proposed"
+                self._conn.execute("UPDATE records SET payload=? WHERE record_id=?",
+                                   (json.dumps(payload, sort_keys=True), rule.record_id))
+                self._fts_index(self._lookup_record(rule.record_id))
+                self._journal("migrate_rule_reapproval", rule.record_id, rule.scope,
+                              "active rule returned to proposed: approvals are re-recorded in schema 7")
+                self.migration_reapproval.append(rule.record_id)
+            elif payload.get("status", "proposed") == "proposed" and superseded:
+                # Old correct() left a corrected rule 'proposed'. Current correct() deprecates it, and
+                # an export of the stale state would not restore (a Correction of a live rule).
+                payload = {**payload, "status": "deprecated"}
+                self._conn.execute("UPDATE records SET payload=? WHERE record_id=?",
+                                   (json.dumps(payload, sort_keys=True), rule.record_id))
+                self._fts_index(self._lookup_record(rule.record_id))
+                self._journal("migrate_rule_deprecate", rule.record_id, rule.scope,
+                              "proposed rule superseded by a Correction deprecated in schema 7")
+            self._conn.execute("INSERT OR REPLACE INTO rule_incarnations VALUES (?, ?)",
+                               (rule.record_id, os.urandom(32).hex()))
 
     # ---- verifiers (D2-9) ---------------------------------------------
 
@@ -440,6 +977,7 @@ class Substrate:
             if ctx is None or not ctx.user_authored:
                 raise ScopeViolation("verifier registration not permitted")
             _check_id(actor_id)
+            self._auto_retry_scrub()
             self._conn.execute("BEGIN IMMEDIATE")
             try:
                 self._conn.execute(
@@ -479,12 +1017,26 @@ class Substrate:
         _flatten_payload(getattr(record, "payload", None), parts)
         return " ".join(parts)
 
+    def _fts_drop_row(self, record_id: str) -> None:
+        """Delete a record's fts row by rowid (point lookup); the record_id re-check guards a stale hint."""
+        self._fts_epoch += 1
+        hint = self._conn.execute(
+            "SELECT fts_rowid FROM fts_rowmap WHERE record_id=?", (record_id,)).fetchone()
+        if hint is not None:
+            self._conn.execute("DELETE FROM fts WHERE rowid=? AND record_id=?", (hint[0], record_id))
+            self._conn.execute("DELETE FROM fts_rowmap WHERE record_id=?", (record_id,))
+
     def _fts_index(self, record) -> None:
-        self._conn.execute("DELETE FROM fts WHERE record_id = ?", (record.record_id,))
-        self._conn.execute(
+        self._fts_erased_ids.discard(record.record_id)
+        self._fts_residual_ids.discard(record.record_id)
+        self._fts_drop_row(record.record_id)
+        cursor = self._conn.execute(
             "INSERT INTO fts(record_id, scope, text) VALUES (?,?,?)",
             (record.record_id, record.scope, self._payload_only_text(record)),
         )
+        self._conn.execute(
+            "INSERT OR REPLACE INTO fts_rowmap(record_id, fts_rowid) VALUES (?,?)",
+            (record.record_id, cursor.lastrowid))
 
     def rebuild_fts(self, scope: str, ctx) -> None:
         """Rebuild one granted scope's derived index, atomically from records."""
@@ -511,7 +1063,11 @@ class Substrate:
                             "SELECT 1 FROM fts WHERE record_id=? AND scope IS NOT ? LIMIT 1",
                             (rec.record_id, scope)).fetchone():
                         raise SubstrateError("conflicting index scope; refusing rebuild")
+                self._fts_epoch += 1
                 self._conn.execute("DELETE FROM fts WHERE scope=?", (scope,))
+                self._conn.execute(
+                    "DELETE FROM fts_rowmap WHERE record_id IN (SELECT record_id FROM records WHERE scope=?)",
+                    (scope,))
                 for rec in records:
                     self._fts_index(rec)
                 self._journal("fts_rebuilt", None, scope, "scope index rebuilt")
@@ -521,7 +1077,23 @@ class Substrate:
                 raise
 
     def _fts_remove(self, record_id: str) -> None:
-        self._conn.execute("DELETE FROM fts WHERE record_id = ?", (record_id,))
+        """Erase a record's FTS row. A missing/stale rowid hint falls back to a scan by record_id."""
+        self._fts_epoch += 1
+        hint = self._conn.execute(
+            "SELECT fts_rowid FROM fts_rowmap WHERE record_id=?", (record_id,)).fetchone()
+        removed = 0
+        if hint is not None:
+            removed = self._conn.execute(
+                "DELETE FROM fts WHERE rowid=? AND record_id=?", (hint[0], record_id)).rowcount
+            self._conn.execute("DELETE FROM fts_rowmap WHERE record_id=?", (record_id,))
+        if hint is None or removed < 1:
+            # Slow path (the hint is derived data and may be absent, e.g. rows written by an older
+            # build): locate every row by record_id, erase, then verify.
+            removed += self._conn.execute("DELETE FROM fts WHERE record_id=?", (record_id,)).rowcount
+            self._conn.execute("DELETE FROM fts_rowmap WHERE record_id=?", (record_id,))
+        self._fts_erased_ids.add(record_id)  # verified once, at scrub time
+        if removed > 0:
+            self._fts_rows_erased = True
 
     # ---- jobs and receipts (Phase 3) ---------------------------------
 
@@ -618,84 +1190,146 @@ class Substrate:
                 (record_id,),
             ).fetchone() is not None
 
+    def _readable_fts_records(self, scope: str, ctx):
+        """Validate one scope's projection with linear scans in the current snapshot.
+
+        FTS5's UNINDEXED record_id cannot support a point lookup: issuing one per
+        record is quadratic. Keep all index rows by id so duplicates and misplaced
+        entries for readable records remain detectable, including foreign-scope ones.
+        """
+        records = [Record.from_row(row) for row in self._conn.execute(
+            "SELECT * FROM records WHERE scope=?", (scope,))]
+        all_ids = {row[0] for row in self._conn.execute("SELECT record_id FROM records")}
+        indexed = {}
+        scoped_ids = {rec.record_id for rec in records}
+        for rid, indexed_scope, text in self._conn.execute("SELECT record_id, scope, text FROM fts"):
+            # An orphan belongs to the scope its own row names, whatever scopes this engine knows
+            # (a per-request engine knows only the request scope). Another scope's orphan is found
+            # by that scope's own check. Only a row naming no scope at all is unattributable.
+            if rid not in all_ids and (indexed_scope == scope or indexed_scope is None):
+                return None
+            if rid in scoped_ids:
+                indexed.setdefault(rid, []).append((indexed_scope, text))
+        readable = []
+        for rec in records:
+            if (not isinstance(rec.payload, dict) or not isinstance(rec.provenance, dict)
+                    or not isinstance(rec.source_ids, list)
+                    or not all(isinstance(item, str) for item in rec.source_ids)):
+                return None
+            if not self.scope_engine.authorize_read(
+                    scope, ctx, self.scope_engine._payload_text(rec)).allowed:
+                continue
+            if indexed.get(rec.record_id, []) != [(scope, self._payload_only_text(rec))]:
+                return None
+            readable.append(rec)
+        return readable
+
     def fts_index_complete(self, scope: str, ctx) -> bool:
         """Check readable record projections and stray entries in one scope."""
         if ctx is None or not self.scope_engine.authorize_read(scope, ctx, "").allowed:
             raise ScopeViolation("read not permitted")
+        import contextlib
         with self._lock:
-            if self._conn.execute(
-                "SELECT 1 FROM fts LEFT JOIN records ON records.record_id=fts.record_id "
-                "WHERE records.record_id IS NULL OR records.scope IS NOT fts.scope LIMIT 1"
-            ).fetchone():
-                return False
-            rows = self._conn.execute("SELECT * FROM records WHERE scope=?", (scope,)).fetchall()
-            for row in rows:
-                rec = Record.from_row(row)
-                if (not isinstance(rec.payload, dict) or not isinstance(rec.provenance, dict)
-                        or not isinstance(rec.source_ids, list)
-                        or not all(isinstance(item, str) for item in rec.source_ids)):
-                    return False
-                if not self.scope_engine.authorize_read(
-                        scope, ctx, self.scope_engine._payload_text(rec)).allowed:
-                    continue
-                indexed = self._conn.execute(
-                    "SELECT scope, text FROM fts WHERE record_id=?", (rec.record_id,)
-                ).fetchall()
-                if [tuple(item) for item in indexed] != [(scope, self._payload_only_text(rec))]:
-                    return False
-            return True
+            transaction = contextlib.nullcontext() if self._conn.in_transaction else self._read_transaction()
+            with transaction:
+                return self._readable_fts_records(scope, ctx) is not None
 
     def vector_index_complete(self, scope: str, ctx, *, model_id: str) -> bool:
-        """Whether every readable text record in one authorized scope has this model's vector.
-
-        Used by hybrid recall to fail visibly rather than silently become lexical-only.
-        The method returns no identifiers or counts.
-        """
+        """Whether every readable record has a valid projection and model vector."""
         if ctx is None or not self.scope_engine.authorize_read(scope, ctx, "").allowed:
             raise ScopeViolation("read not permitted")
+        import contextlib
         with self._lock:
-            # Stray entries affect the search corpus even when later filtering
-            # hides their IDs. Reject orphan or cross-scope index members.
-            if self._conn.execute(
-                "SELECT 1 FROM fts LEFT JOIN records ON records.record_id=fts.record_id "
-                "WHERE records.record_id IS NULL OR records.scope IS NOT fts.scope LIMIT 1"
-            ).fetchone():
-                return False
-            # Records, not the rebuildable FTS projection, define inventory.
-            # A missing projection cannot attest complete hybrid recall.
-            record_ids = [row[0] for row in self._conn.execute(
-                "SELECT record_id FROM records WHERE scope = ?", (scope,)
-            ).fetchall()]
-            table = self._vec_table(scope, model_id)
-            exists = self._vec_exists(scope, model_id)
-            for rid in record_ids:
-                rec = self._source_or_record(rid)
-                if rec is not None and (not isinstance(rec.payload, dict) or not isinstance(rec.provenance, dict)
-                                        or not isinstance(rec.source_ids, list)
-                                        or not all(isinstance(item, str) for item in rec.source_ids)):
+            transaction = contextlib.nullcontext() if self._conn.in_transaction else self._read_transaction()
+            with transaction:
+                records = self._readable_fts_records(scope, ctx)
+                if records is None:
                     return False
-                if rec is None or not self.scope_engine.authorize_read(
-                    rec.scope, ctx, self.scope_engine._payload_text(rec)
-                ).allowed:
-                    continue
-                indexed = self._conn.execute(
-                    "SELECT scope, text FROM fts WHERE record_id = ?", (rid,)
-                ).fetchall()
-                if [tuple(row) for row in indexed] != [(scope, self._payload_only_text(rec))]:
+                table = self._vec_table(scope, model_id)
+                # A record deliberately superseded by a Correction loses its vectors (its text
+                # no longer describes the current state), so it is exempt, not missing.
+                superseded = {row[0] for row in self._conn.execute(
+                    "SELECT supersedes FROM records WHERE scope=? AND supersedes IS NOT NULL", (scope,))}
+                required = {rec.record_id for rec in records
+                            if rec.record_type in EMBEDDABLE_TYPES and rec.record_id not in superseded
+                            and self._embed_text(rec) is not None}
+                if not required:
+                    return True
+                if not self._vec_exists(scope, model_id):
                     return False
-                if not exists:
-                    return False
-                found = self._conn.execute(
-                    f"SELECT embedding FROM {table} WHERE record_id = ?", (rid,)
-                ).fetchone()
-                if found is None or len(found[0]) != VEC_DIM * 4:
-                    return False
-                # Legacy stores may contain NaN/inf from before write validation.
-                if not all(math.isfinite(value[0]) for value in struct.iter_unpack('=f', found[0])):
-                    return False
-            return True
+                for rid, blob in self._conn.execute(f"SELECT record_id, embedding FROM {table}"):
+                    if rid not in required:
+                        continue
+                    if len(blob) != VEC_DIM * 4 or not all(
+                            math.isfinite(value[0]) for value in struct.iter_unpack('=f', blob)):
+                        return False
+                    required.remove(rid)
+                return not required
 
-    def vector_put(self, record_id: str, scope: str, vector, ctx=None, *, model_id: str) -> None:
+    @staticmethod
+    def _embed_text(rec: Record) -> str | None:
+        """The stripped payload text a record is embedded from, or None when it has none.
+
+        A record with no embeddable text can never get a vector, so it is exempt from vector
+        completeness (otherwise one text-less HTTP-ingested record would disable hybrid recall).
+        """
+        text = rec.payload.get("text") if isinstance(rec.payload, dict) else None
+        return text.strip() if isinstance(text, str) and text.strip() else None
+
+    REEMBED_TEXT_CHARS = 2000  # same opening-text bound the document ingest embeds
+
+    def reembed_missing(self, scope: str, ctx, embedder, *, limit: int | None = None) -> dict[str, int]:
+        """Embed the readable embeddable records of ``scope`` that have no vector for the model.
+
+        The supported repair for a scope whose vector index is incomplete (records ingested over
+        HTTP, written without an embedder, or left bare by an older correction). Needs write
+        authority over the scope, like ``vector_put``. Idempotent: records that already have a
+        vector are untouched. Text is the record's payload text, bounded by REEMBED_TEXT_CHARS.
+        Returns counts: embedded, already_present, skipped_no_text, remaining (when ``limit`` cut it short).
+        """
+        stub = Record(record_id="reembed", record_type="Source", scope=scope, payload={},
+                      attribution="document", source_ids=[])
+        if ctx is None or not self.scope_engine.authorize_write(stub, ctx).allowed:
+            raise ScopeViolation("write not permitted")
+        model_id = embedder.model_id
+        with self._lock:
+            have = set()
+            if self._vec_exists(scope, model_id):
+                have = {row[0] for row in self._conn.execute(
+                    f"SELECT record_id FROM {self._vec_table(scope, model_id)}")}
+            todo, present, no_text = [], 0, 0
+            for row in self._conn.execute(
+                    "SELECT * FROM records WHERE scope=? ORDER BY created_at, record_id", (scope,)).fetchall():
+                rec = Record.from_row(row)
+                if (rec.record_type not in EMBEDDABLE_TYPES or not isinstance(rec.payload, dict)
+                        or not self.scope_engine.authorize_read(
+                            scope, ctx, self.scope_engine._payload_text(rec)).allowed):
+                    continue
+                if rec.record_id in have:
+                    present += 1
+                    continue
+                text = self._embed_text(rec)
+                if text is None:
+                    no_text += 1
+                    continue
+                todo.append((rec.record_id, text[: self.REEMBED_TEXT_CHARS], _sha256(text)))
+        remaining = 0
+        if limit is not None and len(todo) > limit:
+            remaining, todo = len(todo) - limit, todo[:limit]
+        embedded = changed = 0
+        for rid, text, digest in todo:  # embed outside the lock; the text is re-verified under it
+            vector = embedder.embed_document(text)
+            try:
+                self.vector_put(rid, scope, vector, ctx, model_id=model_id, _expect_text_hash=digest)
+            except _StaleVector:
+                changed += 1  # overwritten/deleted while embedding: the vector would be stale
+                continue
+            embedded += 1
+        return {"embedded": embedded, "already_present": present, "skipped_no_text": no_text,
+                "skipped_changed": changed, "remaining": remaining}
+
+    def vector_put(self, record_id: str, scope: str, vector, ctx=None, *, model_id: str,
+                   _expect_text_hash: str | None = None) -> None:
         """Store an embedding for a record in its scope's vector table.
 
         Needs write authority over the scope (review-style gate: same rule as writes).
@@ -716,6 +1350,10 @@ class Substrate:
                 if (ctx is None or stored is None or stored.scope != scope
                         or not self.scope_engine.authorize_write(stored, ctx).allowed):
                     raise ScopeViolation("write not permitted")
+                if _expect_text_hash is not None:
+                    now = self._embed_text(stored)
+                    if now is None or _sha256(now) != _expect_text_hash:
+                        raise _StaleVector(record_id)
                 self._conn.execute(
                     f"CREATE VIRTUAL TABLE IF NOT EXISTS {table} USING "
                     f"vec0(record_id TEXT PRIMARY KEY, embedding float[{VEC_DIM}])"
@@ -807,31 +1445,62 @@ class Substrate:
         """
         if ctx is None:
             return []
-        out = []
         with self._lock:
+            params = ()
+            where = ""
             if scopes is not None:
+                if not scopes:
+                    return []
                 placeholders = ",".join("?" * len(scopes))
-                rows = self._conn.execute(
-                    f"SELECT fts.record_id FROM fts "
-                    f"JOIN records ON records.record_id = fts.record_id "
-                    f"WHERE fts MATCH ? AND records.scope IN ({placeholders}) "
-                    f"ORDER BY bm25(fts)",
-                    (match, *scopes),
-                ).fetchall()
-            else:
-                rows = self._conn.execute(
-                    "SELECT record_id FROM fts WHERE fts MATCH ? ORDER BY bm25(fts)",
-                    (match,),
-                ).fetchall()
-            for (rid,) in rows:
-                rec = self._source_or_record(rid)
-                if rec is None:
-                    continue
-                if self.scope_engine.authorize_read(rec.scope, ctx, self.scope_engine._payload_text(rec)).allowed:
-                    out.append(rid)
-                    if len(out) >= limit:
-                        break
-        return out
+                where = f" WHERE records.scope IN ({placeholders})"
+                params = tuple(scopes)
+            local = self._fts_visible_corpus(ctx, scopes, where, params)
+            return [row[0] for row in local.execute(
+                "SELECT record_id FROM corpus WHERE corpus MATCH ? ORDER BY bm25(corpus), rowid LIMIT ?",
+                (match, limit)).fetchall()]
+
+    def _fts_visible_corpus(self, ctx, scopes, where: str, params: tuple):
+        """In-memory FTS over exactly the rows ctx may read in ``scopes``.
+
+        BM25 statistics must come only from that readable corpus, never the shared table, so ranking
+        in one scope is not influenced by another. Building it is O(corpus), so the last corpus is
+        kept and reused while every input that decides its content is unchanged: the store's
+        write/index epochs, the caller's grants, scope names and content markers. Any rollback drops
+        it. Raw edits to the fts table that bypass Substrate are not tracked here; the completeness
+        check reads the table directly and still fails closed on them.
+        """
+        engine = self.scope_engine
+        version = self._conn.execute("SELECT value FROM meta WHERE key='store_version'").fetchone()
+        key = (
+            version[0] if version else None,
+            self._conn.execute("PRAGMA data_version").fetchone()[0],
+            self._fts_epoch,
+            None if scopes is None else tuple(sorted(scopes)),
+            (frozenset(ctx.granted_scopes), bool(ctx.user_authorized_cross_scope),
+             bool(ctx.user_authored), frozenset(ctx.cross_scope_targets),
+             bool(ctx.authorization_source)),
+            frozenset(engine.known_scopes),
+            frozenset(engine.global_allowlist) if hasattr(engine, "global_allowlist") else None,
+            tuple(sorted((name, tuple(sorted(ms))) for name, ms in engine.markers.items())),
+        )
+        if self._fts_corpus is not None and self._fts_corpus[0] == key:
+            return self._fts_corpus[1]
+        # One joined read; authorization still looks at every record's own text.
+        rows = self._conn.execute(
+            "SELECT records.*, fts.text FROM fts JOIN records ON records.record_id=fts.record_id" + where,
+            params).fetchall()
+        visible = []
+        for row in rows:
+            rec = Record.from_row(row[:-1])
+            if engine.authorize_read(rec.scope, ctx, engine._payload_text(rec)).allowed:
+                visible.append((rec.record_id, row[-1]))
+        self._drop_fts_corpus()
+        local = sqlite3.connect(':memory:', check_same_thread=False)
+        local.execute("CREATE VIRTUAL TABLE corpus USING fts5(record_id UNINDEXED, text, tokenize='porter unicode61')")
+        local.executemany("INSERT INTO corpus(record_id,text) VALUES (?,?)", visible)
+        self._fts_corpus_builds += 1
+        self._fts_corpus = (key, local)
+        return local
 
     def _source_or_record(self, record_id: str):
         row = self._conn.execute("SELECT * FROM records WHERE record_id=?", (record_id,)).fetchone()
@@ -848,6 +1517,7 @@ class Substrate:
         ):
             raise ScopeViolation("write not permitted")
         with self._lock:
+            self._auto_retry_scrub()
             self._conn.execute("BEGIN IMMEDIATE")
             try:
                 self._conn.execute(
@@ -907,6 +1577,87 @@ class Substrate:
 
     # ---- writes -------------------------------------------------------
 
+    def _summary_sources_available(self, record: Record, ctx: ScopeContext | None) -> bool:
+        """Every citation must resolve inside the record's own scope.
+
+        A missing id and a foreign-scope id are one refusal, so a writer learns nothing about
+        other scopes. Derived records and Observations must also cite readable sources.
+        """
+        derived = record.epistemic_status == 'derived' or record.record_type == 'Observation'
+        for source_id in record.source_ids:
+            source = self._lookup_record(source_id)
+            if source is None or source.scope != record.scope:
+                return False
+            if derived and not self.scope_engine.authorize_read(
+                    source.scope, ctx, self.scope_engine._payload_text(source)).allowed:
+                return False
+        return True
+
+    @staticmethod
+    def _same_rule_proposal(old: Record, new: Record) -> bool:
+        before = Substrate._record_to_export(old)
+        after = Substrate._record_to_export(new)
+        before['payload'] = {k: v for k, v in old.payload.items() if k not in _RULE_LIFECYCLE_KEYS}
+        after['payload'] = {k: v for k, v in new.payload.items() if k not in _RULE_LIFECYCLE_KEYS}
+        return before == after
+
+    @staticmethod
+    def _proposal_hash(record: Record) -> str:
+        data = Substrate._record_to_export(record)
+        data['payload'] = {k: v for k, v in record.payload.items()
+                           if k not in _RULE_LIFECYCLE_KEYS}
+        return _sha256(json.dumps(data, sort_keys=True, ensure_ascii=True, allow_nan=False))
+
+    @staticmethod
+    def _approval_target(record: Record) -> str | None:
+        """The rule a user Decision/Commitment affirmatively approves, else None.
+
+        Approval is structured, never inferred from naming or prose: the payload must be
+        exactly {"rule_id": <id>, "approved": True}. Rejections, free text, applies_to,
+        source_ids and any extra field never approve. Legacy records fail closed.
+        """
+        payload = record.payload
+        if (record.record_type not in ('Decision', 'Commitment') or record.attribution != 'user'
+                or not isinstance(payload, dict) or set(payload) != {'approved', 'rule_id'}
+                or payload['approved'] is not True or not isinstance(payload['rule_id'], str)):
+            return None
+        return payload['rule_id']
+
+    def _valid_rule_promoter(self, record: Record, ctx: ScopeContext) -> bool:
+        if self._conn.execute("SELECT 1 FROM records WHERE supersedes=? LIMIT 1", (record.record_id,)).fetchone():
+            return False
+        promoter_id = (record.payload or {}).get("promoted_by")
+        if not isinstance(promoter_id, str) or not promoter_id:
+            return False
+        promoter = self._lookup_record(promoter_id)
+        # Time-bounded approval cannot support an indefinitely active rule:
+        # reject even a future valid_to rather than expose an expired approval.
+        if (promoter is None or promoter.record_type not in ("Decision", "Commitment")
+                or promoter.attribution != "user" or promoter.scope != record.scope
+                or promoter.valid_to is not None
+                or (promoter.valid_from is not None and promoter.valid_from > time.time())
+                or (promoter.effective_at is not None and promoter.effective_at > time.time())
+                or self._conn.execute("SELECT 1 FROM records WHERE supersedes=? LIMIT 1", (promoter_id,)).fetchone()
+                or not self.scope_engine.authorize_read(
+                    promoter.scope, ctx, self.scope_engine._payload_text(promoter)).allowed):
+            return False
+        # Legacy records without an explicit affirmative and target fail closed.
+        if self._approval_target(promoter) != record.record_id:
+            return False
+        binding = self._conn.execute(
+            "SELECT a.proposal_hash FROM rule_approvals a JOIN rule_incarnations i "
+            "ON i.rule_id=a.rule_id AND i.token=a.token WHERE a.promoter_id=? AND a.rule_id=?",
+            (promoter_id, record.record_id)).fetchone()
+        return binding is not None and binding[0] == self._proposal_hash(record)
+
+    def _active_rule_relies_on(self, record_id: str) -> bool:
+        # Deactivate the rule before changing or removing its promoter.
+        return self._conn.execute(
+            "SELECT 1 FROM records WHERE record_type='ProposedRule' "
+            "AND json_extract(payload, '$.status')='active' "
+            "AND json_extract(payload, '$.promoted_by')=? LIMIT 1", (record_id,)
+        ).fetchone() is not None
+
     def put(
         self,
         record: Record,
@@ -933,6 +1684,7 @@ class Substrate:
         overwrite: bool,
         original_id: str | None = None,
     ) -> None:
+        self._validate_integrity(record)
         decision = self.scope_engine.authorize_write(record, ctx)
         if not decision.allowed:
             # G10: a caller without the scope must not write into its journal.
@@ -956,12 +1708,17 @@ class Substrate:
             own = self._begin_write("weft_write")
 
             if original_id is not None:
+                # Scope before relevance: whether the original is missing, unreadable or in a
+                # foreign scope must be decided (identically) before anything about the original's
+                # role, such as being an active rule's promoter, can influence the answer.
                 orig_row = self._conn.execute(
                     "SELECT * FROM records WHERE record_id=?", (original_id,)
                 ).fetchone()
                 if orig_row is None:
-                    # G9: same exception as an unreadable original.
-                    raise ScopeViolation("correction not permitted")
+                    # G9: identical to an unreadable original, audit included.
+                    self._journal("correct_denied", None, None, "correction not permitted")
+                    self._finish_write("weft_write", own)
+                    raise self._audited_violation("correction not permitted", own)
                 orig = Record.from_row(orig_row)
                 read = self.scope_engine.authorize_read(
                     orig.scope, ctx, self.scope_engine._payload_text(orig)
@@ -976,6 +1733,26 @@ class Substrate:
                     self._journal("correct_denied", None, None, "correction not permitted")
                     self._finish_write("weft_write", own)
                     raise self._audited_violation("correction not permitted", own)
+                if self._active_rule_relies_on(original_id):
+                    raise KnowledgeRefusal("active rule relies on promoter")
+                # The replacement id must be free or accessible BEFORE anything is written: a
+                # denial here commits the denial journal entry, so an earlier rule deprecation
+                # would be committed with it.
+                clash = self._lookup_record(record.record_id)
+                if clash is not None and (
+                        ctx is None or clash.scope not in ctx.granted_scopes
+                        or not self.scope_engine.authorize_write(clash, ctx).allowed
+                        or not self.scope_engine.authorize_read(
+                            clash.scope, ctx, self.scope_engine._payload_text(clash)).allowed):
+                    self._journal("write_denied", None, None, "write not permitted")
+                    self._finish_write("weft_write", own)
+                    raise self._audited_violation("write not permitted", own)
+                if orig.record_type == 'ProposedRule' and orig.payload.get('status', 'proposed') in ('proposed', 'active'):
+                    orig.payload = {**orig.payload, 'status': 'deprecated'}
+                    self._conn.execute("UPDATE records SET payload=? WHERE record_id=?",
+                                       (json.dumps(orig.payload, sort_keys=True), original_id))
+                    self._fts_index(self._lookup_record(original_id))
+                    self._journal("deprecate_rule", original_id, orig.scope, "rule corrected")
                 record.supersedes = original_id
 
             # Phase 2: knowledge rules (spec §3) decide inside the transaction.
@@ -988,6 +1765,8 @@ class Substrate:
             )
             if reason is not None:
                 raise KnowledgeRefusal(reason)
+            if not self._summary_sources_available(record, ctx):
+                raise KnowledgeRefusal("cited source not available")
 
             existing = self._conn.execute(
                 "SELECT scope, record_type, epistemic_status FROM records WHERE record_id=?",
@@ -1009,6 +1788,8 @@ class Substrate:
                     raise self._audited_violation("write not permitted", own)
                 if not overwrite:
                     raise RecordConflict(f"record {record.record_id!r} already exists")
+                if self._active_rule_relies_on(record.record_id):
+                    raise KnowledgeRefusal("active rule relies on promoter")
                 if existing[2] == "verified":
                     # Round 3 BLOCK: a verified record can only be removed, never rewritten.
                     # Otherwise a Claim could be demoted to derived and its Verification deleted.
@@ -1044,6 +1825,10 @@ class Substrate:
                     }
                     if (old_status, new_status) not in allowed_transitions:
                         raise KnowledgeRefusal("invalid proposed rule transition")
+                    if not self._same_rule_proposal(incumbent, record):
+                        raise KnowledgeRefusal("rule transition may change status fields only")
+                    if new_status == "active" and not self._valid_rule_promoter(record, ctx):
+                        raise KnowledgeRefusal("promotion requires valid user decision")
             elif incumbent is not None and incumbent.record_type == "ProposedRule":
                 # Cannot change a ProposedRule into another record type.
                 raise KnowledgeRefusal("cannot change ProposedRule record type")
@@ -1053,7 +1838,9 @@ class Substrate:
             if existing is not None:
                 self._vec_remove(record.record_id, existing[0])
             if original_id is not None:
-                self._vec_remove(original_id, record.scope)
+                # The superseded record's vectors are kept: its own text is unchanged, and
+                # deleting the Correction later makes it current again (it must stay embedded).
+                self._conn.execute("DELETE FROM rule_approvals WHERE promoter_id=?", (original_id,))
             self._conn.execute(
                 """INSERT OR REPLACE INTO records
                    (record_id, record_type, scope, epistemic_status, payload,
@@ -1062,6 +1849,20 @@ class Substrate:
                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 record.to_row(),
             )
+            self._conn.execute("DELETE FROM rule_approvals WHERE promoter_id=?", (record.record_id,))
+            self._conn.execute("DELETE FROM lineage_erased WHERE record_id=?", (record.record_id,))
+            if record.record_type == 'ProposedRule' and incumbent is None:
+                self._conn.execute("INSERT OR REPLACE INTO rule_incarnations VALUES (?, ?)",
+                                   (record.record_id, os.urandom(32).hex()))
+            name = self._approval_target(record) if ctx.user_authored else None
+            if name is not None:
+                proposal = self._lookup_record(name)
+                incarnation = self._conn.execute("SELECT token FROM rule_incarnations WHERE rule_id=?", (name,)).fetchone()
+                if (proposal is not None and proposal.record_type == 'ProposedRule'
+                        and proposal.scope == record.scope and proposal.payload.get('status', 'proposed') == 'proposed'
+                        and incarnation and self.scope_engine.authorize_read(proposal.scope, ctx, self.scope_engine._payload_text(proposal)).allowed):
+                    self._conn.execute("INSERT INTO rule_approvals VALUES (?, ?, ?, ?)",
+                                       (record.record_id, name, incarnation[0], self._proposal_hash(proposal)))
             # Index the serialized record representation, so rebuilds and integrity
             # checks use the same key order as the durable authority.
             self._fts_index(self._lookup_record(record.record_id))
@@ -1080,6 +1881,21 @@ class Substrate:
             raise
 
     def delete(self, record_id: str, ctx: ScopeContext | None = None, *, reason: str = "") -> bool:
+        """Hard delete: remove the record, repair its dependents, journal the removal.
+
+        After a successful erase the index and WAL are scrubbed once (see ``_scrub``), however many
+        records the cascade removed. Authorization is decided inside ``_delete``'s write transaction.
+        """
+        self.last_refusal = None
+        erased = self._delete(record_id, ctx, reason=reason)
+        if not erased and self.last_refusal is None:
+            self.last_refusal = _GENERIC_DELETE_REFUSAL
+        if erased:
+            with self._lock:
+                self._scrub()
+        return erased
+
+    def _delete(self, record_id: str, ctx: ScopeContext | None = None, *, reason: str = "") -> bool:
         """Hard delete: remove the record and journal the removal.
 
         Deletion is a write. Authorization is decided INSIDE the write transaction
@@ -1090,14 +1906,18 @@ class Substrate:
             if ctx is None:
                 self._journal_standalone("delete_denied", record_id, None, "no scope context")
                 return False
+            self._auto_retry_scrub()
             try:
                 self._conn.execute("BEGIN IMMEDIATE")
                 row = self._conn.execute(
                     "SELECT record_id, scope FROM records WHERE record_id=?", (record_id,)
                 ).fetchone()
                 if row is None:
+                    erased = self._erase_quarantined(record_id, ctx, reason)
+                    if erased:
+                        self._set_scrub_flag(True)
                     self._conn.execute("COMMIT")
-                    return False
+                    return erased
 
                 decision = self.scope_engine.authorize_delete(row[1], ctx)
                 if not decision.allowed:
@@ -1114,6 +1934,12 @@ class Substrate:
                     self._conn.execute("COMMIT")
                     return False
 
+                if (full.record_type == "ProposedRule" and full.payload.get("status") == "active"
+                        and not ctx.user_authored):
+                    self._veto(record_id, row[1], "an active rule can only be deleted by a user-authored caller")
+                    self._conn.execute("COMMIT")
+                    return False
+
                 dependents = self._conn.execute(
                     "SELECT record_id, scope FROM records WHERE supersedes = ?", (record_id,)
                 ).fetchall()
@@ -1121,41 +1947,33 @@ class Substrate:
                     if not self.scope_engine.authorize_delete(dep_scope, ctx).allowed:
                         # Review fix F-B: name neither the dependent nor its scope in the
                         # audit detail, so the caller learns nothing about it.
-                        self._journal(
-                            "delete_denied", record_id, row[1],
-                            "delete refused: a dependent record is outside your granted scopes",
-                        )
+                        self._veto(record_id, row[1], "a dependent record is outside your granted scopes")
                         self._conn.execute("COMMIT")
                         return False
 
                 # R-2 (review): a verified Claim depends on the Verification that names it.
                 # Removing the Verification would leave the Claim verified with no support.
-                if self._relied_on(record_id):
-                    self._journal("delete_denied", None, None, "delete not permitted")
+                if self._relied_on(record_id) or self._active_rule_relies_on(record_id):
+                    self._veto(record_id, row[1],
+                               "a verified claim or an active rule relies on this record")
                     self._conn.execute("COMMIT")
                     return False
 
-                summaries = [
-                    (sid, sscope)
-                    for sid, sscope, src in self._conn.execute(
-                        "SELECT record_id, scope, source_ids FROM records "
-                        "WHERE record_type IN ('Summary', 'Observation')"
-                    ).fetchall()
-                    if self._cites(src, record_id)
-                ]
+                # Compute the full lineage before making any changes. Historical
+                # cross-scope references must not give another scope a veto.
+                plan = self._plan_cascade(record_id, row[1], ctx)
+                if isinstance(plan, str):
+                    self._veto(record_id, row[1], plan)
+                    self._conn.execute("COMMIT")
+                    return False
+                summaries, extra_deps = plan
+                dependents.extend(extra_deps)
                 for sid, sscope in summaries:
-                    if not self.scope_engine.authorize_delete(sscope, ctx).allowed:
-                        self._journal("delete_denied", None, None, "delete not permitted")
-                        self._conn.execute("COMMIT")
-                        return False
-                for sid, sscope in summaries:
-                    self._conn.execute("DELETE FROM records WHERE record_id = ?", (sid,))
-                    self._fts_remove(sid)
-                    self._vec_remove(sid, sscope)
+                    self._remove_lineage_member(sid, sscope)
                     self._journal("unlink_summary", None, sscope, "removed derived artifact (cascade)")
 
                 for dep_id, dep_scope in dependents:
-                    self._conn.execute("UPDATE records SET supersedes = NULL WHERE record_id = ?", (dep_id,))
+                    self._unlink_supersedes(dep_id)
                     # Review N7: the detail names no deleted id.
                     self._journal(
                         "unlink_supersedes", dep_id, dep_scope,
@@ -1163,17 +1981,186 @@ class Substrate:
                     )
 
                 self._conn.execute("DELETE FROM records WHERE record_id=?", (record_id,))
+                self._conn.execute("DELETE FROM rule_incarnations WHERE rule_id=?", (record_id,))
+                self._conn.execute("DELETE FROM rule_approvals WHERE promoter_id=? OR rule_id=?", (record_id, record_id))
                 self._fts_remove(record_id)
                 self._vec_remove(record_id, row[1])
+                self._conn.execute("DELETE FROM entity_links WHERE source_id=? OR target_id=?", (record_id, record_id))
                 # R-P3-10: an import's job row must not outlive its Source.
                 self._conn.execute("DELETE FROM jobs WHERE scope = ? AND source_id = ?", (row[1], record_id))
-                self._journal("delete", record_id, row[1], f"reason={reason}")
+                self._conn.execute("DELETE FROM lineage_erased WHERE record_id=?", (record_id,))
+                self._erase_quarantined(record_id, ctx, reason)  # a legacy copy of the same id
+                # The audit row stays (type/time/scope); the id and free-text reason do not.
+                self._redact_journal(record_id)
+                self._journal("delete", _ERASED, row[1], f"reason={_ERASED}")
                 self._bump_version()
+                self._set_scrub_flag(True)
                 self._conn.execute("COMMIT")
                 return True
             except Exception:
                 self._rollback_if_open()
                 raise
+
+    def _unlink_supersedes(self, dep_id: str) -> None:
+        """Clear a dependent's supersedes link because its target is being erased.
+
+        A Correction gets the boolean ``lineage_erased`` marker (its own id only; no id of the erased
+        original is kept anywhere) so an export of its scope still restores. Must run inside a write
+        transaction.
+        """
+        self._conn.execute(
+            "INSERT OR IGNORE INTO lineage_erased(record_id) "
+            "SELECT record_id FROM records "
+            "WHERE record_id=? AND record_type='Correction' AND supersedes IS NOT NULL", (dep_id,))
+        self._conn.execute("UPDATE records SET supersedes = NULL WHERE record_id = ?", (dep_id,))
+
+    def _veto(self, record_id: str, scope: str, why: str) -> None:
+        """Record a delete refusal the caller is entitled to see (it already holds delete authority
+        over ``scope``): the journal row carries the scope, and ``last_refusal`` says why."""
+        self.last_refusal = f"delete refused: {why}"
+        self._journal("delete_denied", record_id, scope, self.last_refusal)
+
+    def _plan_cascade(self, record_id: str, scope: str, ctx):
+        """Lineage cascade of erasing ``record_id``: (members, extra_dependents), or a refusal reason.
+
+        Members are the transitive same-scope derived records that cite it; extra_dependents are
+        records whose supersedes link points at a member. Nothing is changed here.
+        """
+        members, blocked = self._lineage(record_id, scope)
+        if blocked:
+            return "a retained record in this scope cites this record"
+        for sid, sscope in members:
+            dependent = self._lookup_record(sid)
+            if (not self.scope_engine.authorize_delete(sscope, ctx).allowed or
+                    not self.scope_engine.authorize_read(
+                        sscope, ctx, self.scope_engine._payload_text(dependent)).allowed):
+                return "a derived record is outside your granted scopes"
+        extra_deps: list[tuple[str, str]] = []
+        for sid, _ in members:
+            extra = self._conn.execute(
+                "SELECT record_id, scope FROM records WHERE supersedes=?", (sid,)).fetchall()
+            if any(not self.scope_engine.authorize_delete(s, ctx).allowed for _, s in extra):
+                return "a dependent record is outside your granted scopes"
+            extra_deps.extend(extra)
+        return members, extra_deps
+
+    def _erase_quarantined(self, record_id: str, ctx, reason: str = "") -> bool:
+        """Erase one quarantined row if ``ctx`` may delete in its scope. In a write transaction.
+
+        Applies delete()'s lineage cascade: derived records citing the row go with it and
+        dependents' supersedes links are repaired, so no citation is left dangling.
+        """
+        row = self._conn.execute(
+            "SELECT scope FROM quarantined_records WHERE record_id=?", (record_id,)).fetchone()
+        if row is None:
+            return False
+        if not isinstance(row[0], str) or not self.scope_engine.authorize_delete(row[0], ctx).allowed:
+            self._journal("delete_denied", None, None, "delete not permitted")
+            return False
+        dependents = self._conn.execute(
+            "SELECT record_id, scope FROM records WHERE supersedes=?", (record_id,)).fetchall()
+        if any(not self.scope_engine.authorize_delete(s, ctx).allowed for _, s in dependents):
+            self._veto(record_id, row[0], "a dependent record is outside your granted scopes")
+            return False
+        plan = self._plan_cascade(record_id, row[0], ctx)
+        if isinstance(plan, str):
+            self._veto(record_id, row[0], plan)
+            return False
+        members, extra_deps = plan
+        dependents.extend(extra_deps)
+        for sid, sscope in members:
+            self._remove_lineage_member(sid, sscope)
+            self._journal("unlink_summary", None, sscope, "removed derived artifact (cascade)")
+        for dep_id, dep_scope in dependents:
+            self._unlink_supersedes(dep_id)
+            self._journal("unlink_supersedes", dep_id, dep_scope,
+                          "cleared dangling supersedes link (target deleted)")
+        self._conn.execute("DELETE FROM quarantined_records WHERE record_id=?", (record_id,))
+        self._redact_journal(record_id)
+        self._journal("delete_quarantined", _ERASED, row[0], f"reason={_ERASED}")
+        self._bump_version()
+        return True
+
+    def list_quarantined(self, ctx: ScopeContext | None = None) -> list[dict[str, Any]]:
+        """Quarantined legacy rows in scopes the caller may read: id, scope, type, reason (no payload)."""
+        if ctx is None:
+            return []
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT record_id, scope, record_type, reason FROM quarantined_records ORDER BY record_id"
+            ).fetchall()
+        return [{"record_id": r[0], "scope": r[1], "record_type": r[2], "reason": r[3]}
+                for r in rows
+                if isinstance(r[1], str) and self.scope_engine.authorize_read(r[1], ctx, "").allowed]
+
+    def purge_quarantined(self, ctx: ScopeContext | None = None, *, scope: str | None = None,
+                          record_id: str | None = None) -> int:
+        """Erase quarantined rows (optionally one scope / one id) the caller may delete. Returns the count."""
+        if ctx is None:
+            return 0
+        with self._lock:
+            self._auto_retry_scrub()
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                sql, params = "SELECT record_id FROM quarantined_records", []
+                clauses = []
+                if scope is not None:
+                    clauses.append("scope = ?")
+                    params.append(scope)
+                if record_id is not None:
+                    clauses.append("record_id = ?")
+                    params.append(record_id)
+                if clauses:
+                    sql += " WHERE " + " AND ".join(clauses)
+                count = sum(1 for (rid,) in self._conn.execute(sql, params).fetchall()
+                            if self._erase_quarantined(rid, ctx, "purge_quarantined"))
+                if count:
+                    self._set_scrub_flag(True)
+                self._conn.execute("COMMIT")
+            except Exception:
+                self._rollback_if_open()
+                raise
+            if count:
+                self._scrub()
+            return count
+
+    def _lineage(self, record_id: str, scope: str) -> tuple[list[tuple[str, str]], bool]:
+        """Transitive same-scope derived lineage that removing ``record_id`` must cascade to.
+
+        Returns (members, blocked). blocked is true when a record outside that lineage (notably a
+        verified Claim) still cites a member, so removal would leave a dangling citation.
+        Historical foreign-scope citations are deliberately not a cross-scope veto.
+        """
+        candidates = self._conn.execute(
+            "SELECT record_id, scope, source_ids FROM records "
+            "WHERE epistemic_status='derived' "
+            "OR record_type IN ('Observation', 'Summary', 'Hypothesis', 'Reasoning')"
+        ).fetchall()
+        removed = {record_id}
+        members: list[tuple[str, str]] = []
+        while True:
+            new = [(sid, sscope) for sid, sscope, src in candidates
+                   if sid not in removed and sscope == scope
+                   and any(self._cites(src, parent) for parent in removed)]
+            if not new:
+                break
+            members.extend(new)
+            removed.update(sid for sid, _ in new)
+        retained = self._conn.execute(
+            "SELECT record_id, source_ids FROM records WHERE scope=?", (scope,)).fetchall()
+        blocked = any(rid not in removed and any(self._cites(src, parent) for parent in removed)
+                      for rid, src in retained)
+        return members, blocked
+
+    def _remove_lineage_member(self, record_id: str, scope: str) -> None:
+        """Remove one cascaded record with its indexes, vectors and entity links."""
+        self._conn.execute("DELETE FROM records WHERE record_id = ?", (record_id,))
+        self._fts_remove(record_id)
+        self._vec_remove(record_id, scope)
+        self._conn.execute("DELETE FROM entity_links WHERE source_id=? OR target_id=?", (record_id, record_id))
+        self._conn.execute("DELETE FROM jobs WHERE scope = ? AND source_id = ?", (scope, record_id))
+        self._conn.execute("DELETE FROM lineage_erased WHERE record_id=?", (record_id,))
+        self._redact_journal(record_id)
 
     def correct(
         self,
@@ -1337,96 +2324,224 @@ class Substrate:
                 "schema_version": SCHEMA_VERSION,
                 "scope": scope,
                 "exported_at": time.time(),
-                "records": [self._record_to_export(r) for r in readable],
+                "records": [self._export_with_tombstone(r) for r in readable],
             }
 
-    def import_scope(self, data: dict[str, Any], ctx: ScopeContext | None = None) -> int:
+    def import_scope(self, data: dict[str, Any], ctx: ScopeContext | None = None, *, strict: bool = False) -> int:
         """Import records from an export dict into the substrate.
 
         The caller must have a granted write scope for the exported scope.
         Returns the number of records imported. Raises ``ValueError`` if the
         schema version does not match or the scope is missing.
+
+        With strict=True, policy refusals raise KnowledgeRefusal instead of
+        returning zero, distinguishing a rejected restore from an empty one.
         """
         if ctx is None:
             raise ValueError("context required for import")
         scope = data.get("scope")
         if not scope:
             raise ValueError("export payload missing scope")
-        if data.get("schema_version") != SCHEMA_VERSION:
+        if data.get("schema_version") not in _IMPORTABLE_SCHEMA_VERSIONS:
             raise ValueError(f"schema version mismatch: {data.get('schema_version')} != {SCHEMA_VERSION}")
+        raw = data.get("records", [])
+        if not isinstance(raw, list) or not all(isinstance(item, dict) for item in raw):
+            raise SchemaViolation("export records must be a list of objects")
         records = []
-        for rec_dict in data.get("records", []):
-            records.append(self._record_from_export(rec_dict))
+        marked: dict[str, Any] = {}  # record_id -> the raw lineage_erased value, when present
+        for rec_dict in raw:
+            rec = self._record_from_export(rec_dict)
+            self._validate_integrity(rec)
+            records.append(rec)
+            if "lineage_erased" in rec_dict:
+                marked[rec.record_id] = rec_dict["lineage_erased"]
+        self.last_import_refusal = None
+
+        def refused(reason: str) -> int:
+            # A refused restore is atomic: nothing was written. The reason is kept (and raised
+            # with strict=True) so it can never be mistaken for an empty bundle.
+            self.last_import_refusal = reason
+            if strict:
+                raise KnowledgeRefusal(reason)
+            return 0
+
+        bundle_ids = {r.record_id for r in records}
+        for rec in records:
+            if rec.record_id in marked and (
+                    marked[rec.record_id] is not True
+                    or rec.record_type != "Correction" or rec.supersedes is not None):
+                # Same generic refusal as an unmarked, target-less Correction.
+                return refused(f"record {rec.record_id!r}: Correction without a supersedes target")
+
+        # A bundle holding ANY active rule is refused whole, before any idempotent skip or
+        # insertion: an import never restores approvals, so it never restores an active rule, and
+        # "this rule already exists identically" must not turn the refusal into a partial import.
+        for rec in records:
+            if rec.record_type == "ProposedRule" and isinstance(rec.payload, dict) \
+                    and rec.payload.get("status", "proposed") == "active":
+                return refused(
+                    f"record {rec.record_id!r}: an active rule is never restored by import; "
+                    "export it as proposed (or re-propose it) and approve it again here")
+
+        # Order bundle-local dependencies (supersedes and source_ids) before dependents,
+        # independent of export order (an overwritten Source exports after its Observation).
+        # Refuse ambiguous duplicates and cycles before opening a transaction.
+        if len({r.record_id for r in records}) != len(records):
+            return refused("duplicate record_id in bundle")
+        ordered = []
+        pending = list(records)
+        while pending:
+            pending_ids = {r.record_id for r in pending}
+            ready = [r for r in pending if not (set(r.source_ids) | ({r.supersedes} if r.supersedes else set())) & pending_ids]
+            if not ready:
+                return refused("dependency cycle in bundle (source_ids/supersedes)")
+            ordered.extend(ready)
+            ready_ids = {id(r) for r in ready}
+            pending = [r for r in pending if id(r) not in ready_ids]
+        class _ImportRefused(Exception):
+            def __init__(self, reason: str = "import refused"):
+                super().__init__(reason)
+                self.reason = reason
+
         imported = 0
         with self._lock:
-            for rec in records:
-                decision = self.scope_engine.authorize_write(rec, ctx)
-                if not decision.allowed:
-                    continue
-                # Import must also have authority over any incumbent record
-                # with the same ID; otherwise a cross-scope write can replace
-                # an existing record by ID collision.
-                incumbent = self._lookup_record(rec.record_id)
-                if incumbent is not None:
-                    if (ctx is None or incumbent.scope not in ctx.granted_scopes
-                            or not self.scope_engine.authorize_write(incumbent, ctx).allowed
-                            or not self.scope_engine.authorize_read(
-                                incumbent.scope, ctx, self.scope_engine._payload_text(incumbent)).allowed):
+            import_own = self._begin_write("weft_import")
+            try:
+                for rec in ordered:
+                    if rec.scope != scope:
+                        raise _ImportRefused(f"record {rec.record_id!r} is outside the bundle scope")
+                    decision = self.scope_engine.authorize_write(rec, ctx)
+                    if not decision.allowed:
+                        raise _ImportRefused("write not permitted")
+                    # Import must also have authority over any incumbent record
+                    # with the same ID; otherwise a cross-scope write can replace
+                    # an existing record by ID collision.
+                    incumbent = self._lookup_record(rec.record_id)
+                    if incumbent is not None:
+                        if (ctx is None or incumbent.scope != scope or incumbent.scope not in ctx.granted_scopes
+                                or not self.scope_engine.authorize_write(incumbent, ctx).allowed
+                                or not self.scope_engine.authorize_read(
+                                    incumbent.scope, ctx, self.scope_engine._payload_text(incumbent)).allowed):
+                            raise _ImportRefused("write not permitted")
+                    if incumbent is not None and (
+                            json.dumps(self._record_to_export(incumbent), sort_keys=True)
+                            == json.dumps(self._record_to_export(rec), sort_keys=True)):
+                        # Idempotent restore: an identical record already present is skipped, so a
+                        # partially damaged store can be repaired from its own export.
                         continue
-                self._validate(rec)
-                reason = check_record(
-                    rec, ctx, is_verifier=self._is_verifier, lookup=self._lookup_record
-                )
-                if reason is not None:
-                    continue
-                # ProposedRule gate: imports must respect the same lifecycle
-                # transitions as direct writes (no bypass via import path).
-                if rec.record_type == "ProposedRule":
-                    old = self._lookup_record(rec.record_id)
-                    new_status = (rec.payload or {}).get("status", "proposed")
-                    if old is None:
-                        # New insert via import: must start as proposed.
-                        if new_status != "proposed":
-                            continue
-                    elif old.record_type != "ProposedRule":
-                        # Cannot convert a non-ProposedRule into a ProposedRule.
-                        continue
-                    else:
-                        # All lifecycle transitions require user attribution.
-                        if not (ctx and ctx.user_authored):
-                            continue
-                        old_status = (old.payload or {}).get("status", "proposed")
-                        allowed = {
-                            ("proposed", "active"),
-                            ("proposed", "rejected"),
-                            ("proposed", "deprecated"),
-                            ("active", "deprecated"),
-                        }
-                        if (old_status, new_status) not in allowed:
-                            continue
-                elif incumbent is not None and incumbent.record_type == "ProposedRule":
-                    # Cannot change a ProposedRule into another record type.
-                    continue
-                own = False
-                try:
-                    own = self._begin_write("weft_write")
-                    self._conn.execute(
-                        "INSERT OR REPLACE INTO records "
-                        "(record_id, record_type, scope, epistemic_status, payload, "
-                        "created_at, effective_at, supersedes, source_ids, provenance, attribution, "
-                        "valid_from, valid_to) "
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                        rec.to_row(),
+                    if incumbent is not None and (incumbent.epistemic_status == "verified"
+                            or (incumbent.record_type == "Verification" and self._relied_on(rec.record_id))
+                            or self._active_rule_relies_on(rec.record_id)):
+                        raise _ImportRefused(
+                            f"record {rec.record_id!r} would overwrite a protected record "
+                            "(verified, relied-on Verification, or promoter of an active rule)")
+                    if rec.supersedes:
+                        if rec.record_type != "Correction" or incumbent is not None:
+                            raise _ImportRefused(
+                                f"record {rec.record_id!r}: a supersedes link restores only as a new "
+                                "Correction (not over an existing record, not for an active rule's promoter)")
+                        # Scope before relevance: a missing, foreign or unreadable target gets one
+                        # refusal, decided before the target's role (e.g. promoter) is consulted.
+                        target = self._lookup_record(rec.supersedes)
+                        if (target is None or target.scope != rec.scope
+                                or not self.scope_engine.authorize_read(
+                                    target.scope, ctx, self.scope_engine._payload_text(target)).allowed):
+                            raise _ImportRefused(f"record {rec.record_id!r}: superseded record not available")
+                        if self._active_rule_relies_on(rec.supersedes):
+                            raise _ImportRefused(
+                                f"record {rec.record_id!r}: a supersedes link restores only as a new "
+                                "Correction (not over an existing record, not for an active rule's promoter)")
+                    elif rec.record_type == "Correction":
+                        # Only a Correction marked lineage_erased may arrive without a target, and
+                        # only from a user-authored import. No other id is looked up, so this path
+                        # is neither an existence oracle nor subject to id reuse.
+                        if marked.get(rec.record_id) is not True or not ctx.user_authored:
+                            raise _ImportRefused(f"record {rec.record_id!r}: Correction without a supersedes target")
+                    self._validate(rec)
+                    reason = check_record(
+                        rec, ctx, is_verifier=self._is_verifier, lookup=self._lookup_record
                     )
-                    self._fts_index(rec)
-                    self._journal("import", rec.record_id, rec.scope, f"type={rec.record_type}")
-                    self._bump_version()
-                    self._finish_write("weft_write", own)
-                    imported += 1
-                except Exception:
-                    self._abort_write("weft_write", own)
-                    raise
+                    if reason is not None:
+                        raise _ImportRefused(f"record {rec.record_id!r}: {reason}")
+                    if not self._summary_sources_available(rec, ctx):
+                        raise _ImportRefused(f"record {rec.record_id!r}: cited source not available in this scope")
+                    # Rules: an import never transitions an existing rule (identical content was
+                    # skipped above). A new id may arrive only as 'proposed', or as an inert
+                    # 'rejected'/'deprecated' rule exactly as exported; 'active' never restores.
+                    if rec.record_type == "ProposedRule":
+                        if incumbent is not None:
+                            raise _ImportRefused(
+                                f"record {rec.record_id!r}: an existing rule differs from the bundle's "
+                                f"(content or status); imports never change an existing rule")
+                        new_status = (rec.payload or {}).get("status", "proposed")
+                        if new_status == "active":
+                            raise _ImportRefused(
+                                f"record {rec.record_id!r}: an active rule is never restored by import; "
+                                "export it as proposed (or re-propose it) and approve it again here")
+                        if new_status not in ("proposed", "rejected", "deprecated"):
+                            raise _ImportRefused(f"record {rec.record_id!r}: unknown rule status {new_status!r}")
+                    elif incumbent is not None and incumbent.record_type == "ProposedRule":
+                        raise _ImportRefused(f"record {rec.record_id!r}: cannot replace a ProposedRule with another type")
+                    if rec.supersedes:
+                        target = self._lookup_record(rec.supersedes)
+                        if (target is not None and target.record_type == "ProposedRule"
+                                and (target.payload or {}).get("status", "proposed") in ("proposed", "active")):
+                            if rec.supersedes in bundle_ids:
+                                raise _ImportRefused(
+                                    f"record {rec.record_id!r}: this bundle restores rule {rec.supersedes!r} "
+                                    f"as live ({(target.payload or {}).get('status', 'proposed')}) and also a Correction of it; "
+                                    "a corrected rule must be exported as 'deprecated'")
+                            raise _ImportRefused(
+                                f"record {rec.record_id!r}: importing a Correction would deprecate the existing "
+                                f"rule {rec.supersedes!r}; imports never change an existing rule")
+                    own = False
+                    try:
+                        own = self._begin_write("weft_write")
+                        if incumbent is not None:
+                            self._vec_remove(rec.record_id, incumbent.scope)
+                        if rec.supersedes:
+                            self._conn.execute("DELETE FROM rule_approvals WHERE promoter_id=?", (rec.supersedes,))
+                        self._conn.execute(
+                            "INSERT OR REPLACE INTO records "
+                            "(record_id, record_type, scope, epistemic_status, payload, "
+                            "created_at, effective_at, supersedes, source_ids, provenance, attribution, "
+                            "valid_from, valid_to) "
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                            rec.to_row(),
+                        )
+                        self._conn.execute("DELETE FROM rule_approvals WHERE promoter_id=?", (rec.record_id,))
+                        self._conn.execute("DELETE FROM lineage_erased WHERE record_id=?", (rec.record_id,))
+                        if marked.get(rec.record_id) is True and rec.supersedes is None:
+                            self._conn.execute("INSERT OR IGNORE INTO lineage_erased(record_id) VALUES (?)",
+                                               (rec.record_id,))
+                        if rec.record_type == 'ProposedRule' and incumbent is None:
+                            self._conn.execute("INSERT OR REPLACE INTO rule_incarnations VALUES (?, ?)",
+                                               (rec.record_id, os.urandom(32).hex()))
+                        self._fts_index(self._lookup_record(rec.record_id))
+                        self._journal("import", rec.record_id, rec.scope, f"type={rec.record_type}")
+                        self._bump_version()
+                        self._finish_write("weft_write", own)
+                        imported += 1
+                    except Exception:
+                        self._abort_write("weft_write", own)
+                        raise
+                self._finish_write("weft_import", import_own)
+            except _ImportRefused as exc:
+                self._abort_write("weft_import", import_own)
+                return refused(exc.reason)
+            except BaseException:
+                self._abort_write("weft_import", import_own)
+                raise
         return imported
+
+    def _export_with_tombstone(self, rec: Record) -> dict[str, Any]:
+        out = self._record_to_export(rec)
+        if rec.record_type == "Correction" and rec.supersedes is None:
+            row = self._conn.execute(
+                "SELECT 1 FROM lineage_erased WHERE record_id=?", (rec.record_id,)).fetchone()
+            if row is not None:
+                out["lineage_erased"] = True  # a boolean only; no id or content of the erased record
+        return out
 
     @staticmethod
     def _record_to_export(rec: Record) -> dict[str, Any]:
@@ -1442,10 +2557,14 @@ class Substrate:
             "source_ids": rec.source_ids,
             "provenance": rec.provenance,
             "attribution": rec.attribution,
+            "valid_from": rec.valid_from,
+            "valid_to": rec.valid_to,
         }
 
     @staticmethod
-    def _record_from_export(d: dict[str, Any]) -> Record:
+    def _record_from_export(d: Any) -> Record:
+        if not isinstance(d, dict) or not all(k in d for k in ("record_id", "record_type", "scope", "epistemic_status")):
+            raise SchemaViolation("exported record is missing required fields")
         return Record(
             record_id=d["record_id"],
             record_type=d["record_type"],
@@ -1458,6 +2577,8 @@ class Substrate:
             source_ids=d.get("source_ids", []),
             provenance=d.get("provenance", {}),
             attribution=d.get("attribution"),
+            valid_from=d.get("valid_from"),
+            valid_to=d.get("valid_to"),
         )
 
     def journal_entries(self, ctx: ScopeContext | None = None) -> list[dict]:
@@ -1484,37 +2605,79 @@ class Substrate:
         return out
 
     def prune_derived(self, scope: str, older_than: float, ctx: ScopeContext | None = None) -> int:
-        """Delete derived records (Claim, Hypothesis, Summary, Reasoning) in ``scope``
-        created before ``older_than`` whose source records still exist.
+        """Delete derived records in ``scope`` created before ``older_than`` whose sources still exist.
 
-        Returns the number of records pruned. No context -> 0.
+        Selection is by epistemic status ('derived'), never by record type: a verified record is
+        never pruned, nor is a record a verified or active-rule record relies on. Each prune applies
+        delete()'s transitive lineage cascade (dependent derived records, Observations, their
+        entity links, indexes and vectors go with it), so no citation is left dangling. A candidate
+        whose removal a retained record would observe is skipped, not forced.
+
+        Returns the number of records removed (pruned plus cascaded). No context -> 0.
         """
         if ctx is None:
             return 0
-        with self._lock:
+        with self.ingestion_transaction():
             rows = self._conn.execute(
                 "SELECT record_id, scope, source_ids FROM records "
-                "WHERE scope = ? AND record_type IN ('Claim', 'Hypothesis', 'Summary', 'Reasoning') "
-                "AND created_at < ?",
+                "WHERE scope = ? AND epistemic_status = 'derived' AND created_at < ? "
+                "ORDER BY created_at, record_id",
                 (scope, older_than),
             ).fetchall()
-            prunable = []
+            removed_total = 0
             for rid, rscope, src_json in rows:
+                if self._lookup_record(rid) is None:
+                    continue  # already cascaded by an earlier prune
                 if not self.scope_engine.authorize_delete(rscope, ctx).allowed:
                     continue
                 src_ids = json.loads(src_json)
-                if not src_ids:
+                if not src_ids or not all(self._lookup_record(sid) is not None for sid in src_ids):
                     continue
-                if all(self._lookup_record(sid) is not None for sid in src_ids):
-                    prunable.append(rid)
-            for rid in prunable:
-                self._conn.execute("DELETE FROM records WHERE record_id = ?", (rid,))
-                self._fts_remove(rid)
-                self._vec_remove(rid, scope)
-                self._journal("prune_derived", rid, scope, "retention TTL exceeded")
-            if prunable:
+                if self._relied_on(rid) or self._active_rule_relies_on(rid):
+                    continue
+                members, blocked = self._lineage(rid, rscope)
+                if blocked:
+                    continue
+                skip = False
+                for sid, sscope in members:
+                    dependent = self._lookup_record(sid)
+                    if (not self.scope_engine.authorize_delete(sscope, ctx).allowed
+                            or not self.scope_engine.authorize_read(
+                                sscope, ctx, self.scope_engine._payload_text(dependent)).allowed
+                            or self._relied_on(sid) or self._active_rule_relies_on(sid)):
+                        skip = True
+                        break
+                if skip:
+                    continue
+                doomed = [(rid, rscope)] + members
+                for did, _ in doomed:
+                    dependents = self._conn.execute(
+                        "SELECT record_id, scope FROM records WHERE supersedes=?", (did,)).fetchall()
+                    if any(not self.scope_engine.authorize_delete(s, ctx).allowed for _, s in dependents):
+                        raise ScopeViolation("prune not permitted")
+                    for dep_id, dep_scope in dependents:
+                        self._unlink_supersedes(dep_id)
+                        self._journal("unlink_supersedes", dep_id, dep_scope,
+                                      "cleared dangling supersedes link (target deleted)")
+                for sid, sscope in members:
+                    self._remove_lineage_member(sid, sscope)
+                    self._journal("unlink_summary", None, sscope, "removed derived artifact (cascade)")
+                self._remove_lineage_member(rid, rscope)
+                self._journal("prune_derived", _ERASED, rscope, "retention TTL exceeded")
+                removed_total += len(doomed)
+            for qid, qscope in self._conn.execute(
+                    "SELECT record_id, scope FROM quarantined_records WHERE scope = ? "
+                    "AND epistemic_status = 'derived' AND typeof(created_at) IN ('real','integer') "
+                    "AND created_at < ?", (scope, older_than)).fetchall():
+                if self._erase_quarantined(qid, ctx, "retention TTL exceeded"):
+                    removed_total += 1
+            if removed_total:
                 self._bump_version()
-            return len(prunable)
+                self._set_scrub_flag(True)
+        if removed_total:
+            with self._lock:
+                self._scrub()  # once, after the outermost transaction committed
+        return removed_total
 
     # ---- projections --------------------------------------------------
 
@@ -1637,6 +2800,57 @@ class Substrate:
 
     # ---- internals ----------------------------------------------------
 
+    @staticmethod
+    def _validate_integrity(record: Record) -> None:
+        _check_id(record.record_id)
+        if not isinstance(record.payload, dict) or not isinstance(record.provenance, dict):
+            raise SchemaViolation("payload and provenance must be objects")
+        if 'text' in record.payload and not isinstance(record.payload['text'], str):
+            raise SchemaViolation("payload text must be a string")
+        for name in ('created_at', 'effective_at', 'valid_from', 'valid_to'):
+            value = getattr(record, name)
+            if value is None and name != 'created_at':
+                continue
+            try:
+                valid = (type(value) in (int, float) and math.isfinite(value)
+                         and (type(value) is float or abs(value) < 2 ** 53))
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise SchemaViolation("invalid timestamp")
+        if (record.valid_from is not None and record.valid_to is not None
+                and record.valid_from > record.valid_to):
+            raise SchemaViolation("valid_from must not be after valid_to")
+        if not isinstance(record.source_ids, list) or not all(isinstance(x, str) for x in record.source_ids):
+            raise SchemaViolation("source_ids must be a list of strings")
+        try:
+            stack = [record.payload, record.provenance, record.source_ids]
+            seen = set()
+            while stack:
+                value = stack.pop()
+                if isinstance(value, (dict, list)):
+                    if id(value) in seen:
+                        continue  # json.dumps below detects cycles
+                    seen.add(id(value))
+                    if isinstance(value, dict):
+                        if not all(isinstance(k, str) for k in value):
+                            raise ValueError("JSON keys must be strings")
+                        stack.extend(value.keys())
+                        stack.extend(value.values())
+                    else:
+                        stack.extend(value)
+                elif isinstance(value, str):
+                    value.encode("utf-8")
+                elif value is None or isinstance(value, (bool, int)):
+                    pass
+                elif isinstance(value, float) and math.isfinite(value):
+                    pass
+                else:
+                    raise ValueError("invalid JSON value")
+            json.dumps([record.payload, record.provenance, record.source_ids], allow_nan=False)
+        except (ValueError, TypeError, UnicodeError, RecursionError) as exc:
+            raise SchemaViolation("record contains invalid JSON") from exc
+
     def _validate(self, record: Record) -> None:
         """Schema validation. Scope and id safety are enforced separately and always."""
         if not record.record_type:
@@ -1648,6 +2862,7 @@ class Substrate:
 
     def close(self) -> None:
         with self._lock:
+            self._drop_fts_corpus()
             self._conn.close()
 
     def __enter__(self) -> "Substrate":

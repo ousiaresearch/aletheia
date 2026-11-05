@@ -2,7 +2,10 @@
 
 Optional module: import weft.extraction only when extraction is enabled.
 Extracts discrete facts from raw Observations as Claims, with deduplication
-and importance scoring. All model calls go through TokenHarbor.
+and importance scoring. Model calls go to an EXTERNAL third-party endpoint (TokenHarbor) and send scope
+text off-host, so they are refused unless the operator opts in explicitly
+(WEFT_EXTRACT_ALLOW_EXTERNAL=1 or `weft extract --allow-external`). The credential
+comes from TOKENHARBOR_API_KEY only.
 """
 from __future__ import annotations
 
@@ -19,16 +22,23 @@ from weft.substrate import Record, Substrate
 from weft.scope import ScopeContext, ScopeEngine
 
 
-# TokenHarbor config (local only, not imported unless extraction is used)
-_TOKEN_PATH = Path.home() / ".config/vireth/th_token"
+# TokenHarbor config (not imported unless extraction is used)
 _BASE_URL = "https://tokenharbor.ai/v1"
 _JUDGE_MODEL = "deepseek-v4.1-flash"
 
 
 def _get_token() -> str:
-    if _TOKEN_PATH.exists():
-        return _TOKEN_PATH.read_text().strip()
-    return os.environ.get("TOKENHARBOR_API_KEY", "")
+    return os.environ.get("TOKENHARBOR_API_KEY", "").strip()
+
+
+def destination_host() -> str:
+    from urllib.parse import urlparse
+    return urlparse(_BASE_URL).hostname or _BASE_URL
+
+
+def external_allowed() -> bool:
+    """Explicit operator opt-in for sending scope text to the external endpoint."""
+    return os.environ.get("WEFT_EXTRACT_ALLOW_EXTERNAL", "") == "1"
 
 
 def _extract_facts(text: str, scope: str) -> list[dict[str, Any]]:
@@ -37,6 +47,8 @@ def _extract_facts(text: str, scope: str) -> list[dict[str, Any]]:
     Returns list of {subject, predicate, object, fact_type, confidence, context}.
     Fail-closed: returns [] on any error.
     """
+    if not external_allowed():
+        return []
     token = _get_token()
     if not token:
         return []
@@ -124,12 +136,15 @@ def extract_facts(sub: Substrate, ctx: ScopeContext, scope: str, limit: int = 10
     Returns list of new Claim records. Does not write to substrate.
     Fail-closed: returns [] on any error.
     """
+    if ctx is None or not external_allowed():
+        return []
     try:
+        # Read only through the substrate's gate: grant and content markers apply, so
+        # nothing the caller cannot read ever reaches the external endpoint.
+        readable, _ = sub.query(ctx, scope=scope)
         records = [
-            row for row in sub._conn.execute(
-                "SELECT record_id, payload, created_at FROM records WHERE scope = ? AND record_type IN ('Observation', 'Source')",
-                (scope,)
-            ).fetchall()
+            (r.record_id, json.dumps(r.payload), r.created_at)
+            for r in readable if r.record_type in ("Observation", "Source")
         ]
     except Exception:
         return []
@@ -260,13 +275,11 @@ def consolidate_scope(sub: Substrate, ctx: ScopeContext, scope: str, similarity_
     Returns {claims_reviewed, duplicate_count, kept}.
     Fail-closed: returns empty dict on any error.
     """
+    if ctx is None:
+        return {}
     try:
-        claims = [
-            Record.from_row(row) for row in sub._conn.execute(
-                "SELECT * FROM records WHERE scope = ? AND record_type = 'Claim'",
-                (scope,)
-            ).fetchall()
-        ]
+        readable, _ = sub.query(ctx, record_type="Claim", scope=scope)
+        claims = [r for r in readable if isinstance(r.payload, dict)]
     except Exception:
         return {}
     
