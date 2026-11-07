@@ -37,7 +37,7 @@ def test_the_hermes_provider_is_declared_and_present_on_disk():
 
 
 def test_the_plugin_manifest_sits_beside_its_entry_point():
-    manifest = REPO / "hermes-plugin" / "plugin.yaml"
+    manifest = REPO / "aletheia" / "plugin.yaml"
     assert manifest.is_file() and (manifest.parent / "__init__.py").is_file()
     text = manifest.read_text()
     assert "weft-memory>=" in text, "the manifest must name the package it needs"

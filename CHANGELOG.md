@@ -2,6 +2,18 @@
 
 All notable changes to Weft are documented here.
 
+## [1.1.0] — 2026-11-06
+
+### Added
+- **Aletheia**: the Hermes memory provider now registers as `aletheia` (was `weft`), so the catalog
+  entry, the manifest name and `memory.provider` are one word. The substrate keeps the name Weft, and
+  the tools keep their `weft_*` names because they operate on the substrate.
+- `aletheia/` replaces `hermes-plugin/` as the plugin directory the catalog pins.
+
+### Changed
+- No behaviour change: same store path (`<profile>/weft/weft.sqlite3`), same scope derivation, same
+  recall path and receipts. Only the names a reader types.
+
 ## [1.0.0] — 2026-11-06
 
 The substrate and the Hermes provider surface are stable; the operational evidence is still thin,

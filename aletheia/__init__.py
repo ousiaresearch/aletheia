@@ -1,4 +1,4 @@
-"""Hermes plugin shim: register Weft as the active external memory provider.
+"""Hermes plugin shim: register Aletheia (the Weft provider) as the active memory provider.
 
 Everything lives in :mod:`weft.providers.hermes`; this file exists so the plugin loader has an
 entry point and so the manifest sits beside it (the catalog pins the directory, not the package).

@@ -163,7 +163,7 @@ def test_queue_prefetch_then_prefetch_returns_the_block(tmp_path, monkeypatch):
         assert block.startswith("<weft-memory>") and "ledger keeps every turn" in block
         assert "<receipt>hybrid" in block
         status = provider.recall_status()
-        assert status is not None and status.count == 1 and status.provider_label == "Weft"
+        assert status is not None and status.count == 1 and status.provider_label == "Aletheia"
         assert provider.prefetch("again") == "", "a delivered block is consumed once"
     finally:
         provider.shutdown()
