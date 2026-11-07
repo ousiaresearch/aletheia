@@ -18,3 +18,6 @@ eval/_probe_*.py
 tmp*/
 weft_memory.egg-info/
 benchmarks/full/cache/
+dist/
+build/
+*.egg-info/
