@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "weft-memory"
-version = "0.1.0a1"
+version = "1.0.0"
 description = "Evidence-bound scoped memory substrate for people and their agents"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["memory", "scope", "retrieval", "agent", "sqlite", "embeddings"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "License :: OSI Approved :: GNU Affero General Public License v3",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",

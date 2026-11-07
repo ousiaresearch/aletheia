@@ -2,6 +2,39 @@
 
 All notable changes to Weft are documented here.
 
+## [1.0.0] — 2026-11-06
+
+The substrate and the Hermes provider surface are stable; the operational evidence is still thin,
+which is what the beta classifier is for.
+
+### Added
+- **Hermes memory provider** (`weft/providers/hermes.py`, `hermes-plugin/`): in-process memory for
+  Hermes agents. The store and scope bind to the profile the manager hands in; recall runs on a worker
+  thread so the turn's prefetch is free (measured: 30 ms for hybrid recall, 8.6 s to load models at
+  startup); every recall carries a receipt; tools `weft_recall`, `weft_ingest`, `weft_forget`,
+  `weft_receipt`.
+- Turnkey deployment (Dockerfile, compose, HTTP tool routes).
+- Procedural memory with a deny-by-default promotion gate.
+- Graph and temporal reasoning: entity links in SQLite, date extraction, temporal boosting.
+
+### Changed
+- Schema v7 substrate hardening with Round 2–9 integrity gates.
+- Retrieval quality is part of the contract: the local embedder and cross-encoder reranker are always
+  on, and a missing model is reported rather than replaced by a keyword fallback.
+- Test suite: 429 checks at 0.1.0a0 → **1014** at this commit.
+- Stable version numbering: the dependency spec is now `weft-memory>=1.0,<2`, so a plain
+  `pip install weft-memory` resolves it (a pre-release would not have).
+
+### Fixed
+- Authentication: actor derived from the bearer token, middleware placement, `/health` and tool routes
+  authenticated, client-supplied actor removed.
+- Packaging: `weft.providers` is declared in `pyproject.toml` (the first a1 wheel silently omitted it),
+  with a test that fails whenever a package directory is undeclared. Built wheels are no longer tracked.
+
+### Security
+- Client-controlled actor removed from every write path.
+- Remaining phase-14 auth surface gaps closed and regression-tested.
+
 ## [0.1.0a1] — 2026-11-06
 
 The alpha that carries the hardening: 109 commits since a0, and the first release with a Hermes

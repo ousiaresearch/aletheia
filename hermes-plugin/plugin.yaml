@@ -1,6 +1,6 @@
 name: weft
 label: Weft
-version: 0.1.0a1
+version: 1.0.0
 kind: standalone
 author: Ousia Research
 homepage: https://github.com/ousiaresearch/weft
@@ -10,7 +10,7 @@ description: >-
   package; this manifest only registers the memory provider.
 requires_hermes: ">=0.22.5"
 python_dependencies:
-  - "weft-memory>=0.1.0a1,<0.2"
+  - "weft-memory>=1.0,<2"
   - "sentence-transformers>=2.0,<6"
   - "mlx-embeddings==0.1.0; sys_platform == 'darwin' and platform_machine == 'arm64'"
 config_keys:

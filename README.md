@@ -6,8 +6,8 @@ Weft ingests conversations, documents, and media into a scoped, auditable store.
 
 ## Status
 
-Alpha. The substrate, scope engine, ingestion, retrieval, reasoning loop and server are implemented and reviewed through phase 14, with the phase-8 through phase-14 hardening in this release. `scripts/test.sh` runs the current suite: 1011 checks. A Hermes memory-provider surface ships in `weft/providers/hermes.py`. AGPL-3.0.
-**Published:** `weft-memory==0.1.0a1` on PyPI (https://pypi.org/project/weft-memory/0.1.0a1/).
+1.0. The substrate, scope engine, ingestion, retrieval, reasoning loop, server and the Hermes memory provider are implemented and reviewed through phase 14. The version marks an API that no longer moves under adopters; it is not a claim that the system has been operated at scale — single-user on macOS is what has actually been run, with the phase-8 through phase-14 hardening in this release. `scripts/test.sh` runs the current suite: 1011 checks. A Hermes memory-provider surface ships in `weft/providers/hermes.py`. AGPL-3.0.
+**Published:** `weft-memory==1.0.0` on PyPI (https://pypi.org/project/weft-memory/1.0.0/).
 
 ## Boundaries
 
