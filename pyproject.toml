@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "weft-memory"
-version = "0.1.0a0"
+version = "0.1.0a1"
 description = "Evidence-bound scoped memory substrate for people and their agents"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
 requires-python = ">=3.11"
 authors = [
-  {name = "Johann Ross", email = "johann@ousiaresearch.xyz"},
+  {name = "Ousia Research", email = "dev@ousiaresearch.com"},
 ]
 keywords = ["memory", "scope", "retrieval", "agent", "sqlite", "embeddings"]
 classifiers = [
@@ -59,4 +59,4 @@ weft = "weft.cli:entrypoint"
 weft-server = "weft.server:main"
 
 [tool.setuptools]
-packages = ["weft"]
+packages = ["weft", "weft.providers"]
