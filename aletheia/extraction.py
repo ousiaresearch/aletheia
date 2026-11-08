@@ -2,10 +2,10 @@
 
 Optional module: import aletheia.extraction only when extraction is enabled.
 Extracts discrete facts from raw Observations as Claims, with deduplication
-and importance scoring. Model calls go to an EXTERNAL third-party endpoint (TokenHarbor) and send scope
-text off-host, so they are refused unless the operator opts in explicitly
-(ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1 or `aletheia extract --allow-external`). The credential
-comes from TOKENHARBOR_API_KEY only.
+and importance scoring. External model calls use the operator-selected provider
+and send scope text off-host, so they are refused unless the operator opts in
+explicitly (ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1 or `aletheia extract --allow-external`).
+The provider key is read only from the configured environment variable.
 """
 from __future__ import annotations
 
@@ -20,37 +20,22 @@ from typing import Any
 from aletheia.knowledge import RULES, check_record
 from aletheia.substrate import Record, Substrate
 from aletheia.scope import ScopeContext, ScopeEngine
-
-
-# TokenHarbor config (not imported unless extraction is used)
-_BASE_URL = "https://tokenharbor.ai/v1"
-_JUDGE_MODEL = "deepseek-v4.1-flash"
-
-
-def _get_token() -> str:
-    return os.environ.get("TOKENHARBOR_API_KEY", "").strip()
+from aletheia.llm_client import complete_text, destination_host as _llm_destination_host, get_config
 
 
 def destination_host() -> str:
-    from urllib.parse import urlparse
-    return urlparse(_BASE_URL).hostname or _BASE_URL
+    """Return the host selected by the operator's LLM provider configuration."""
+    return _llm_destination_host()
 
 
 def external_allowed() -> bool:
-    """Explicit operator opt-in for sending scope text to the external endpoint."""
+    """Explicit operator opt-in for sending scope text to the selected endpoint."""
     return os.environ.get("ALETHEIA_EXTRACT_ALLOW_EXTERNAL", "") == "1"
 
 
 def _extract_facts(text: str, scope: str) -> list[dict[str, Any]]:
-    """Use TokenHarbor LLM to extract discrete factual claims from observation text.
-
-    Returns list of {subject, predicate, object, fact_type, confidence, context}.
-    Fail-closed: returns [] on any error.
-    """
+    """Extract factual claims with the explicitly selected provider; fail closed."""
     if not external_allowed():
-        return []
-    token = _get_token()
-    if not token:
         return []
 
     prompt = f"""Extract discrete factual claims from the following observation text.
@@ -77,32 +62,17 @@ Observation: {text[:3000]}
 
 Return empty array [] if no extractable facts."""
     try:
-        import urllib.request
-        req = urllib.request.Request(
-            f"{_BASE_URL}/chat/completions",
-            data=json.dumps({
-                "model": _JUDGE_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 1200,
-                "temperature": 0.0
-            }).encode(),
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
-            }
-        )
-
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode())
-
-        text_out = result["choices"][0]["message"]["content"].strip()
-
-        # Extract JSON array from response
-        start = text_out.find('[')
-        end = text_out.rfind(']') + 1
+        if get_config() is None:
+            return []
+        text_out = complete_text(prompt, max_tokens=1200, temperature=0.0)
+        if not text_out:
+            return []
+        start = text_out.find("[")
+        end = text_out.rfind("]") + 1
         if start >= 0 and end > start:
             facts = json.loads(text_out[start:end])
-            return [f for f in facts if isinstance(f, dict) and f.get("subject") and f.get("predicate")]
+            if isinstance(facts, list):
+                return [f for f in facts if isinstance(f, dict) and f.get("subject") and f.get("predicate")]
     except Exception:
         pass
     return []

@@ -250,6 +250,10 @@ class _Emb:
 
 
 def test_cli_extract_keeps_vector_index_complete(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv('ALETHEIA_LLM_PROVIDER', 'openai-compatible')
+    monkeypatch.setenv('ALETHEIA_LLM_BASE_URL', 'https://extract.example/v1')
+    monkeypatch.setenv('ALETHEIA_LLM_MODEL', 'test-model')
+    monkeypatch.setenv('ALETHEIA_LLM_API_KEY', 'test-key')
     monkeypatch.setattr(cli, 'default_text_embedder', lambda: _Emb())
     db = tmp_path / 'w.db'
     note = tmp_path / 'n.md'

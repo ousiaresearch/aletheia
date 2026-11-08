@@ -55,7 +55,7 @@ def test_extract_and_write_claims():
         sub.put(obs, ctx)
         
         claims = extract_facts(sub, ctx, "test", limit=10)
-        # With no TokenHarbor token, should return empty list (fail-closed)
+        # Without explicit extraction opt-in, no provider is called.
         assert isinstance(claims, list)
         
         written = write_claims(sub, ctx, claims)
@@ -120,39 +120,52 @@ def test_consolidate_deduplicates():
         sub.close()
 
 
-def test_extraction_fail_closed_on_missing_token():
-    """extract_facts returns [] when TokenHarbor token is missing."""
-    import os
-    old_token = os.environ.get("TOKENHARBOR_API_KEY", "")
-    os.environ["TOKENHARBOR_API_KEY"] = ""
+def test_extraction_rejects_unknown_provider_fail_closed(monkeypatch):
+    monkeypatch.setenv("ALETHEIA_EXTRACT_ALLOW_EXTERNAL", "1")
+    monkeypatch.setenv("ALETHEIA_LLM_PROVIDER", "unknown-test-provider")
+    monkeypatch.setenv("ALETHEIA_LLM_MODEL", "test-model")
+    monkeypatch.setenv("ALETHEIA_LLM_API_KEY", "test-key")
+    assert _extract_facts("Mina uses Aletheia.", "personal") == []
+
+
+def test_extraction_uses_selected_provider_only_after_opt_in(monkeypatch):
+    from unittest.mock import patch
+
+    monkeypatch.setenv("ALETHEIA_LLM_PROVIDER", "openai-compatible")
+    monkeypatch.setenv("ALETHEIA_LLM_BASE_URL", "https://chosen.example/v1")
+    monkeypatch.setenv("ALETHEIA_LLM_MODEL", "chosen-test-model")
+    monkeypatch.setenv("ALETHEIA_LLM_API_KEY", "test-key")
+    monkeypatch.setenv("ALETHEIA_EXTRACT_ALLOW_EXTERNAL", "1")
+    response = '[{"subject":"Mina","predicate":"uses","object":"Aletheia"}]'
+    with patch("aletheia.extraction.complete_text", return_value=response) as complete:
+        facts = _extract_facts("Mina uses Aletheia.", "personal")
+    complete.assert_called_once()
+    assert facts[0]["subject"] == "Mina"
+    assert facts[0]["predicate"] == "uses"
+
+
+def test_extraction_fail_closed_on_missing_provider_key(monkeypatch):
+    """Opted-in extraction still fails closed when selected provider has no key."""
+    monkeypatch.setenv("ALETHEIA_EXTRACT_ALLOW_EXTERNAL", "1")
+    monkeypatch.setenv("ALETHEIA_LLM_PROVIDER", "openai-compatible")
+    monkeypatch.setenv("ALETHEIA_LLM_BASE_URL", "https://llm.example/v1")
+    monkeypatch.setenv("ALETHEIA_LLM_MODEL", "test-model")
+    for name in ("ALETHEIA_LLM_API_KEY", "ALETHEIA_LLM_API_KEY_ENV", "OPENAI_API_KEY", "DASHSCOPE_API_KEY", "ALIBABA_CODING_PLAN_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    sub, ctx, _ = _make_sub()
     try:
-        sub, ctx, tmp = _make_sub()
-        try:
-            src = Record(
-                record_id="src-3",
-                record_type="Source",
-                scope="test",
-                payload={"text": "Source for fail-closed test."},
-                epistemic_status="stated",
-                attribution="document",
-                source_ids=[],
-            )
-            sub.put(src, ctx)
-            
-            obs = Record(
-                record_id="obs-2",
-                record_type="Observation",
-                scope="test",
-                payload={"text": "Some fact to extract."},
-                epistemic_status="stated",
-                attribution="document",
-                source_ids=["src-3"],
-            )
-            sub.put(obs, ctx)
-            
-            claims = extract_facts(sub, ctx, "test", limit=10)
-            assert claims == []
-        finally:
-            sub.close()
+        src = Record(
+            record_id="src-3", record_type="Source", scope="test",
+            payload={"text": "Source for fail-closed test."}, epistemic_status="stated",
+            attribution="document", source_ids=[],
+        )
+        sub.put(src, ctx)
+        obs = Record(
+            record_id="obs-2", record_type="Observation", scope="test",
+            payload={"text": "Some fact to extract."}, epistemic_status="stated",
+            attribution="document", source_ids=["src-3"],
+        )
+        sub.put(obs, ctx)
+        assert extract_facts(sub, ctx, "test", limit=10) == []
     finally:
-        os.environ["TOKENHARBOR_API_KEY"] = old_token
+        sub.close()

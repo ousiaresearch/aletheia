@@ -27,6 +27,13 @@ def _store(tmp_path):
     return sub, ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True, actor='u'), root
 
 
+def _provider_env(monkeypatch):
+    monkeypatch.setenv('ALETHEIA_LLM_PROVIDER', 'openai-compatible')
+    monkeypatch.setenv('ALETHEIA_LLM_BASE_URL', 'https://extract.example/v1')
+    monkeypatch.setenv('ALETHEIA_LLM_MODEL', 'test-model')
+    monkeypatch.setenv('ALETHEIA_LLM_API_KEY', 'dummy-key')
+
+
 def _no_network(monkeypatch):
     import urllib.request
     calls = []
@@ -42,7 +49,7 @@ def _no_network(monkeypatch):
 
 def test_extract_facts_ungranted_caller_gets_nothing_and_sends_nothing(tmp_path, monkeypatch):
     sub, ctx_a, _ = _store(tmp_path)
-    monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
+    _provider_env(monkeypatch)
     monkeypatch.setenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', '1')
     calls = _no_network(monkeypatch)
     try:
@@ -64,7 +71,7 @@ def test_consolidate_scope_ungranted_caller_gets_nothing(tmp_path):
 def test_extract_facts_respects_content_marker_gate(tmp_path, monkeypatch):
     """A record the read gate withholds is never sent, even inside a granted scope."""
     sub, _, root = _store(tmp_path)
-    monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
+    _provider_env(monkeypatch)
     monkeypatch.setenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', '1')
     sent = []
     monkeypatch.setattr(extraction, '_extract_facts', lambda text, scope: sent.append(text) or [])
@@ -80,7 +87,7 @@ def test_extract_facts_respects_content_marker_gate(tmp_path, monkeypatch):
 
 def test_library_extraction_requires_explicit_opt_in(tmp_path, monkeypatch):
     sub, _, root = _store(tmp_path)
-    monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
+    _provider_env(monkeypatch)
     monkeypatch.delenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', raising=False)
     calls = _no_network(monkeypatch)
     try:
@@ -93,7 +100,7 @@ def test_library_extraction_requires_explicit_opt_in(tmp_path, monkeypatch):
 def test_cli_extract_refuses_without_opt_in(tmp_path, monkeypatch, capsys):
     sub, _, _ = _store(tmp_path)
     sub.close()
-    monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
+    _provider_env(monkeypatch)
     monkeypatch.delenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', raising=False)
     calls = _no_network(monkeypatch)
     rc = cli.main(['--db', str(tmp_path / 'w.db'), 'extract', '--scope', 'b'])
@@ -105,12 +112,39 @@ def test_cli_extract_refuses_without_opt_in(tmp_path, monkeypatch, capsys):
 def test_cli_extract_with_flag_prints_destination_host_first(tmp_path, monkeypatch, capsys):
     sub, _, _ = _store(tmp_path)
     sub.close()
-    monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
+    _provider_env(monkeypatch)
     monkeypatch.delenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', raising=False)
     monkeypatch.setattr(extraction, '_extract_facts', lambda text, scope: [])
     rc = cli.main(['--db', str(tmp_path / 'w.db'), 'extract', '--scope', 'b', '--allow-external'])
     assert rc == 0
-    assert 'tokenharbor.ai' in capsys.readouterr().err
+    assert 'extract.example' in capsys.readouterr().err
+
+
+def test_recall_query_expansion_stays_disabled_without_explicit_opt_in(tmp_path, monkeypatch):
+    _provider_env(monkeypatch)
+    monkeypatch.delenv('ALETHEIA_QUERY_EXPANSION', raising=False)
+    from unittest.mock import patch
+    from aletheia.retrieval import recall
+
+    sub, _, root = _store(tmp_path)
+    try:
+        with patch('aletheia.query_expansion.complete_text') as complete:
+            recall(sub, 'Orion', root, scope_hint='b', mode='lexical')
+        complete.assert_not_called()
+    finally:
+        sub.close()
+
+
+def test_cli_extract_refuses_without_selected_provider(tmp_path, monkeypatch, capsys):
+    sub, _, _ = _store(tmp_path)
+    sub.close()
+    for name in ('ALETHEIA_LLM_PROVIDER', 'ALETHEIA_LLM_MODEL', 'ALETHEIA_LLM_API_KEY', 'ALETHEIA_LLM_API_KEY_ENV', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY'):
+        monkeypatch.delenv(name, raising=False)
+    calls = _no_network(monkeypatch)
+    rc = cli.main(['--db', str(tmp_path / 'w.db'), 'extract', '--scope', 'b', '--allow-external'])
+    assert rc == 2
+    assert calls == []
+    assert 'configure' in capsys.readouterr().err.lower()
 
 
 def test_no_personal_credential_path(tmp_path, monkeypatch):
@@ -118,10 +152,14 @@ def test_no_personal_credential_path(tmp_path, monkeypatch):
     monkeypatch.setenv('HOME', str(tmp_path))
     (tmp_path / '.config' / 'vireth').mkdir(parents=True)
     (tmp_path / '.config' / 'vireth' / 'th_token').write_text('personal')
-    monkeypatch.delenv('TOKENHARBOR_API_KEY', raising=False)
-    assert extraction._get_token() == ''
-    monkeypatch.setenv('TOKENHARBOR_API_KEY', 'envkey')
-    assert extraction._get_token() == 'envkey'
+    monkeypatch.setenv('ALETHEIA_LLM_PROVIDER', 'openai-compatible')
+    monkeypatch.setenv('ALETHEIA_LLM_BASE_URL', 'https://extract.example/v1')
+    monkeypatch.setenv('ALETHEIA_LLM_MODEL', 'test-model')
+    monkeypatch.setenv('ALETHEIA_LLM_API_KEY_ENV', 'TEST_PROVIDER_KEY')
+    monkeypatch.setenv('TEST_PROVIDER_KEY', 'envkey')
+    from aletheia.llm_client import get_config
+    config = get_config()
+    assert config is not None and config.api_key == 'envkey'
 
 
 # ---- R6-08 -----------------------------------------------------------------------------------
@@ -213,4 +251,4 @@ def test_docs_state_real_restore_and_extract_facts():
     assert 'import_scope' in doc and 'Python API' in doc
     assert 'registered verifier' in doc and 'user-authored' in doc
     for text in (doc, readme):
-        assert 'allow-external' in text and 'TOKENHARBOR_API_KEY' in text
+        assert 'allow-external' in text and 'ALETHEIA_LLM_PROVIDER' in text

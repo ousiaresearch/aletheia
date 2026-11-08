@@ -221,13 +221,17 @@ Choose a writable `ALETHEIA_DB_PATH` if the default location is unsuitable. The
 Docker build and runtime are unverified and need to be verified on a machine with Docker; this guide
 is not evidence of a successful deployment.
 
-## `aletheia extract` sends scope text to an external service
+## Optional external LLM calls
 
-`aletheia extract` (and `aletheia.extraction.extract_facts`) sends record text to the
-third-party endpoint `https://tokenharbor.ai/v1` (TokenHarbor). It is **disabled
-by default**. It runs only when you pass `--allow-external` or set
-`ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1`; the destination host is printed to stderr before
-anything is sent. The credential is read from `TOKENHARBOR_API_KEY` only (no
-credential file is read). Only records the caller's scope grant can read are sent.
-The HTTP server never calls this service. Not exercised against the real endpoint
-in this repository's tests (the transport is faked).
+`aletheia extract` (and `aletheia.extraction.extract_facts`) can send readable record text to
+an operator-selected LLM. No provider is selected by default. Native OpenAI and Anthropic APIs
+are supported, as are OpenAI-compatible endpoints; configure `ALETHEIA_LLM_PROVIDER`,
+`ALETHEIA_LLM_MODEL`, and the appropriate API-key environment variable. For compatible endpoints,
+also set `ALETHEIA_LLM_BASE_URL`; `ALETHEIA_LLM_API_KEY_ENV` may name the environment variable
+that holds the secret. Aletheia does not read Hermes auth files or store credentials in the project.
+
+Extraction remains **disabled by default**. It runs only when you pass `--allow-external` or set
+`ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1`; the selected destination host is printed to stderr before
+anything is sent. Only records the caller's scope grant can read are sent. Query expansion is also
+off unless explicitly enabled. The HTTP server never makes these LLM calls. Provider transports
+are tested with mocked HTTP responses; no live endpoint was exercised in this repository's tests.

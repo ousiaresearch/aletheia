@@ -48,9 +48,12 @@ def _parser() -> argparse.ArgumentParser:
     extract = commands.add_parser("extract", help="extract facts from Observations into Claims")
     extract.add_argument("--scope", required=True)
     extract.add_argument("--limit", type=int, default=100, help="max Observations to process")
-    extract.add_argument("--allow-external", action="store_true",
-                         help="REQUIRED: send scope text to the external TokenHarbor endpoint "
-                              "(credential from TOKENHARBOR_API_KEY); also ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1")
+    extract.add_argument(
+        "--allow-external",
+        action="store_true",
+        help=("REQUIRED: send scope text to the selected LLM endpoint; configure "
+              "ALETHEIA_LLM_PROVIDER/MODEL and a provider API key"),
+    )
     
     consolidate = commands.add_parser("consolidate", help="deduplicate Claims in a scope")
     consolidate.add_argument("--scope", required=True)
@@ -199,11 +202,17 @@ def _run_serve(args) -> int:
 
 def _run_extract(args) -> int:
     from aletheia.extraction import destination_host, extract_facts, external_allowed, write_claims
+    from aletheia.llm_client import get_config
     if args.allow_external:
         os.environ["ALETHEIA_EXTRACT_ALLOW_EXTERNAL"] = "1"
     if not external_allowed():
         print("aletheia extract sends scope text to an external service and is disabled by default; "
               "pass --allow-external (or set ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1) to proceed",
+              file=sys.stderr)
+        return 2
+    if get_config() is None:
+        print("aletheia extract requires a configured provider, model, and API key; "
+              "set ALETHEIA_LLM_PROVIDER, ALETHEIA_LLM_MODEL, and provider credentials",
               file=sys.stderr)
         return 2
     print(f"aletheia extract: sending scope text to external host {destination_host()}", file=sys.stderr)

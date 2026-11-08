@@ -45,7 +45,7 @@ def test_install_uninstall_cycle():
     subprocess.run([aletheia, "--help"], check=True, stdout=subprocess.DEVNULL)
     db = "/tmp/aletheia-install-pytest.db"
     subprocess.run([aletheia, "--db", db, "serve", "--help"], check=True, stdout=subprocess.DEVNULL)
-    subprocess.run([pip, "-m", "pip", "uninstall", "-y", "aletheia"], check=True)
+    subprocess.run([pip, "-m", "pip", "uninstall", "-y", "ousia-aletheia"], check=True)
     assert not os.path.exists(aletheia), "aletheia entrypoint still exists after uninstall"
     # Run import check from a neutral directory to avoid cwd shadowing.
     result = subprocess.run(

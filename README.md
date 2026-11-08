@@ -97,12 +97,34 @@ Python >= 3.11 required. The `server` extra installs the HTTP server only; it do
 sentence-transformers or any embedder. The default local embedder (an MLX BGE-M3 snapshot,
 `local-embedding` extra) runs on darwin/arm64 only.
 
-## External extraction (opt-in)
+## Optional external LLM features (explicit opt-in)
 
-`aletheia extract` sends scope text to the third-party TokenHarbor endpoint
-(`tokenharbor.ai`). It is off by default: pass `--allow-external` (or set
-`ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1`) and provide `TOKENHARBOR_API_KEY`. The host is
-printed to stderr before sending. The CLI and HTTP server make no other external calls. Library callers that pass a `token_getter` to `recall` enable query expansion, which sends query text to the same host.
+Fact extraction and query expansion can use an operator-selected LLM. Aletheia has no default
+provider and does not silently choose or contact one. The client supports native OpenAI and
+Anthropic APIs, plus arbitrary OpenAI-compatible endpoints (including compatible gateways).
+Configure the provider, model, and credentials in the process environment:
+
+```bash
+# Native Anthropic example
+export ALETHEIA_LLM_PROVIDER=anthropic
+export ALETHEIA_LLM_MODEL='<model-id>'
+export ANTHROPIC_API_KEY # load it from your secret manager before starting Aletheia
+
+# Or native OpenAI: ALETHEIA_LLM_PROVIDER=openai, OPENAI_API_KEY=...
+# For an OpenAI-compatible service, also set:
+# ALETHEIA_LLM_PROVIDER=openai-compatible
+# ALETHEIA_LLM_BASE_URL='<provider's API base URL>'
+# ALETHEIA_LLM_MODEL='<provider's exact model id>'
+# ALETHEIA_LLM_API_KEY_ENV='<name of the environment variable holding the key>'
+```
+
+Aletheia reads the key from the named environment variable; it does not read Hermes auth files
+or copy credentials into project configuration. Make the secret available to the Aletheia process
+through your existing secret manager. For fact extraction, external transmission remains disabled
+unless you pass `--allow-external` (or set `ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1`). The selected host
+is printed to stderr before any request. Query expansion is separately disabled unless the caller
+explicitly supplies it or sets `ALETHEIA_QUERY_EXPANSION=1`. The CLI and HTTP server make no other
+external calls.
 
 ## Quick start
 

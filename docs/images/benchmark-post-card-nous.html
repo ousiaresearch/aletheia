@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1600, initial-scale=1">
+<title>Nous Research — Aletheia 70% retrieval hit@k</title>
+<style>
+  * { box-sizing:border-box; }
+  html,body { margin:0; width:1600px; height:900px; overflow:hidden; }
+  body {
+    position:relative; color:#e6f7f8;
+    background:#071b35 url("source/benchmark-bg-nous-v1-raw.png") center / 100% 100% no-repeat;
+    font-family:Impact,"Arial Narrow","Helvetica Neue",sans-serif;
+  }
+  .edge { position:absolute; inset:18px; border:2px solid rgba(226,247,247,.68); pointer-events:none; }
+  .crop { position:absolute; width:30px; height:30px; border-color:#e7f216; border-style:solid; }
+  .crop.tl {left:0;top:0;border-width:0 0 3px 3px}.crop.tr {right:0;top:0;border-width:0 3px 3px 0}
+  .crop.bl {left:0;bottom:0;border-width:3px 0 0 3px}.crop.br {right:0;bottom:0;border-width:3px 3px 0 0}
+  .mast {
+    position:absolute; left:72px; top:58px; display:flex; align-items:center; gap:15px;
+  }
+  .nous {
+    display:inline-block; padding:2px 13px 5px; color:#091126; background:#e7f216;
+    font-size:48px; letter-spacing:.055em; line-height:.98; font-weight:900;
+    border:2px solid #061326; box-shadow:4px 4px 0 #00aeeF;
+  }
+  .research { font-size:19px; font-weight:800; letter-spacing:.21em; color:#e8f5f3; }
+  .descriptor {
+    position:absolute; left:80px; top:205px; color:#bfe8f2;
+    font-size:22px; letter-spacing:.19em; font-weight:700;
+  }
+  .main {
+    position:absolute; left:64px; top:260px; width:660px; height:390px;
+  }
+  .score {
+    font-size:280px; line-height:.78; letter-spacing:-.045em; color:#e7f216;
+    text-shadow:4px 0 #00aeeF, -2px 2px #071616;
+  }
+  .metric {
+    margin:30px 0 0 15px; font-size:42px; letter-spacing:.12em;
+    color:#eef8f5; text-shadow:2px 0 #00aeeF;
+  }
+  .badge {
+    display:inline-block; margin:18px 0 0 15px; padding:9px 15px 8px;
+    color:#071616; background:#00aeeF; border:2px solid #e7f216;
+    font-size:21px; letter-spacing:.13em; font-weight:900;
+  }
+  .compare {
+    position:absolute; left:58px; right:58px; bottom:42px; height:181px;
+    background:rgba(4,13,28,.94); border:2px solid #c4f4f6;
+    box-shadow:8px 8px 0 rgba(0,174,239,.82);
+    padding:17px 27px 12px;
+  }
+  .compare-head {
+    display:flex; justify-content:space-between; align-items:center;
+    height:25px; border-bottom:2px solid #00aeeF; padding-bottom:9px;
+    font-size:16px; font-weight:800; letter-spacing:.16em; color:#bfe8f2;
+  }
+  .compare-head span:last-child { color:#e7f216; }
+  .figures { display:grid; grid-template-columns:repeat(3,1fr); height:83px; align-items:center; }
+  .figure { text-align:center; border-right:1px solid rgba(191,232,242,.45); }
+  .figure:last-child { border-right:0; }
+  .name { color:#edf5f4; font-size:20px; letter-spacing:.08em; }
+  .value { margin-left:10px; color:#e7f216; font-size:34px; letter-spacing:.015em; }
+  .caveat {
+    border-top:1px solid rgba(191,232,242,.45); padding-top:7px;
+    color:#d5e4e3; text-align:center; font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:18px; line-height:1.18; letter-spacing:.025em;
+  }
+</style>
+</head>
+<body>
+  <div class="edge"><i class="crop tl"></i><i class="crop tr"></i><i class="crop bl"></i><i class="crop br"></i></div>
+  <div class="mast"><span class="nous">NOUS</span><span class="research">RESEARCH</span></div>
+  <div class="descriptor">ALETHEIA &nbsp; / &nbsp; ENHANCED RECALL TEST</div>
+  <div class="main">
+    <div class="score">70%</div>
+    <div class="metric">RETRIEVAL HIT@K</div>
+    <div class="badge">NO LLM JUDGE</div>
+  </div>
+  <section class="compare">
+    <div class="compare-head"><span>PUBLISHED LOCOMO COMPARISON FIGURES</span><span>LLM-JUDGED ANSWER SCORES*</span></div>
+    <div class="figures">
+      <div class="figure"><span class="name">MEM0</span><span class="value">67.1%</span></div>
+      <div class="figure"><span class="name">ZEP / GRAPHITI</span><span class="value">75.1%</span></div>
+      <div class="figure"><span class="name">MEMHQ</span><span class="value">83.2%</span></div>
+    </div>
+    <div class="caveat">* Different scoring methods: Aletheia reports retrieval hit@k; published comparison figures use LLM-judged answers. Context, not a head-to-head ranking.</div>
+  </section>
+</body>
+</html>

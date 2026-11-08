@@ -9,7 +9,10 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections.abc import Callable
 from typing import Sequence
+
+from aletheia.llm_client import complete_text
 
 logger = logging.getLogger(__name__)
 
@@ -58,95 +61,80 @@ def _local_expand_query(query: str, n: int = 3) -> list[str]:
     return [query]
 
 
-def expand_query(token_getter, query: str, n: int = 3) -> list[str]:
-    """Generate alternative phrasings for a query.
+def _provider_text(
+    prompt: str,
+    token_getter: Callable[[], str | None] | None = None,
+    *,
+    max_tokens: int,
+    temperature: float,
+) -> str | None:
+    """Call the explicitly configured provider; token_getter remains a legacy key hook."""
+    api_key = token_getter() if callable(token_getter) else None
+    return complete_text(prompt, max_tokens=max_tokens, temperature=temperature, api_key=api_key)
 
-    Tries TokenHarbor first; falls back to local flan-t5-small if no token
-    or network fails. Returns [original, alt1, alt2, ...] up to n+1 total.
-    Fail-closed: returns [query] on any error.
+
+def _json_strings(text: str | None) -> list[str]:
+    if not text:
+        return []
+    start, end = text.find("["), text.rfind("]") + 1
+    if start < 0 or end <= start:
+        return []
+    values = json.loads(text[start:end])
+    if not isinstance(values, list):
+        return []
+    return [value.strip() for value in values if isinstance(value, str) and value.strip()]
+
+
+def expand_query(
+    token_getter: Callable[[], str | None] | None = None,
+    query: str = "",
+    n: int = 3,
+) -> list[str]:
+    """Generate query alternatives through the configured provider, then local fallback.
+
+    Provider routing is controlled by ALETHEIA_LLM_PROVIDER / MODEL / BASE_URL.
+    The caller must opt into query expansion; this function never chooses a vendor.
     """
-    token = token_getter()
-    if token:
-        prompt = (
-            f"Generate {n} alternative ways to ask the following question, "
-            f"preserving the same meaning but using different wording, synonyms, "
-            f"or paraphrases. Return ONLY a JSON array of strings.\n\n"
-            f"Original: {query}\n\n"
-            f"Alternatives:"
-        )
-        try:
-            import urllib.request
-            req = urllib.request.Request(
-                "https://tokenharbor.ai/v1/chat/completions",
-                data=json.dumps({
-                    "model": "deepseek-v4.1-flash",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 150,
-                    "temperature": 0.7,
-                }).encode(),
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                },
-            )
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                result = json.loads(resp.read().decode())
-            text = result["choices"][0]["message"]["content"].strip()
-            start = text.find("[")
-            end = text.rfind("]") + 1
-            if start >= 0 and end > start:
-                alts = json.loads(text[start:end])
-                if isinstance(alts, list):
-                    seen = {query}
-                    out = [query]
-                    for alt in alts:
-                        if isinstance(alt, str) and alt.strip() and alt.strip() not in seen:
-                            out.append(alt.strip())
-                            seen.add(alt.strip())
-                        if len(out) >= n + 1:
-                            break
-                    return out
-        except Exception as e:
-            logger.warning("TokenHarbor query expansion failed: %s", e)
-
-    # Local fallback
+    prompt = (
+        f"Generate {n} alternative ways to ask the following question, "
+        f"preserving the same meaning but using different wording, synonyms, "
+        f"or paraphrases. Return ONLY a JSON array of strings.\n\n"
+        f"Original: {query}\n\nAlternatives:"
+    )
+    try:
+        values = _json_strings(_provider_text(prompt, token_getter, max_tokens=150, temperature=0.7))
+        seen = {query}
+        out = [query]
+        for value in values:
+            if value not in seen:
+                out.append(value)
+                seen.add(value)
+            if len(out) >= n + 1:
+                break
+        if len(out) > 1:
+            return out
+    except Exception as e:
+        logger.warning("Configured-provider query expansion failed: %s", e)
     return _local_expand_query(query, n)
 
 
-def expand_query_hyde(token_getter, query: str) -> list[str]:
-    """P1: HyDE-style expansion — generate a hypothetical answer to the query.
+def expand_query_hyde(
+    token_getter: Callable[[], str | None] | None = None,
+    query: str = "",
+) -> list[str]:
+    """Generate a hypothetical answer through the selected provider or local fallback."""
+    prompt = (
+        "Write a brief, factual hypothetical answer to the following question. "
+        "Do not hedge or say 'I don't know'. Keep it to 2-3 sentences.\n\n"
+        f"Question: {query}\n\nHypothetical answer:"
+    )
+    try:
+        text = _provider_text(prompt, token_getter, max_tokens=120, temperature=0.3)
+        if text:
+            return [query, text]
+    except Exception as e:
+        logger.warning("Configured-provider HyDE expansion failed: %s", e)
 
-    Tries TokenHarbor first; falls back to local flan-t5-small. Returns
-    [original, hypothetical_answer] so vector recall can match the answer
-    text against the corpus, not just the question text.
-    Fail-closed: returns [query] on any error.
-    """
-    token = token_getter()
-    if token:
-        try:
-            import urllib.request
-            req = urllib.request.Request(
-                "https://tokenharbor.ai/v1/chat/completions",
-                data=json.dumps({
-                    "model": "deepseek-v4.1-flash",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 120,
-                    "temperature": 0.3,
-                }).encode(),
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                },
-            )
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                result = json.loads(resp.read().decode())
-            text = result["choices"][0]["message"]["content"].strip()
-            if text:
-                return [query, text]
-        except Exception as e:
-            logger.warning("TokenHarbor HyDE expansion failed: %s", e)
-
-    # Local fallback
     try:
         from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
         import torch
@@ -154,13 +142,6 @@ def expand_query_hyde(token_getter, query: str) -> list[str]:
         model_name = "google/flan-t5-small"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-
-        prompt = (
-            "Write a brief, factual hypothetical answer to the following question. "
-            "Do not hedge or say 'I don't know'. Keep it to 2-3 sentences.\n\n"
-            f"Question: {query}\n\n"
-            "Hypothetical answer:"
-        )
         inputs = tokenizer(prompt, return_tensors="pt")
         with torch.no_grad():
             outputs = model.generate(**inputs, max_new_tokens=120, temperature=0.3)
@@ -201,52 +182,24 @@ def classify_query(query: str) -> str:
     return "other"
 
 
-def expand_query_multihop(token_getter, query: str) -> list[str]:
-    """P1: decompose a multi-hop question into sub-questions.
-
-    Returns [original, sub1, sub2, ...] if the question looks multi-hop,
-    otherwise [query].
-    """
+def expand_query_multihop(
+    token_getter: Callable[[], str | None] | None = None,
+    query: str = "",
+) -> list[str]:
+    """Decompose a compound question using the selected provider, if configured."""
     if not re.search(r"\b(and|or|also|then|after|before|because|since|while)\b", query, re.IGNORECASE):
         return [query]
-
-    token = token_getter()
-    if not token:
-        return [query]
-
     prompt = (
         "Decompose the following question into 2 simpler sub-questions that "
         "together would answer the original. Return ONLY a JSON array of strings.\n\n"
-        f"Original: {query}\n\n"
-        "Sub-questions:"
+        f"Original: {query}\n\nSub-questions:"
     )
     try:
-        import urllib.request
-        req = urllib.request.Request(
-            "https://tokenharbor.ai/v1/chat/completions",
-            data=json.dumps({
-                "model": "deepseek-v4.1-flash",
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 120,
-                "temperature": 0.0,
-            }).encode(),
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            },
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read().decode())
-        text = result["choices"][0]["message"]["content"].strip()
-        start = text.find("[")
-        end = text.rfind("]") + 1
-        if start >= 0 and end > start:
-            subs = json.loads(text[start:end])
-            if isinstance(subs, list) and subs:
-                return [query] + [s for s in subs if isinstance(s, str) and s.strip()]
+        values = _json_strings(_provider_text(prompt, token_getter, max_tokens=120, temperature=0.0))
+        return [query] + [value for value in values if value != query]
     except Exception as e:
-        logger.warning("Multi-hop expansion failed: %s", e)
-    return [query]
+        logger.warning("Configured-provider multi-hop expansion failed: %s", e)
+        return [query]
 
 
 def _fuse_rrf(ranked_lists: Sequence[list], pool: int, k: int = 60) -> list:
