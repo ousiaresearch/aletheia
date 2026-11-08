@@ -76,7 +76,7 @@ be missed when the agent does not think to ask.
 `hermes honcho tokens 1200` caps the injected budget instead, trading completeness for size — but
 stale material still enters. Weaker fix.
 
-## Requirements this imposes on Weft
+## Requirements this imposes on Aletheia
 
 1. **Relevance filtering must precede injection.** Context is selected against the present query,
    not appended unconditionally. A memory system that injects its entire accumulated state every
@@ -87,7 +87,7 @@ stale material still enters. Weaker fix.
    service, "reducing memory" must address every layer, and the system should report which layers
    were affected.
 4. **Injection must be explainable and auditable.** Every injected item should be attributable —
-   which scope, which source, why included. Weft's RecallReceipt requirement covers this.
+   which scope, which source, why included. Aletheia's RecallReceipt requirement covers this.
 5. **Automatic and on-demand recall are both legitimate, but must be scoped.** Default to a
    small, always-eligible set (identity, standing preferences, current active project) rather than
    the whole archive.
@@ -140,7 +140,7 @@ Convention Letters`. ACS material is not merely recalled — it has been **writt
 identity layer**.
 
 **Consequence:** a scope gate at retrieval time does not remediate contamination already persisted
-in derived artifacts. Weft must address both:
+in derived artifacts. Aletheia must address both:
 - Gate at injection/recall (prevent new contamination).
 - Provenance and scope on derived artifacts, plus an explicit remediation path for existing
   contaminated state (tagging, re-derivation, or deletion — with lineage retained where policy
@@ -220,7 +220,7 @@ host, which is selected only for the *default* profile, not for `arien`. The rea
 workspace divergence shown above. The underlying concern — config resolution being runtime-dependent —
 stands and is unchanged.)*
 
-**Requirement added to Weft:** configuration resolution must be deterministic and reported. The
+**Requirement added to Aletheia:** configuration resolution must be deterministic and reported. The
 system must state which config, which peer, and which workspace served a given recall — not leave it
 to `$HERMES_HOME` resolution at runtime. Ambiguous or conflicting host definitions must fail closed,
 not silently pick a winner.

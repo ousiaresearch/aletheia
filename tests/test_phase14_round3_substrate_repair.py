@@ -13,10 +13,10 @@ import sqlite3
 
 import pytest
 
-from weft.knowledge import KnowledgeRefusal
-from weft.procedural import deprecate_rule, promote_rule, reject_rule
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import (SCHEMA_VERSION, Record, SchemaViolation, ScopeViolation,
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.procedural import deprecate_rule, promote_rule, reject_rule
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import (SCHEMA_VERSION, Record, SchemaViolation, ScopeViolation,
                             Substrate)
 
 

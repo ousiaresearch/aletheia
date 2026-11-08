@@ -1,4 +1,4 @@
-"""Benchmark harness for Weft memory recall.
+"""Benchmark harness for Aletheia memory recall.
 
 Loads gold datasets from benchmarks/datasets/, runs recall on a fresh substrate
 per case, and reports recall@k, MRR, abstention accuracy, and latency.
@@ -12,9 +12,9 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 BENCH_DIR = Path(__file__).resolve().parents[1] / "benchmarks"
 DATASET_DIR = BENCH_DIR / "datasets"
@@ -67,7 +67,7 @@ def _load_dataset(name: str) -> list[Case]:
 
 
 def _map_record_type(raw_type: str) -> tuple[str, str, str]:
-    """Map dataset record type to valid Weft type, attribution, and status."""
+    """Map dataset record type to valid Aletheia type, attribution, and status."""
     mapping = {
         "Observation": ("Source", "document", "stated"),
         "Document": ("Source", "document", "stated"),
@@ -105,7 +105,7 @@ def _insert_records(sub: Substrate, ctx: ScopeContext, records: list[dict]) -> N
 
 def _run_case(case: Case, embedder=None) -> Result:
     engine = ScopeEngine(known_scopes=KNOWN)
-    with tempfile.TemporaryDirectory(prefix="weft-bench-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="aletheia-bench-") as tmp:
         db_path = Path(tmp) / f"{case.case_id}.db"
         sub = Substrate(db_path, engine)
         ctx = ScopeContext(granted_scopes=KNOWN, user_authored=True)

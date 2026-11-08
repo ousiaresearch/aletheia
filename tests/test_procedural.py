@@ -5,8 +5,8 @@ import time
 
 import pytest
 
-from weft.knowledge import KnowledgeRefusal
-from weft.procedural import (
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.procedural import (
     STATUS_ACTIVE,
     STATUS_PROPOSED,
     STATUS_REJECTED,
@@ -17,14 +17,14 @@ from weft.procedural import (
     reject_rule,
     deprecate_rule,
 )
-from weft.scope import ScopeContext
-from weft.substrate import Record, Substrate
+from aletheia.scope import ScopeContext
+from aletheia.substrate import Record, Substrate
 
 
 @pytest.fixture()
 def substrate(tmp_path):
     engine = None  # minimal stub: ScopeEngine not needed for these tests
-    from weft.scope import ScopeEngine
+    from aletheia.scope import ScopeEngine
     engine = ScopeEngine(known_scopes={"test"})
     sub = Substrate(str(tmp_path / "test.db"), engine)
     ctx = ScopeContext(granted_scopes=frozenset({"test"}), user_authored=True)
@@ -170,5 +170,5 @@ def test_promote_rule_via_source_ids(substrate):
 # ---------------------------------------------------------------------------
 
 def __rule(rid: str, scope: str, name: str) -> "ProposedRule":
-    from weft.procedural import ProposedRule, STATUS_DEPRECATED
+    from aletheia.procedural import ProposedRule, STATUS_DEPRECATED
     return ProposedRule(rule_id=rid, scope=scope, name=name, description=name)

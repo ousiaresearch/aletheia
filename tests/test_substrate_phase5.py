@@ -1,7 +1,7 @@
 import pytest
 import time
-from weft.substrate import Substrate, Record
-from weft.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Substrate, Record
+from aletheia.scope import ScopeContext, ScopeEngine
 
 KNOWN = {"s", "s1", "s2"}
 

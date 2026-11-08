@@ -2,10 +2,10 @@
 
 import pytest
 
-from weft.ingest import Ingestor
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Substrate
+from aletheia.ingest import Ingestor
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Substrate
 
 KNOWN = {"acs-project", "memory-providers"}
 USER = ScopeContext(granted_scopes=frozenset(KNOWN), user_authored=True, actor="johann")
@@ -14,7 +14,7 @@ MEM = ScopeContext(granted_scopes=frozenset({"memory-providers"}), actor="arien"
 
 @pytest.fixture
 def sub(tmp_path):
-    s = Substrate(tmp_path / "weft.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers={}))
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers={}))
     yield s
     s.close()
 

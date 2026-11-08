@@ -2,13 +2,13 @@ import sqlite3
 
 import pytest
 
-from weft.entity_link import link_entities
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.entity_link import link_entities
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 
 def setup_store(tmp_path):
-    path = tmp_path / 'weft.db'
+    path = tmp_path / 'aletheia.db'
     sub = Substrate(str(path), ScopeEngine(known_scopes={'a', 'b'}))
     ctx = ScopeContext(granted_scopes={'a', 'b'}, user_authored=True)
     return path, sub, ctx
@@ -42,7 +42,7 @@ def test_link_failure_rolls_back_all_links(tmp_path):
 
 
 def test_weak_confident_claim_does_not_outrank_strong_source(tmp_path):
-    from weft.retrieval import recall
+    from aletheia.retrieval import recall
     _, sub, ctx = setup_store(tmp_path)
     sub.put(Record('strong', 'Source', 'a', {'text': 'Zanzibar harbor Zanzibar harbor Zanzibar harbor'}, attribution='user'), ctx)
     sub.put(Record('weak', 'Claim', 'a', {'text': 'harbor', 'confidence': 1000000000}, epistemic_status='derived', source_ids=['strong'], attribution='agent'), ctx)
@@ -53,8 +53,8 @@ def test_weak_confident_claim_does_not_outrank_strong_source(tmp_path):
 
 
 def test_distant_boosts_cannot_overtake_strongest_and_receipt_tier_is_selected(tmp_path, monkeypatch):
-    import weft.retrieval as retrieval
-    import weft.temporal as temporal
+    import aletheia.retrieval as retrieval
+    import aletheia.temporal as temporal
     _, sub, ctx = setup_store(tmp_path)
     for i in range(6):
         sub.put(Record(f'r{i}', 'Source', 'a', {'text': ('needle ' * (8-i)) + ('x' * 450 + ' needle' if i == 5 else '')}, attribution='user'), ctx)

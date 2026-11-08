@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 
 def run(cmd: str, check: bool = True) -> str:
     print(f"[setup] {cmd}", flush=True)
@@ -23,7 +23,7 @@ def run(cmd: str, check: bool = True) -> str:
     return out
 
 if not REPO.exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, str(REPO))
 
@@ -94,4 +94,4 @@ for name, runner in suites:
     print(f"[checkpoint] Saved after {name}", flush=True)
 
 (REPO / "benchmarks" / "hybrid-results.json").write_text(json.dumps(results, indent=2) + "\n")
-print("\n[Done] All suites complete. Artifacts in /content/weft/benchmarks/", flush=True)
+print("\n[Done] All suites complete. Artifacts in /content/aletheia/benchmarks/", flush=True)

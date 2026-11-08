@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build release artifacts for Weft alpha.
+# Build release artifacts for Aletheia alpha.
 # Requires: python3.11+, pip, build
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,8 +9,8 @@ REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_DIR}"
 
 # Prefer an explicit Python >= 3.11; fail clearly if none is available.
-if [ -n "${WEFT_PYTHON:-}" ]; then
-  PYTHON_BIN="${WEFT_PYTHON}"
+if [ -n "${ALETHEIA_PYTHON:-}" ]; then
+  PYTHON_BIN="${ALETHEIA_PYTHON}"
 else
   for candidate in python3.11 python3.12 python3.13 python3; do
     if command -v "${candidate}" >/dev/null 2>&1; then
@@ -29,7 +29,7 @@ PY_VER="$("${PYTHON_BIN}" -c 'import sys; print(".".join(map(str, sys.version_in
 PY_MAJOR="$("${PYTHON_BIN}" -c 'import sys; print(sys.version_info.major)')"
 PY_MINOR="$("${PYTHON_BIN}" -c 'import sys; print(sys.version_info.minor)')"
 if [ "${PY_MAJOR}" -lt 3 ] || [ "${PY_MAJOR}" -eq 3 -a "${PY_MINOR}" -lt 11 ]; then
-  echo "Error: ${PYTHON_BIN} is ${PY_VER}, but Weft requires Python >= 3.11" >&2
+  echo "Error: ${PYTHON_BIN} is ${PY_VER}, but Aletheia requires Python >= 3.11" >&2
   exit 1
 fi
 
@@ -98,13 +98,13 @@ if [ "${METADATA_CHECK}" -ne 1 ]; then
 fi
 
 echo "==> Installing wheel in fresh venv"
-VERIFY_VENV="$(mktemp -d -t weft-alpha-verify-XXXXXXXXXX)"
+VERIFY_VENV="$(mktemp -d -t aletheia-alpha-verify-XXXXXXXXXX)"
 umask 0077
 "${PYTHON_BIN}" -m venv "${VERIFY_VENV}"
 "${VERIFY_VENV}/bin/python" -m pip install --quiet dist/*.whl
 
 echo "==> Checking entrypoint"
-"${VERIFY_VENV}/bin/weft" --help >/dev/null
-"${VERIFY_VENV}/bin/weft" --db /tmp/weft-alpha-test.db serve --help >/dev/null
+"${VERIFY_VENV}/bin/aletheia" --help >/dev/null
+"${VERIFY_VENV}/bin/aletheia" --db /tmp/aletheia-alpha-test.db serve --help >/dev/null
 
 echo "==> Done. Artifacts in dist/"

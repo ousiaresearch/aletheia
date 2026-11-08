@@ -1,6 +1,6 @@
 # Phase 7 — Gated Cutover Checklist
 
-**Plan:** `~/.hermes/plans/2026-10-24_weft-memory-system-full-plan.md`
+**Plan:** `~/.hermes/plans/2026-10-24_aletheia-system-full-plan.md`
 **Current HEAD:** `e88dff4` (Phase 7 checklist updated; provenance completed; build verification added)
 
 ## Gates
@@ -9,7 +9,7 @@ Each gate must be PASS before the next is attempted.
 
 1. **Scoped recall demonstrated**
    - **PASS:** Phases 3–6 implemented tiered retrieval with scope engine, tiered loading, and RecallReceipt.
-   - **Artifacts:** `weft/retrieval.py`, `weft/server.py`, `weft/shadow.py`, tests/test_server.py shadow tests.
+   - **Artifacts:** `aletheia/retrieval.py`, `aletheia/server.py`, `aletheia/shadow.py`, tests/test_server.py shadow tests.
    - **Evidence:** 429 passing tests, including shadow recall/reason/compare.
 
 2. **Grounded reasoning measured**
@@ -29,7 +29,7 @@ Each gate must be PASS before the next is attempted.
 
 5. **License inventory complete**
    - **PASS:** AGPL LICENSE file present. `docs/research/license-verification.md` exists and covers inspected components.
-   - **Residual:** au-host and UI SDKs unresolved. Not in Weft distribution scope.
+   - **Residual:** au-host and UI SDKs unresolved. Not in Aletheia distribution scope.
    - **Note:** Engineering-level verification only. Legal review before distribution.
 
 6. **Resource limits documented**

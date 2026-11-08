@@ -1,7 +1,7 @@
 import copy
 import pytest
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate, SCHEMA_VERSION, SchemaViolation, ScopeViolation
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate, SCHEMA_VERSION, SchemaViolation, ScopeViolation
 
 @pytest.fixture
 def store(tmp_path):
@@ -28,8 +28,8 @@ def test_safe_record_validation(store,path,field,value):
 
 
 def test_old_approval_cannot_promote_recreated_proposal(store):
-    from weft.procedural import promote_rule
-    from weft.knowledge import KnowledgeRefusal
+    from aletheia.procedural import promote_rule
+    from aletheia.knowledge import KnowledgeRefusal
     sub, ctx = store
     rule = Record(record_id="rule", record_type="ProposedRule", scope="a", payload={"status":"proposed", "description":"original"}, attribution="agent")
     sub.put(rule, ctx)
@@ -51,8 +51,8 @@ def test_rejected_import_rolls_back_whole_bundle(store):
 
 
 def test_imported_approval_cannot_inherit_prior_binding(store):
-    from weft.procedural import promote_rule
-    from weft.knowledge import KnowledgeRefusal
+    from aletheia.procedural import promote_rule
+    from aletheia.knowledge import KnowledgeRefusal
     sub, ctx = store
     rule = Record(record_id="rule", record_type="ProposedRule", scope="a", payload={"status":"proposed"}, attribution="agent")
     sub.put(rule, ctx)
@@ -105,8 +105,8 @@ def test_rule_correction_remains_withdrawn_after_correction_deleted(store):
     sub.put(Record(record_id="approval", record_type="Decision", scope="a", payload={"rule_id":"rule"}, attribution="user"),ctx)
     sub.correct("rule",Record(record_id="correction", record_type="Correction", scope="a", payload={"text":"withdrawn"}, attribution="user"),ctx)
     assert sub.delete("correction",ctx)
-    from weft.procedural import promote_rule
-    from weft.knowledge import KnowledgeRefusal
+    from aletheia.procedural import promote_rule
+    from aletheia.knowledge import KnowledgeRefusal
     with pytest.raises((KnowledgeRefusal, ScopeViolation)): promote_rule(sub,ctx,"rule")
 
 

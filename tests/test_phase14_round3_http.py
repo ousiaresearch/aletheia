@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from weft import server_common
-from weft.mcp_server import app as tool_app
-from weft.server import app as full_app
-from weft.shadow import _append  # noqa: F401
+from aletheia import server_common
+from aletheia.mcp_server import app as tool_app
+from aletheia.server import app as full_app
+from aletheia.shadow import _append  # noqa: F401
 
 ROOT = Path(__file__).resolve().parents[1]
 KEY = "round3-key"
@@ -19,9 +19,9 @@ KEY = "round3-key"
 
 @pytest.fixture
 def env(tmp_path, monkeypatch):
-    monkeypatch.setenv("WEFT_API_KEY", KEY)
-    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "a,b")
-    monkeypatch.setenv("WEFT_DB_PATH", str(tmp_path / "s.db"))
+    monkeypatch.setenv("ALETHEIA_API_KEY", KEY)
+    monkeypatch.setenv("ALETHEIA_KNOWN_SCOPES", "a,b")
+    monkeypatch.setenv("ALETHEIA_DB_PATH", str(tmp_path / "s.db"))
     return tmp_path / "s.db"
 
 
@@ -72,9 +72,9 @@ def test_apps_use_shared_middleware_and_compare_digest():
     for app in (full_app, tool_app):
         assert any(m.cls is server_common.AuthMiddleware for m in app.user_middleware)
     for name in ("server.py", "mcp_server.py", "shadow.py"):
-        src = (ROOT / "weft" / name).read_text()
+        src = (ROOT / "aletheia" / name).read_text()
         assert "compare_digest" not in src and "startswith(\"Bearer" not in src
-    assert "compare_digest" in (ROOT / "weft" / "server_common.py").read_text()
+    assert "compare_digest" in (ROOT / "aletheia" / "server_common.py").read_text()
 
 
 def test_auth_401_before_validation_and_invalid_utf8(env):
@@ -88,7 +88,7 @@ def test_auth_401_before_validation_and_invalid_utf8(env):
 
 
 def test_unset_key_fails_closed(env, monkeypatch):
-    monkeypatch.delenv("WEFT_API_KEY")
+    monkeypatch.delenv("ALETHEIA_API_KEY")
     assert TestClient(full_app).get("/health", headers=HDR).status_code == 401
 
 
@@ -107,7 +107,7 @@ def test_stale_fts_index_is_deliberate_503(env):
     db.close()
     r = c.post("/mcp/recall", headers=HDR, json={"scope": "a", "query": "apple"})
     assert r.status_code == 503
-    assert "weft --db <path> rebuild-fts" in r.text
+    assert "aletheia --db <path> rebuild-fts" in r.text
     assert "Traceback" not in r.text and str(env) not in r.text
     # shared by the custom router
     r = c.post("/mcp/call", headers=HDR, json={"tool": "recall", "arguments": {"scope": "a", "query": "apple"}})
@@ -131,14 +131,14 @@ def test_server_extra_has_no_sentence_transformers_and_tests_have_httpx():
 
 
 def test_dead_embedder_loader_removed():
-    import weft.mcp_server as m
+    import aletheia.mcp_server as m
     assert not hasattr(m, "_load_embedder")
 
 
 def test_deployment_doc_covers_r3_10():
     doc = (ROOT / "docs" / "turnkey-deployment.md").read_text()
     low = doc.lower()
-    assert "$WEFT_API_KEY" in doc and "substitute" in low
+    assert "$ALETHEIA_API_KEY" in doc and "substitute" in low
     assert not re.search(r"Bearer \*", doc)
     assert "not fully restorable" in low and "fresh approval" in low
     assert "structured" in low and "affirmative" in low

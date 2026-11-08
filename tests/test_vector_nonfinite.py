@@ -1,9 +1,9 @@
 import pytest
 import sqlite_vec
 
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 
 @pytest.mark.parametrize('bad', [float('nan'), float('inf'), float('-inf'), 1e39, -1e39], ids=['nan', 'positive-infinity', 'negative-infinity', 'float32-overflow', 'negative-float32-overflow'])

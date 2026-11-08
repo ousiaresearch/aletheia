@@ -50,7 +50,7 @@ def test_pinned_constant_matches_the_approved_gold_set():
 
 
 def test_bge_checkpoints_have_distinct_model_ids():
-    from weft.adapters import BgeM3Embedder
+    from aletheia.adapters import BgeM3Embedder
     a = BgeM3Embedder("/x/models--mlx-community--bge-m3-mlx-4bit/snapshots/0a93c12b0684953bdaed14865dc270bb1894a749")
     b = BgeM3Embedder("/x/models--mlx-community--bge-m3-mlx-8bit/snapshots/7eca4a1c6ea1a0c5efc37598b369012f3985910f")
     assert a.model_id != b.model_id

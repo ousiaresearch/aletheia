@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-import weft.retrieval as retrieval
-import weft.temporal as temporal
-from weft import cli
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+import aletheia.retrieval as retrieval
+import aletheia.temporal as temporal
+from aletheia import cli
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -92,7 +92,7 @@ def test_lexical_mode_equal_bm25_still_tied(tmp_path, monkeypatch):
 # ---- rebuild command order ---------------------------------------------
 
 def _documented_commands(text):
-    return re.findall(r"`(weft [^`]*rebuild-fts[^`]*)`", text)
+    return re.findall(r"`(aletheia [^`]*rebuild-fts[^`]*)`", text)
 
 
 def test_documented_rebuild_commands_parse_with_real_parser():
@@ -100,19 +100,19 @@ def test_documented_rebuild_commands_parse_with_real_parser():
     cmds = _documented_commands(doc)
     assert cmds
     for c in cmds:
-        assert c.startswith("weft --db <path> rebuild-fts --scope "), c
+        assert c.startswith("aletheia --db <path> rebuild-fts --scope "), c
         argv = shlex.split(c)[1:]
         ns = cli._parser().parse_args(argv)
         assert ns.command == "rebuild-fts" and ns.db == "<path>"
-    for c in ("weft --db <path> reembed --scope <scope>",):
+    for c in ("aletheia --db <path> reembed --scope <scope>",):
         assert c in doc
 
 
 def test_503_message_command_parses(tmp_path):
-    import inspect, weft.mcp_server as m
+    import inspect, aletheia.mcp_server as m
     src = inspect.getsource(m)
     assert "rebuild-fts --db" not in src
-    assert "weft --db <path> rebuild-fts --scope" in src
+    assert "aletheia --db <path> rebuild-fts --scope" in src
     cli._parser().parse_args(["--db", "<path>", "rebuild-fts", "--scope", "s"])
 
 
@@ -124,39 +124,39 @@ def test_readme_and_docs_have_no_invalid_order():
 # ---- serve --db ---------------------------------------------------------
 
 def test_serve_sets_db_path_env(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("WEFT_DB_PATH", "x"); monkeypatch.delenv("WEFT_DB_PATH")
-    monkeypatch.setenv("WEFT_API_KEY", "k")
-    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "a")
+    monkeypatch.setenv("ALETHEIA_DB_PATH", "x"); monkeypatch.delenv("ALETHEIA_DB_PATH")
+    monkeypatch.setenv("ALETHEIA_API_KEY", "k")
+    monkeypatch.setenv("ALETHEIA_KNOWN_SCOPES", "a")
     args = cli._parser().parse_args(["--db", str(tmp_path / "x.db"), "serve"])
     cli._prepare_serve_env(args)
-    assert os.environ["WEFT_DB_PATH"] == str(tmp_path / "x.db")
+    assert os.environ["ALETHEIA_DB_PATH"] == str(tmp_path / "x.db")
     assert capsys.readouterr().err == ""
 
 
 def test_serve_warns_on_conflicting_db(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("WEFT_DB_PATH", str(tmp_path / "env.db"))
-    monkeypatch.setenv("WEFT_API_KEY", "k")
-    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "a")
+    monkeypatch.setenv("ALETHEIA_DB_PATH", str(tmp_path / "env.db"))
+    monkeypatch.setenv("ALETHEIA_API_KEY", "k")
+    monkeypatch.setenv("ALETHEIA_KNOWN_SCOPES", "a")
     args = cli._parser().parse_args(["--db", str(tmp_path / "x.db"), "serve"])
     cli._prepare_serve_env(args)
-    assert os.environ["WEFT_DB_PATH"] == str(tmp_path / "env.db")
-    assert "WEFT_DB_PATH" in capsys.readouterr().err
+    assert os.environ["ALETHEIA_DB_PATH"] == str(tmp_path / "env.db")
+    assert "ALETHEIA_DB_PATH" in capsys.readouterr().err
 
 
 def test_serve_warns_when_unconfigured_without_secrets(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("WEFT_DB_PATH", "x"); monkeypatch.delenv("WEFT_DB_PATH")
-    monkeypatch.delenv("WEFT_API_KEY", raising=False)
-    monkeypatch.delenv("WEFT_KNOWN_SCOPES", raising=False)
+    monkeypatch.setenv("ALETHEIA_DB_PATH", "x"); monkeypatch.delenv("ALETHEIA_DB_PATH")
+    monkeypatch.delenv("ALETHEIA_API_KEY", raising=False)
+    monkeypatch.delenv("ALETHEIA_KNOWN_SCOPES", raising=False)
     args = cli._parser().parse_args(["--db", str(tmp_path / "x.db"), "serve"])
     cli._prepare_serve_env(args)
     err = capsys.readouterr().err
-    assert "WEFT_API_KEY" in err and "WEFT_KNOWN_SCOPES" in err
+    assert "ALETHEIA_API_KEY" in err and "ALETHEIA_KNOWN_SCOPES" in err
 
 
 def test_serve_does_not_print_key(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("WEFT_DB_PATH", "x"); monkeypatch.delenv("WEFT_DB_PATH")
-    monkeypatch.setenv("WEFT_API_KEY", "supersecretvalue")
-    monkeypatch.delenv("WEFT_KNOWN_SCOPES", raising=False)
+    monkeypatch.setenv("ALETHEIA_DB_PATH", "x"); monkeypatch.delenv("ALETHEIA_DB_PATH")
+    monkeypatch.setenv("ALETHEIA_API_KEY", "supersecretvalue")
+    monkeypatch.delenv("ALETHEIA_KNOWN_SCOPES", raising=False)
     cli._prepare_serve_env(cli._parser().parse_args(["--db", str(tmp_path / "x.db"), "serve"]))
     assert "supersecretvalue" not in capsys.readouterr().err
 

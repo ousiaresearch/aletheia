@@ -4,10 +4,10 @@ Scaling assertions are relative (SQLite VM steps via a progress handler, never w
 """
 import pytest
 
-from weft.procedural import ProposedRule, propose_rule
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate, VEC_DIM
+from aletheia.procedural import ProposedRule, propose_rule
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate, VEC_DIM
 
 
 class Emb:

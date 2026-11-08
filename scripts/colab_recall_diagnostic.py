@@ -2,10 +2,10 @@
 """Recall accuracy diagnostic using a strong judge model.
 
 For each QA pair:
-1. Run Weft recall to get top-10 context chunks
+1. Run Aletheia recall to get top-10 context chunks
 2. Ask a strong model to answer from that context only
 3. Compare to gold answer
-4. Report whether gold answer is retrievable from Weft's current recall
+4. Report whether gold answer is retrievable from Aletheia's current recall
 
 This isolates recall quality from generation quality.
 """
@@ -18,7 +18,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 
 def run(cmd: str, check: bool = True) -> str:
     print(f"[setup] {cmd}", flush=True)
@@ -32,7 +32,7 @@ def run(cmd: str, check: bool = True) -> str:
     return out
 
 if not REPO.exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, str(REPO))
 
@@ -100,8 +100,8 @@ if ans_test.status_code != 200:
 
 from benchmarks.full.locomo import _load_dataset, convert_sample  # noqa: E402
 from benchmarks.full.common import make_engine, make_ctx, create_substrate, run_recall  # noqa: E402
-from weft.scope import ScopeEngine  # noqa: E402
-from weft.extraction import extract_facts, write_claims  # noqa: E402
+from aletheia.scope import ScopeEngine  # noqa: E402
+from aletheia.extraction import extract_facts, write_claims  # noqa: E402
 
 print("\n[diag] Loading LoCoMo dataset...", flush=True)
 ds = _load_dataset()

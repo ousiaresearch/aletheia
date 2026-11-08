@@ -9,9 +9,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Sequence
 
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 BENCH_DIR = Path(__file__).resolve().parents[1]
 FULL_DIR = BENCH_DIR / "full"
@@ -71,7 +71,7 @@ def make_ctx() -> ScopeContext:
 
 def create_substrate(conv_id: str, records: list[Record], engine: ScopeEngine | None = None, embedder=None) -> Substrate:
     engine = engine or make_engine()
-    tmp = tempfile.TemporaryDirectory(prefix=f"weft-full-{conv_id}-")
+    tmp = tempfile.TemporaryDirectory(prefix=f"aletheia-full-{conv_id}-")
     db_path = Path(tmp.name) / f"{conv_id}.db"
     sub = Substrate(db_path, engine)
     ctx = make_ctx()
@@ -79,7 +79,7 @@ def create_substrate(conv_id: str, records: list[Record], engine: ScopeEngine | 
         sub.put(rec, ctx)
     # P2: apply temporal metadata (date extraction) to all records
     try:
-        from weft.temporal import apply_temporal_metadata
+        from aletheia.temporal import apply_temporal_metadata
         updated = [apply_temporal_metadata(r) for r in records]
         for rec in updated:
             sub.put(rec, ctx, overwrite=True)
@@ -104,7 +104,7 @@ def create_substrate(conv_id: str, records: list[Record], engine: ScopeEngine | 
     except Exception:
         pass
     try:
-        from weft.entity_link import link_entities
+        from aletheia.entity_link import link_entities
         link_entities(sub, ctx, "benchmark", limit=500)
     except Exception:
         pass

@@ -1,7 +1,7 @@
 import pytest
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate, VEC_DIM
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate, VEC_DIM
 
 
 def record(rid, scope='a', text='visible needle'):

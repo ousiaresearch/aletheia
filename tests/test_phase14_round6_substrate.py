@@ -10,12 +10,12 @@ import sqlite3
 
 import pytest
 
-from weft import cli, temporal
-from weft.knowledge import KnowledgeRefusal
-from weft.procedural import list_active_rules, promote_rule
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import (SCHEMA_VERSION, VEC_DIM, Record, Substrate, ScopeViolation)
+from aletheia import cli, temporal
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.procedural import list_active_rules, promote_rule
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import (SCHEMA_VERSION, VEC_DIM, Record, Substrate, ScopeViolation)
 
 MODEL = 'm@1'
 VEC = [1.0] + [0.0] * (VEC_DIM - 1)

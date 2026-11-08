@@ -20,11 +20,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from weft.adapters import HarrierEmbedder  # noqa: E402
-from weft.ingest import Ingestor  # noqa: E402
-from weft.retrieval import recall  # noqa: E402
-from weft.scope import ScopeContext, ScopeEngine  # noqa: E402
-from weft.substrate import Substrate  # noqa: E402
+from aletheia.adapters import HarrierEmbedder  # noqa: E402
+from aletheia.ingest import Ingestor  # noqa: E402
+from aletheia.retrieval import recall  # noqa: E402
+from aletheia.scope import ScopeContext, ScopeEngine  # noqa: E402
+from aletheia.substrate import Substrate  # noqa: E402
 
 VAULT = Path(os.path.expanduser("~/Documents/Obsidian Vault/Arien"))
 SCRATCH = Path(os.path.expanduser("~/.hermes/profiles/arien/cache/scratch"))
@@ -96,13 +96,13 @@ def gold_is_approved(gold: dict) -> bool:
 
 def make_embedder():
     if EMBEDDER in ("bge", "bge-fp16", "bge-8bit"):
-        from weft.adapters import BgeM3Embedder
+        from aletheia.adapters import BgeM3Embedder
         repo = {"bge": "bge-m3-mlx-4bit", "bge-fp16": "bge-m3-mlx-fp16", "bge-8bit": "bge-m3-mlx-8bit"}[EMBEDDER]
         model = glob.glob(os.path.expanduser(
             f"~/.cache/huggingface/hub/models--mlx-community--{repo}/snapshots/*"))[0]
         return BgeM3Embedder(model)
     if EMBEDDER == "qwen3":
-        from weft.adapters import Qwen3Embedder
+        from aletheia.adapters import Qwen3Embedder
         model = glob.glob(os.path.expanduser(
             "~/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B/snapshots/*"))[0]
         return Qwen3Embedder(model)

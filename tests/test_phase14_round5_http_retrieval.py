@@ -5,9 +5,9 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette.requests import Request
 
-from weft import server_common
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia import server_common
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 ROOT = Path(__file__).resolve().parents[1]
 KEY = "round5-key"
@@ -23,7 +23,7 @@ def _store(tmp_path):
 # ---- (a) ranking -----------------------------------------------------------
 
 def test_stemmed_bm25_difference_is_not_a_tie_for_temporal_payload(tmp_path):
-    from weft.retrieval import recall
+    from aletheia.retrieval import recall
     sub, ctx = _store(tmp_path)
     # Raw-token profiles are identical (no exact 'harbor'), but porter-stemmed BM25 differs.
     sub.put(Record("strong", "Source", "a", {"text": "harbors harbors"}, attribution="user"), ctx)
@@ -37,7 +37,7 @@ def test_stemmed_bm25_difference_is_not_a_tie_for_temporal_payload(tmp_path):
 
 
 def test_stemmed_bm25_difference_is_not_a_tie_for_claim_confidence(tmp_path):
-    from weft.retrieval import recall
+    from aletheia.retrieval import recall
     sub, ctx = _store(tmp_path)
     sub.put(Record("s1", "Source", "a", {"text": "origin"}, attribution="user"), ctx)
     sub.put(Record("strong", "Claim", "a", {"text": "harbors harbors", "confidence": 0.1},
@@ -49,7 +49,7 @@ def test_stemmed_bm25_difference_is_not_a_tie_for_claim_confidence(tmp_path):
 
 
 def test_true_tie_still_reorders_by_confidence(tmp_path):
-    from weft.retrieval import recall
+    from aletheia.retrieval import recall
     sub, ctx = _store(tmp_path)
     sub.put(Record("s1", "Source", "a", {"text": "origin"}, attribution="user"), ctx)
     # Identical text => identical BM25; ids order low first, confidence must win the tie.
@@ -62,7 +62,7 @@ def test_true_tie_still_reorders_by_confidence(tmp_path):
 
 
 def test_ranker_does_not_use_payload_text_token_counts(tmp_path, monkeypatch):
-    import weft.retrieval as retrieval
+    import aletheia.retrieval as retrieval
     assert not hasattr(retrieval, "_lexical_profile")
 
 
@@ -70,23 +70,23 @@ def test_ranker_does_not_use_payload_text_token_counts(tmp_path, monkeypatch):
 
 @pytest.fixture
 def env(tmp_path, monkeypatch):
-    monkeypatch.setenv("WEFT_API_KEY", KEY)
-    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "a,b")
-    monkeypatch.setenv("WEFT_DB_PATH", str(tmp_path / "s.db"))
+    monkeypatch.setenv("ALETHEIA_API_KEY", KEY)
+    monkeypatch.setenv("ALETHEIA_KNOWN_SCOPES", "a,b")
+    monkeypatch.setenv("ALETHEIA_DB_PATH", str(tmp_path / "s.db"))
     return tmp_path / "s.db"
 
 
 @pytest.mark.parametrize("module,method,path,body", [
-    ("weft.mcp_server", "post", "/mcp/status", {"scope": "a"}),
-    ("weft.mcp_server", "post", "/mcp/recall", {"scope": "a", "query": "x"}),
-    ("weft.server", "post", "/query", {"scope": "a", "query": "x"}),
-    ("weft.server", "post", "/export", {"scope": "a"}),
-    ("weft.shadow", "post", "/shadow/recall", {"scope": "a", "query": "x"}),
-    ("weft.shadow", "post", "/shadow/compare", {"scope": "a", "query": "x"}),
+    ("aletheia.mcp_server", "post", "/mcp/status", {"scope": "a"}),
+    ("aletheia.mcp_server", "post", "/mcp/recall", {"scope": "a", "query": "x"}),
+    ("aletheia.server", "post", "/query", {"scope": "a", "query": "x"}),
+    ("aletheia.server", "post", "/export", {"scope": "a"}),
+    ("aletheia.shadow", "post", "/shadow/recall", {"scope": "a", "query": "x"}),
+    ("aletheia.shadow", "post", "/shadow/compare", {"scope": "a", "query": "x"}),
 ])
 def test_request_engine_has_full_known_scopes_but_grants_only_requested(env, monkeypatch, module, method, path, body):
     import importlib
-    from weft.server import app
+    from aletheia.server import app
     mod = importlib.import_module(module)
     real = Substrate
     seen = []
@@ -106,7 +106,7 @@ def test_request_engine_has_full_known_scopes_but_grants_only_requested(env, mon
 
 def test_503_names_full_rebuild_command_for_requested_scope(env):
     import sqlite3
-    c = TestClient(__import__("weft.server", fromlist=["app"]).app, raise_server_exceptions=False)
+    c = TestClient(__import__("aletheia.server", fromlist=["app"]).app, raise_server_exceptions=False)
     r = c.post("/mcp/ingest", headers=HDR, json={"scope": "b", "records": [
         {"record_id": "r1", "payload": {"text": "alpha apple"}}]})
     assert r.status_code == 200, r.text
@@ -116,7 +116,7 @@ def test_503_names_full_rebuild_command_for_requested_scope(env):
     db.close()
     r = c.post("/mcp/recall", headers=HDR, json={"scope": "b", "query": "apple"})
     assert r.status_code == 503
-    assert "weft --db <path> rebuild-fts --scope b" in r.text
+    assert "aletheia --db <path> rebuild-fts --scope b" in r.text
     assert str(env) not in r.text
 
 
@@ -128,7 +128,7 @@ def _req(raw: bytes) -> Request:
 
 @pytest.mark.parametrize("key", ["pässwörd-ключ", "plain-ascii"])
 def test_non_ascii_key_authenticates_in_both_paths(monkeypatch, key):
-    monkeypatch.setenv("WEFT_API_KEY", key)
+    monkeypatch.setenv("ALETHEIA_API_KEY", key)
     raw = b"Bearer " + key.encode("utf-8")
     assert server_common.check_bearer(raw) is None
     server_common.require_api_key(_req(raw))  # must not raise
@@ -136,7 +136,7 @@ def test_non_ascii_key_authenticates_in_both_paths(monkeypatch, key):
 
 def test_wrong_and_invalid_utf8_rejected_in_both_paths(monkeypatch):
     from fastapi import HTTPException
-    monkeypatch.setenv("WEFT_API_KEY", "pässwörd")
+    monkeypatch.setenv("ALETHEIA_API_KEY", "pässwörd")
     for raw in (b"Bearer p\xe4ssw\xf6rd", b"Bearer \xff\xfe", b"Bearer wrong", b"Basic x", b""):
         assert server_common.check_bearer(raw)[0] == 401
         with pytest.raises(HTTPException) as exc:
@@ -145,8 +145,8 @@ def test_wrong_and_invalid_utf8_rejected_in_both_paths(monkeypatch):
 
 
 def test_non_ascii_key_over_asgi(env, monkeypatch):
-    monkeypatch.setenv("WEFT_API_KEY", "pässwörd")
-    from weft.server import app
+    monkeypatch.setenv("ALETHEIA_API_KEY", "pässwörd")
+    from aletheia.server import app
     c = TestClient(app)
     ok = c.get("/health", headers=[(b"authorization", "Bearer pässwörd".encode("utf-8"))])
     assert ok.status_code == 200
@@ -155,7 +155,7 @@ def test_non_ascii_key_over_asgi(env, monkeypatch):
 
 
 def test_401_before_validation(env):
-    from weft.server import app
+    from aletheia.server import app
     r = TestClient(app).post("/mcp/recall", json={"scope": 5, "limit": "x"})
     assert r.status_code == 401
 
@@ -167,5 +167,5 @@ def test_docs_measured_numbers_and_full_command():
     assert "15 s at 5,000" not in doc
     for needle in ("0.03 s", "0.17 s", "0.51 s", "3.1 s", "3.53", "3.40"):
         assert needle in doc
-    assert "weft --db <path> rebuild-fts --scope <scope>" in doc
+    assert "aletheia --db <path> rebuild-fts --scope <scope>" in doc
     assert "orphan" in doc.lower()

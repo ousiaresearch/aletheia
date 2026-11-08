@@ -3,7 +3,7 @@
 ## Prerequisites
 
 1. Create a PyPI account at https://pypi.org
-2. In account settings, create an API token with `project:write` scope for `weft-memory`.
+2. In account settings, create an API token with `project:write` scope for `aletheia`.
 3. Store the token securely. Never commit it to source or logs.
 
 ## Build
@@ -12,7 +12,7 @@
 bash scripts/build-release.sh
 ```
 
-This produces `dist/weft_memory-0.1.0a0-py3-none-any.whl` and verifies install + entrypoint in a fresh venv.
+This produces `dist/aletheia-0.1.0a0-py3-none-any.whl` and verifies install + entrypoint in a fresh venv.
 
 ## Upload (twine)
 
@@ -26,8 +26,8 @@ Enter the API token when prompted.
 ## Verification
 
 ```bash
-python3 -m pip install weft-memory==0.1.0a0
-weft --help
+python3 -m pip install aletheia==0.1.0a0
+aletheia --help
 ```
 
 ## Rollback
@@ -38,4 +38,4 @@ If a bad release is published, yank the file on PyPI and release a new patch ver
 
 - AGPL-3.0 license is declared in pyproject.toml.
 - Wheel is platform-independent (`py3-none-any`).
-- Optional extras: `weft-memory[server]`, `weft-memory[local-embedding]`.
+- Optional extras: `aletheia[server]`, `aletheia[local-embedding]`.

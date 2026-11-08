@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from weft import adapters
+from aletheia import adapters
 
 
 def test_failed_audio_conversion_removes_input_and_output_temporary_files(tmp_path, monkeypatch):

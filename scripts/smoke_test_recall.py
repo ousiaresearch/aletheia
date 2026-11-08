@@ -13,12 +13,12 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/Users/johannross/workspace/weft")
+REPO = Path("/Users/johannross/workspace/aletheia")
 sys.path.insert(0, str(REPO))
 
 from benchmarks.full.locomo import _load_dataset, convert_sample
 from benchmarks.full.common import make_engine, make_ctx, create_substrate, run_recall
-from weft.scope import ScopeEngine
+from aletheia.scope import ScopeEngine
 
 # Local embedder wrapper for smoke test
 try:

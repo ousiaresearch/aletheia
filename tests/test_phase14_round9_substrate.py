@@ -19,10 +19,10 @@ from pathlib import Path
 
 import pytest
 
-from weft.knowledge import KnowledgeRefusal
-from weft.procedural import promote_rule
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, ScopeViolation, Substrate, SubstrateError
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.procedural import promote_rule
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, ScopeViolation, Substrate, SubstrateError
 
 from tests.test_phase14_round7_substrate import build_v6
 
@@ -90,7 +90,7 @@ def test_delete_with_reader_sets_pending_then_complete_scrub_cleans(tmp_path, ca
         seed_filler(s, u)
         s.put(rec('doc1', payload={'text': f'{SENT} zorptangleworth'}), u)
         reader = hold_reader(db)
-        with caplog.at_level(logging.WARNING, logger='weft.substrate'):
+        with caplog.at_level(logging.WARNING, logger='aletheia.substrate'):
             assert s.delete('doc1', u) is True
         assert s.last_scrub_complete is False
         assert s.scrub_pending() is True

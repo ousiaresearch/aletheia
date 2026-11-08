@@ -1,17 +1,17 @@
-# Weft Provider Architecture: Adapters, Not Bundled Models
+# Aletheia Provider Architecture: Adapters, Not Bundled Models
 
 **Status:** Decision (user, Oct 24): "We simply suggest to users options, and build the implementations for it."
-**Supersedes:** the implicit assumption in `model-selection-2026-10.md` and `alpha-formats-models-retrieval.md` that Weft would distribute or depend on specific model weights.
+**Supersedes:** the implicit assumption in `model-selection-2026-10.md` and `alpha-formats-models-retrieval.md` that Aletheia would distribute or depend on specific model weights.
 
 ---
 
 ## 1. Principle
 
-Weft ships **code and interfaces**. Models are **user choices**.
+Aletheia ships **code and interfaces**. Models are **user choices**.
 
-- Weft defines a small set of **task interfaces** (embed, transcribe, describe, OCR, reason).
-- Weft ships **adapters** that implement those interfaces. Each adapter is tested in the release.
-- A model is a **configuration entry** that names an adapter and its parameters. Weft does not ship weights.
+- Aletheia defines a small set of **task interfaces** (embed, transcribe, describe, OCR, reason).
+- Aletheia ships **adapters** that implement those interfaces. Each adapter is tested in the release.
+- A model is a **configuration entry** that names an adapter and its parameters. Aletheia does not ship weights.
 - The model catalogue in the docs is a **list of suggestions with evidence**, not a bill of materials.
 
 Consequences:
@@ -19,7 +19,7 @@ Consequences:
 | Area | Effect |
 |---|---|
 | Distribution size | Small. No weights in the package. |
-| Licence exposure | Weft's own code (AGPL) and its library dependencies. Model licences are shown to the user at fetch time, not redistributed by us. |
+| Licence exposure | Aletheia's own code (AGPL) and its library dependencies. Model licences are shown to the user at fetch time, not redistributed by us. |
 | Inventory (design doc §6) | Covers shipped code and dependencies only. Model weights get a separate per-model "terms shown to user" record. |
 | Claims | We claim support only for adapters that pass the conformance suite and the Phase 4 evaluation. Everything else is labelled **experimental** or **untested**. |
 | Defaults | Defaults are recommended configuration in the install guide. Users can change them without code changes. |
@@ -98,12 +98,12 @@ The conformance suite is a **release gate**. A failing adapter is removed from t
 
 ## 6. Model acquisition and consent
 
-Weft does not fetch models silently.
+Aletheia does not fetch models silently.
 
-1. `weft models list` shows options with status (supported / configurable / untested), size, locality, and licence from the model's own metadata.
-2. `weft models fetch <id>` shows the licence text or its URL, size, source, and expected checksum, and requires confirmation.
-3. Weights are stored in a Weft-managed directory with checksum verification.
-4. Gated models (for example Cohere Transcribe) require the user to accept terms on the provider's site. Weft does not accept terms on the user's behalf, and does not store provider tokens outside the profile-scoped credential store.
+1. `aletheia models list` shows options with status (supported / configurable / untested), size, locality, and licence from the model's own metadata.
+2. `aletheia models fetch <id>` shows the licence text or its URL, size, source, and expected checksum, and requires confirmation.
+3. Weights are stored in a Aletheia-managed directory with checksum verification.
+4. Gated models (for example Cohere Transcribe) require the user to accept terms on the provider's site. Aletheia does not accept terms on the user's behalf, and does not store provider tokens outside the profile-scoped credential store.
 5. Models can be removed. Removing a model removes its weights, and receipts keep the model id and checksum only.
 
 ---
@@ -111,7 +111,7 @@ Weft does not fetch models silently.
 ## 7. Configuration sketch
 
 ```yaml
-# weft.yaml (illustrative)
+# aletheia.yaml (illustrative)
 egress: local_only            # local_only | confirm_external | external_allowed:<tasks>
 tasks:
   embed:
@@ -145,7 +145,7 @@ The startup check fails if a `declared_local` endpoint resolves outside loopback
 | `alpha-formats-models-retrieval.md` §3 | "Model defaults" become "recommended configuration." §6 inventory: model rows move to a per-model "terms shown" list. |
 | `alpha-formats-models-retrieval.md` §2 | Format matrix is unchanged; extractors are shipped code. Where it names a model, read it as a configurable adapter target. |
 | Plan §9.2 | "Model layer" is now the provider-adapter layer with the interfaces in §2 above. |
-| Plan §15 (licensing) | Weft ships no weights. Add "model terms displayed at fetch time" as an obligation. |
+| Plan §15 (licensing) | Aletheia ships no weights. Add "model terms displayed at fetch time" as an obligation. |
 
 ---
 
@@ -166,13 +166,13 @@ Each adapter family may later get proprietary-model support, for example a hoste
 ## 9b. Adapter examples, in plain terms
 
 - **Embedding adapter (OpenAI format).** Sends text to a local server at a configured address, receives vectors, and stores the model name and version with each vector.
-- **Reasoning adapter (two formats).** Same request shape to Weft, translated to either OpenAI or Anthropic wire format. Weft's core only sees a normalized answer with cited evidence IDs and an abstention flag.
+- **Reasoning adapter (two formats).** Same request shape to Aletheia, translated to either OpenAI or Anthropic wire format. Aletheia's core only sees a normalized answer with cited evidence IDs and an abstention flag.
 
 ---
 
 ## 10. Decision record
 
-- Weft ships interfaces and adapters; models are user-selected configuration.
+- Aletheia ships interfaces and adapters; models are user-selected configuration.
 - Support claims apply only to adapters that pass the conformance suite.
-- Model weights are fetched with user consent and are never redistributed by Weft.
+- Model weights are fetched with user consent and are never redistributed by Aletheia.
 - Locality is decided by resolved address, checked by the egress policy, not by a label.

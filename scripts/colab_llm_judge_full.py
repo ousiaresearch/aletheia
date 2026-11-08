@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from threading import Lock
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 
 def run(cmd: str, check: bool = True) -> str:
     print(f"[setup] {cmd}", flush=True)
@@ -29,7 +29,7 @@ def run(cmd: str, check: bool = True) -> str:
     return out
 
 if not REPO.exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, str(REPO))
 
@@ -116,7 +116,7 @@ print("[setup] Loading sentence-transformers embedder...", flush=True)
 from sentence_transformers import SentenceTransformer  # noqa: E402
 
 class STEmbedder:
-    """Wrapper for sentence-transformers to match Weft's embedder interface."""
+    """Wrapper for sentence-transformers to match Aletheia's embedder interface."""
     def __init__(self, model_name: str = "BAAI/bge-m3"):
         self.model = SentenceTransformer(model_name)
         self.model_id = f"sentence-transformers/{model_name}"
@@ -141,8 +141,8 @@ except Exception as e:
 
 from benchmarks.full.locomo import _load_dataset, convert_sample  # noqa: E402
 from benchmarks.full.common import make_engine, make_ctx, create_substrate, run_recall  # noqa: E402
-from weft.scope import ScopeEngine  # noqa: E402
-from weft.extraction import extract_facts, write_claims  # noqa: E402
+from aletheia.scope import ScopeEngine  # noqa: E402
+from aletheia.extraction import extract_facts, write_claims  # noqa: E402
 
 print("\n[run] Loading LoCoMo dataset...", flush=True)
 ds = _load_dataset()

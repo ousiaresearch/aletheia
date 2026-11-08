@@ -9,10 +9,10 @@ import re
 
 import pytest
 
-from weft.ingest import Ingestor
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Substrate
-from weft.substrate import Record
+from aletheia.ingest import Ingestor
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Substrate
+from aletheia.substrate import Record
 
 KNOWN = {"acs-project", "memory-providers"}
 USER = ScopeContext(granted_scopes=frozenset(KNOWN), user_authored=True, actor="johann")
@@ -45,7 +45,7 @@ class OtherModel(FakeEmbedder):
 
 @pytest.fixture
 def sub(tmp_path):
-    s = Substrate(str(tmp_path / "weft.db"), ScopeEngine(KNOWN, {}))
+    s = Substrate(str(tmp_path / "aletheia.db"), ScopeEngine(KNOWN, {}))
     yield s
     s.close()
 

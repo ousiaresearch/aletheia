@@ -1,7 +1,7 @@
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
-from weft.retrieval import recall
-from weft.procedural import ProposedRule, list_active_rules, propose_rule, promote_rule
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
+from aletheia.retrieval import recall
+from aletheia.procedural import ProposedRule, list_active_rules, propose_rule, promote_rule
 
 
 def test_neighbor_expansion_obeys_scope_hint_and_receipt(tmp_path):

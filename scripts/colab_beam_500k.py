@@ -8,7 +8,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, str(REPO))
 

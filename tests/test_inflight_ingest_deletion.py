@@ -1,8 +1,8 @@
 import threading
 
-from weft.ingest import Ingestor
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import RecordConflict, Substrate
+from aletheia.ingest import Ingestor
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import RecordConflict, Substrate
 
 
 def test_inflight_initial_ingest_does_not_recreate_deleted_observation(tmp_path):

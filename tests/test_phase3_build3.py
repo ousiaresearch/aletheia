@@ -7,9 +7,9 @@ ids, state, or counts for acs-project.
 
 import pytest
 
-from weft.ingest import Ingestor
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import ScopeViolation, Substrate
+from aletheia.ingest import Ingestor
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import ScopeViolation, Substrate
 
 KNOWN = {"acs-project", "memory-providers"}
 MARKERS = {"acs-project": {"ACS", "Listening Commonwealth"}}
@@ -19,7 +19,7 @@ MEM = ScopeContext(granted_scopes=frozenset({"memory-providers"}), actor="arien"
 
 @pytest.fixture
 def sub(tmp_path):
-    s = Substrate(tmp_path / "weft.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers=MARKERS))
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers=MARKERS))
     yield s
     s.close()
 

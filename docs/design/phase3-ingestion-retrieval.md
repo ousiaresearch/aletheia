@@ -2,7 +2,7 @@
 
 Status: **specification, not implementation.** Implementation and its review each need an explicit go-ahead, in separate turns, per the phase gate.
 
-Sources: `~/.hermes/plans/2026-10-24_weft-memory-system-full-plan.md` §7 (ingestion), §8 (retrieval), Phase 3 exit list, and §16 open decisions. Inherits Phase 1 (scope gate, residuals R1–R11) and Phase 2 (knowledge rules, residuals R-1–R-6, RESIDUAL-1–4).
+Sources: `~/.hermes/plans/2026-10-24_aletheia-system-full-plan.md` §7 (ingestion), §8 (retrieval), Phase 3 exit list, and §16 open decisions. Inherits Phase 1 (scope gate, residuals R1–R11) and Phase 2 (knowledge rules, residuals R-1–R-6, RESIDUAL-1–4).
 
 ## 1. Scope
 
@@ -110,7 +110,7 @@ echo drafted
 
 ## 9. Build pass 2 (as built)
 
-- Real adapters, both local, no network: `weft/adapters.py`. `QwenVLM` (Qwen3.5-2B-8bit via mlx-vlm, image text and description; chat template applied). `WhisperTranscriber` (ffmpeg to 16 kHz mono WAV, then whisper.cpp large-v3-turbo q5_0). Integration tests run the real models: the VLM reads `WEFT MEMORY TEST 42`; whisper transcribes the smoke clip.
+- Real adapters, both local, no network: `aletheia/adapters.py`. `QwenVLM` (Qwen3.5-2B-8bit via mlx-vlm, image text and description; chat template applied). `WhisperTranscriber` (ffmpeg to 16 kHz mono WAV, then whisper.cpp large-v3-turbo q5_0). Integration tests run the real models: the VLM reads `ALETHEIA MEMORY TEST 42`; whisper transcribes the smoke clip.
 - Retrieval tiers: L0 abstract, L1 overview (2000 chars), L2 full text. The smallest tier containing a query term is returned; the receipt records the highest tier used.
 - Source existence (closes R-6): an Observation may cite only a Source in its own scope. A missing or foreign source gets one generic refusal, so there is no existence oracle.
 - Media crash path: an interrupted derivation writes nothing; a rerun creates exactly one derived record.

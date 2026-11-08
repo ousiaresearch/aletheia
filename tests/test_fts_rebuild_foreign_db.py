@@ -2,11 +2,11 @@ import sqlite3
 
 import pytest
 
-from weft import cli
+from aletheia import cli
 
 
 @pytest.mark.parametrize('kind', ['foreign', 'empty', 'missing'])
-def test_maintenance_rejects_non_weft_store_without_mutation(tmp_path, capsys, kind):
+def test_maintenance_rejects_non_aletheia_store_without_mutation(tmp_path, capsys, kind):
     path = tmp_path / 'foreign.sqlite'
     if kind == 'foreign':
         con = sqlite3.connect(path)

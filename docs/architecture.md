@@ -1,4 +1,4 @@
-# Weft Architecture
+# Aletheia Architecture
 
 **Phase:** 0 — Capability study (deliverable)
 **Status:** Draft, informed by the capability study. Subject to adversarial review.
@@ -193,11 +193,11 @@ derived-text retention and deletion policy.
 ## Governance
 
 - Typed validation is **advisory at the engine** (Arsumbris lesson: diagnostics never block a save).
-  Weft adds **authoritative validation at the memory write/recall boundary** — scope-invalid writes
+  Aletheia adds **authoritative validation at the memory write/recall boundary** — scope-invalid writes
   are rejected regardless of engine behavior.
-- Mediation must **fail closed** in Weft (Arsumbris's mediation fails open when the daemon is
+- Mediation must **fail closed** in Aletheia (Arsumbris's mediation fails open when the daemon is
   unreachable). An unreachable policy engine must block the write, not allow it.
-- No sandboxing exists in the reference systems; Weft treats all retrieved content as untrusted data
+- No sandboxing exists in the reference systems; Aletheia treats all retrieved content as untrusted data
   that cannot authorize writes, alter scope, or act as instructions.
 
 ## Durability

@@ -8,8 +8,8 @@ import sqlite3
 
 import pytest
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate, SubstrateError
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate, SubstrateError
 
 KNOWN = {"acs-project", "memory-providers", "ariel-continuity"}
 MARKERS = {"acs-project": {"ACS", "Listening Commonwealth", "Constitutional Convention Letters"}}
@@ -46,7 +46,7 @@ def engine():
 
 @pytest.fixture
 def sub(tmp_path, engine):
-    s = Substrate(tmp_path / "weft.db", scope_engine=engine)
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=engine)
     _seed_source(s, sorted(KNOWN))
     _seed_source(s, sorted(KNOWN))
     yield s

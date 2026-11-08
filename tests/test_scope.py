@@ -7,8 +7,8 @@ a37d175 (F1-F6, F3 in particular).
 
 import pytest
 
-from weft.scope import ScopeContext, ScopeEngine, references_project
-from weft.substrate import Record
+from aletheia.scope import ScopeContext, ScopeEngine, references_project
+from aletheia.substrate import Record
 
 KNOWN = {"ariel-continuity", "acs-project", "memory-providers", "identity"}
 MARKERS = {

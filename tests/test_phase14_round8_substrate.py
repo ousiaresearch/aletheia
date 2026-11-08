@@ -10,9 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from weft.knowledge import KnowledgeRefusal
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import SCHEMA_VERSION, Record, Substrate
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import SCHEMA_VERSION, Record, Substrate
 
 from tests.test_phase14_round7_substrate import build_v6, all_table_text
 

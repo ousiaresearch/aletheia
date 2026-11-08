@@ -13,8 +13,8 @@
 
 ### 6.2 Tech Stack
 - Electron + React (or plain HTML/JS for alpha).
-- IPC bridge to a local Weft HTTP service.
-- Service runs `weft serve` (see §6.4).
+- IPC bridge to a local Aletheia HTTP service.
+- Service runs `aletheia serve` (see §6.4).
 
 ### 6.3 Security
 - Desktop app authenticates via OS keychain.
@@ -24,7 +24,7 @@
 ## Hermes Shadow Integration
 
 ### 6.4 Shadow Mode
-- Weft runs as a background service in the same Hermes profile.
+- Aletheia runs as a background service in the same Hermes profile.
 - Reads from the same SQLite store but never writes to the active session's journal.
 - Provides `shadow_recall` and `shadow_reason` endpoints.
 - Comparison output: diff of recalled records, reasoning chains, and citations.

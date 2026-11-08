@@ -5,9 +5,9 @@ import time
 
 import pytest
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
-from weft.temporal import effective_at, set_validity, close_window
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
+from aletheia.temporal import effective_at, set_validity, close_window
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def engine():
 
 @pytest.fixture
 def substrate(tmp_path, engine):
-    sub = Substrate(tmp_path / "weft.db", scope_engine=engine)
+    sub = Substrate(tmp_path / "aletheia.db", scope_engine=engine)
     yield sub
     sub.close()
 

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import pytest
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
-from weft.entity_link import extract_entities, link_entities, entity_boost
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
+from aletheia.entity_link import extract_entities, link_entities, entity_boost
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def engine():
 
 @pytest.fixture
 def substrate(tmp_path, engine):
-    sub = Substrate(tmp_path / "weft.db", scope_engine=engine)
+    sub = Substrate(tmp_path / "aletheia.db", scope_engine=engine)
     yield sub
     sub.close()
 

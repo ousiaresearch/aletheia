@@ -1,7 +1,7 @@
-# Weft — Competitive Gap Closure Plan
+# Aletheia — Competitive Gap Closure Plan
 
 **Created:** 2026-10-29  
-**Goal:** Close the highest-impact gaps between Weft and comparable open-source memory providers.  
+**Goal:** Close the highest-impact gaps between Aletheia and comparable open-source memory providers.  
 **Constraints:** clean-room only for external systems; AGPL-3.0; adversarial review before each phase is called closed.
 
 ---
@@ -10,12 +10,12 @@
 
 | Priority | Gap | Why it matters | Phase |
 |---|---|---|---|
-| P0 | No standardized benchmarks | Credibility gate; every serious provider publishes LoCoMo / LongMemEval / BEAM numbers. Without them, Weft is "unverified" in procurement and comparison. | 9 |
+| P0 | No standardized benchmarks | Credibility gate; every serious provider publishes LoCoMo / LongMemEval / BEAM numbers. Without them, Aletheia is "unverified" in procurement and comparison. | 9 |
 | P0 | No MCP server | MCP is the dominant integration surface for Claude Code, OpenClaw, OpenCode, and Hermes. No MCP = no agent adoption outside custom code. | 10 |
 | P1 | No background extraction / consolidation | Pull-only `ingest` commands limit real-time agents. Honcho, Mem0, ByteRover all extract in the background. | 11 |
 | P1 | No graph or temporal reasoning | Cognee, Hindsight, Zep/Graphiti all offer entity/temporal graphs. This is the #1 feature request in agent memory benchmarks. | 12 |
 | P2 | No procedural memory / agent-curated state | LangMem and Letta let agents rewrite their own procedures. Differentiator for long-running, self-improving agents. | 13 |
-| P2 | No managed or turnkey deployment | Mem0 Cloud, Honcho Cloud, Cognee Cloud lower the barrier to try. Weft currently requires CLI + Python. | 14 |
+| P2 | No managed or turnkey deployment | Mem0 Cloud, Honcho Cloud, Cognee Cloud lower the barrier to try. Aletheia currently requires CLI + Python. | 14 |
 | P3 | Community and ecosystem | Stars, Discord, integrations, plugins. These are lagging indicators of product-market fit, not leading ones. Close after P0–P2. | 15 |
 
 ---
@@ -39,17 +39,17 @@
 
 ## Phase 10 — MCP server (P0)
 
-**Goal:** Expose Weft recall and ingest as an MCP server so any MCP client can use it.
+**Goal:** Expose Aletheia recall and ingest as an MCP server so any MCP client can use it.
 
 **Deliverables:**
-1. `weft/mcp_server.py` — stdio MCP server wrapping `recall`, `ingest`, `rebuild-fts`, `status`.
-2. `weft/mcp_tools.py` — tool definitions with scope validation and deny-by-default enforcement.
-3. Entrypoint `weft-mcp` in `pyproject.toml` scripts.
+1. `aletheia/mcp_server.py` — stdio MCP server wrapping `recall`, `ingest`, `rebuild-fts`, `status`.
+2. `aletheia/mcp_tools.py` — tool definitions with scope validation and deny-by-default enforcement.
+3. Entrypoint `aletheia-mcp` in `pyproject.toml` scripts.
 4. Tests: tool schema validation, scope denial, recall receipt formatting.
 5. Adversarial review.
 
 **Acceptance criteria:**
-- `weft-mcp --help` works from a fresh venv install.
+- `aletheia-mcp --help` works from a fresh venv install.
 - Claude Desktop / OpenCode / Hermes config examples in README.
 - All scope invariants enforced at the MCP boundary.
 
@@ -60,15 +60,15 @@
 **Goal:** Add an optional background extractor that consolidates raw records into scoped summaries without breaking the single-file, no-dependency model.
 
 **Deliverables:**
-1. `weft/extraction.py` — optional background extraction module (not imported unless requested).
-2. CLI commands: `weft extract --scope <scope>`, `weft consolidate --scope <scope>`.
+1. `aletheia/extraction.py` — optional background extraction module (not imported unless requested).
+2. CLI commands: `aletheia extract --scope <scope>`, `aletheia consolidate --scope <scope>`.
 3. Config: `extraction.enabled`, `extraction.model`, `extraction.cadence`.
 4. Tests: extraction produces Correction records when facts change; consolidation reduces record count; fail-closed on model errors.
 5. Adversarial review.
 
 **Acceptance criteria:**
 - Extraction runs synchronously or via a background worker; substrate never blocks on it.
-- Default install is unchanged; extraction requires `pip install weft-memory[extraction]`.
+- Default install is unchanged; extraction requires `pip install aletheia[extraction]`.
 
 ---
 
@@ -77,8 +77,8 @@
 **Goal:** Add optional entity linking and temporal validity windows without requiring an external graph database.
 
 **Deliverables:**
-1. `weft/temporal.py` — bi-temporal validity windows on records.
-2. `weft/entity_link.py` — entity extraction and linking using the local embedder (no external graph DB).
+1. `aletheia/temporal.py` — bi-temporal validity windows on records.
+2. `aletheia/entity_link.py` — entity extraction and linking using the local embedder (no external graph DB).
 3. SQLite schema extension: `entity_links` table, `valid_from` / `valid_to` columns.
 4. Retrieval boost: linked entities increase relevance score.
 5. Adversarial review.
@@ -86,7 +86,7 @@
 **Acceptance criteria:**
 - Entity links are stored in the same SQLite file; no new infrastructure.
 - Queries can filter by `effective_at` for temporal grounding.
-- Default install unchanged; graph features require `pip install weft-memory[graph]`.
+- Default install unchanged; graph features require `pip install aletheia[graph]`.
 
 ---
 
@@ -95,8 +95,8 @@
 **Goal:** Allow agents to propose procedural rules and prompt refinements, gated by user attribution.
 
 **Deliverables:**
-1. `weft/procedural.py` — `ProposedRule` status; only `Decision`/`Commitment` records with user attribution promote rules to `active`.
-2. CLI: `weft propose-rule`, `weft active-rules --scope <scope>`.
+1. `aletheia/procedural.py` — `ProposedRule` status; only `Decision`/`Commitment` records with user attribution promote rules to `active`.
+2. CLI: `aletheia propose-rule`, `aletheia active-rules --scope <scope>`.
 3. Tests: rules are deny-by-default; no rule activates without user-attributable Decision.
 4. Adversarial review.
 

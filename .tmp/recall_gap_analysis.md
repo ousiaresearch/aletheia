@@ -1,7 +1,7 @@
-# Weft Recall Gap Analysis — Past 53.5% hit@k
+# Aletheia Recall Gap Analysis — Past 53.5% hit@k
 
 **Date:** 2026-10-30  
-**Scope:** Weft local-first memory retrieval stack at `/Users/johannross/workspace/weft`  
+**Scope:** Aletheia local-first memory retrieval stack at `/Users/johannross/workspace/aletheia`  
 **Constraint:** No reverse-engineering of competitor code; analyze only public docs/methodologies. No benchmarking.
 
 ---
@@ -10,14 +10,14 @@
 
 | Layer | Implementation | Key file |
 |---|---|---|
-| Lexical | FTS5 with BM25 ordering, stopword filter | `weft/substrate.py:fts_candidates` |
-| Vector | sqlite-vec (vec0), BAAI/bge-m3 via mlx-embeddings | `weft/substrate.py:vector_candidates`, `weft/adapters.py` |
-| Fusion | RRF (K=60), rank-only | `weft/retrieval.py:_fuse` |
-| Query expansion | LLM via TokenHarbor (n=2, fail-closed) | `weft/query_expansion.py:expand_query` |
-| Entity boost | Heuristic NER (capitalization), real-time re-extraction | `weft/entity_link.py:entity_boost` |
-| Reranking | Cross-encoder (ms-marco-MiniLM-L-6-v2) + cosine min-max | `weft/retrieval.py:_rerank`, `weft/reranking.py` |
-| Extraction | LLM fact extraction → Claims (manual utility) | `weft/extraction.py` |
-| Temporal | Bi-temporal validity (valid_from/valid_to) | `weft/temporal.py` |
+| Lexical | FTS5 with BM25 ordering, stopword filter | `aletheia/substrate.py:fts_candidates` |
+| Vector | sqlite-vec (vec0), BAAI/bge-m3 via mlx-embeddings | `aletheia/substrate.py:vector_candidates`, `aletheia/adapters.py` |
+| Fusion | RRF (K=60), rank-only | `aletheia/retrieval.py:_fuse` |
+| Query expansion | LLM via TokenHarbor (n=2, fail-closed) | `aletheia/query_expansion.py:expand_query` |
+| Entity boost | Heuristic NER (capitalization), real-time re-extraction | `aletheia/entity_link.py:entity_boost` |
+| Reranking | Cross-encoder (ms-marco-MiniLM-L-6-v2) + cosine min-max | `aletheia/retrieval.py:_rerank`, `aletheia/reranking.py` |
+| Extraction | LLM fact extraction → Claims (manual utility) | `aletheia/extraction.py` |
+| Temporal | Bi-temporal validity (valid_from/valid_to) | `aletheia/temporal.py` |
 
 **Benchmark baseline (200 QA, LoCoMo-derived):**
 - Lexical-only: 20.5% hit@k / 0.093 MRR / ~12ms p50
@@ -31,7 +31,7 @@
 ### P0 — CRITICAL (fix first, highest expected recall gain)
 
 #### 1. Document-level dedup eliminates multi-paragraph evidence
-**File:** `weft/retrieval.py:237-252`
+**File:** `aletheia/retrieval.py:237-252`
 
 ```python
 document = rec.provenance.get("document") if isinstance(rec.provenance, dict) else None
@@ -52,7 +52,7 @@ For ingested documents, every paragraph-Observation shares `provenance.document 
 ---
 
 #### 2. No automatic Claims extraction at ingestion time
-**Files:** `weft/ingest.py:Ingestor`, `weft/extraction.py:extract_facts`
+**Files:** `aletheia/ingest.py:Ingestor`, `aletheia/extraction.py:extract_facts`
 
 `extraction.py` is an optional module with manual `extract_facts()` / `write_claims()` helpers. `Ingestor.ingest_document` and `ingest_turn` **never call it**.
 
@@ -65,7 +65,7 @@ For LoCoMo-style QA, questions target specific facts. Raw paragraph text is verb
 ---
 
 #### 3. Query expansion is external-only and silently degrades to no-op
-**File:** `weft/query_expansion.py:16-67`
+**File:** `aletheia/query_expansion.py:16-67`
 
 ```python
 def expand_query(token_getter, query: str, n: int = 3) -> list[str]:
@@ -88,7 +88,7 @@ Without a TokenHarbor token, query expansion produces zero paraphrases. Most loc
 ### P1 — HIGH IMPACT (expected +5-10pp combined)
 
 #### 4. Single-vector-per-record loses information in long passages
-**Files:** `weft/ingest.py:200-228`, `weft/substrate.py`
+**Files:** `aletheia/ingest.py:200-228`, `aletheia/substrate.py`
 
 Every Source/Observation gets exactly one embedding. A 400-word paragraph compresses into a single 1024-dim vector; BAAI/bge-m3's effective receptive context is much smaller than that. Multiple facts in one paragraph compete in the same vector.
 
@@ -99,7 +99,7 @@ Every Source/Observation gets exactly one embedding. A 400-word paragraph compre
 ---
 
 #### 5. Pure RRF discards score magnitudes; score fusion is stronger
-**File:** `weft/retrieval.py:_fuse` (lines 74-81)
+**File:** `aletheia/retrieval.py:_fuse` (lines 74-81)
 
 ```python
 def _fuse(ranked_lists: list, limit: int) -> list:
@@ -118,7 +118,7 @@ RRF treats rank 1 and rank 10 identically (both contribute ~1/60). In practice, 
 ---
 
 #### 6. FTS5 query has no phrase matching
-**File:** `weft/retrieval.py:177`
+**File:** `aletheia/retrieval.py:177`
 
 ```python
 match = " OR ".join(f'"{t}"' for t in q_content)
@@ -136,7 +136,7 @@ Individual terms are OR'd. Queries like "Melanie painted a lake" match any of th
 ---
 
 #### 7. Entity boost re-parses every candidate text on every recall
-**File:** `weft/entity_link.py:110-136`
+**File:** `aletheia/entity_link.py:110-136`
 
 `entity_boost` calls `extract_entities(record.payload["text"])` for every candidate record during every recall. The `entity_links` table (populated by `link_entities`) already has `(record_id, entity)` mappings but is never queried.
 
@@ -151,7 +151,7 @@ For a pool of 20 candidates, this re-parses 20 texts per query. It also misses e
 ### P2 — MEDIUM IMPACT (expected +3-7pp combined)
 
 #### 8. Cross-encoder pool is the same size as the embedder-rerank pool
-**File:** `weft/retrieval.py:174, 262-267`
+**File:** `aletheia/retrieval.py:174, 262-267`
 
 ```python
 q_pool = limit * 4   # 20 for k=5
@@ -169,7 +169,7 @@ Cross-encoder reranking operates on the same 20 candidates already truncated by 
 ---
 
 #### 9. No query decomposition for multi-hop questions
-**File:** `weft/query_expansion.py`, `weft/retrieval.py`
+**File:** `aletheia/query_expansion.py`, `aletheia/retrieval.py`
 
 LoCoMo questions like "What did X do before Y happened?" require two reasoning steps. A single-query retrieval can only surface evidence matching the whole compound question, not the individual constraints.
 
@@ -180,7 +180,7 @@ LoCoMo questions like "What did X do before Y happened?" require two reasoning s
 ---
 
 #### 10. No automatic temporal extraction from text
-**File:** `weft/extraction.py`, `weft/temporal.py`
+**File:** `aletheia/extraction.py`, `aletheia/temporal.py`
 
 `temporal.py` provides `set_validity`/`close_window`/`effective_at` but no mechanism populates `valid_from`/`valid_to` from observation text. Dates mentioned in conversations ("on 8 May 2023") remain invisible to temporal filtering.
 
@@ -193,7 +193,7 @@ LoCoMo questions like "What did X do before Y happened?" require two reasoning s
 ### P3 — LOW IMPACT / NICE-TO-HAVE
 
 #### 11. Consolidation uses exact text match, not embeddings
-**File:** `weft/extraction.py:192-229`
+**File:** `aletheia/extraction.py:192-229`
 
 `consolidate_scope` deduplicates Claims by `text.lower().strip()`. Two semantically equivalent Claims with different phrasing ("attended meeting" vs "was at meeting") are counted as distinct. Over time this dilutes retrieval.
 
@@ -204,7 +204,7 @@ LoCoMo questions like "What did X do before Y happened?" require two reasoning s
 ---
 
 #### 12. No query intent classification
-**File:** New: `weft/query_classifier.py` or inline in `weft/retrieval.py`
+**File:** New: `aletheia/query_classifier.py` or inline in `aletheia/retrieval.py`
 
 All queries are treated identically regardless of type. Temporal queries, entity-centric queries, and factual lookups each benefit from different evidence weighting:
 - Temporal → boost records with date entities, apply `effective_at` filter
@@ -218,7 +218,7 @@ All queries are treated identically regardless of type. Temporal queries, entity
 ---
 
 #### 13. Vector candidates: inconsistent scoring across the pipeline
-**File:** `weft/substrate.py:730-792`, `weft/retrieval.py:84-117`
+**File:** `aletheia/substrate.py:730-792`, `aletheia/retrieval.py:84-117`
 
 `vector_candidates` returns record IDs ranked by **L2 distance** (lower is better). `_rerank` re-scores by **cosine similarity** (higher is better). RRF fusion combines L2-ranked IDs with BM25-ranked IDs using rank-only scoring. The score semantics are inconsistent across stages.
 
@@ -231,7 +231,7 @@ All queries are treated identically regardless of type. Temporal queries, entity
 ---
 
 #### 14. Reranker gap: cross-encoder queries `selected_texts` but Item has no `selected_texts`
-**File:** `weft/reranking.py:43`, `weft/retrieval.py:34-51`
+**File:** `aletheia/reranking.py:43`, `aletheia/retrieval.py:34-51`
 
 `CrossEncoderReranker.rerank` accesses `item.selected_texts[0]`, but `Item` dataclass in `retrieval.py` has `text`, not `selected_texts`. This would raise `AttributeError` at runtime if cross-encoder is actually invoked.
 

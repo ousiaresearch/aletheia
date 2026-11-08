@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 CACHE = REPO / "benchmarks" / "full" / "cache"
 
 def run(cmd: str, check: bool = True) -> str:
@@ -25,7 +25,7 @@ def run(cmd: str, check: bool = True) -> str:
 
 # Clone repo
 if not (REPO / ".git").exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
     os.chdir(REPO)
 else:
     os.chdir(REPO)
@@ -37,7 +37,7 @@ run("pip install datasets pytest -q")
 
 # Verify imports
 print("[setup] Verifying imports...")
-import weft  # noqa: E402
+import aletheia  # noqa: E402
 from benchmarks.full.locomo import run as run_locomo  # noqa: E402
 from benchmarks.full.longmemeval import run as run_longmemeval  # noqa: E402
 from benchmarks.full.beam import run as run_beam  # noqa: E402
@@ -53,7 +53,7 @@ except Exception as e:
     print(f"[setup] torch not available: {e}")
 
 # Init embedder for hybrid
-from weft.adapters import BgeM3Embedder  # noqa: E402
+from aletheia.adapters import BgeM3Embedder  # noqa: E402
 print("[setup] Loading BGE-M3 embedder...")
 model_dir = (
     Path.home()
@@ -112,7 +112,7 @@ print(f"[run] beam-100k-hybrid done in {time.time()-t0:.1f}s")
 (REPO / "benchmarks" / "hybrid-results.json").write_text(json.dumps(results, indent=2) + "\n")
 
 lines = [
-    "# Weft Benchmark Results (hybrid run — Colab A100)",
+    "# Aletheia Benchmark Results (hybrid run — Colab A100)",
     "",
     f"**Generated:** {results['generated']}",
     f"**Embedder:** {results['embedder']}",
@@ -140,4 +140,4 @@ for name, res in results["suites"].items():
 
 (REPO / "benchmarks" / "hybrid-results.md").write_text("\n".join(lines))
 (REPO / "benchmarks" / "hybrid-complete.txt").write_text(time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-print("\n[setup] Done. Artifacts in /content/weft/benchmarks/")
+print("\n[setup] Done. Artifacts in /content/aletheia/benchmarks/")

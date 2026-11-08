@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -55,7 +55,7 @@ def engine():
 
 @pytest.fixture
 def sub(tmp_path, engine):
-    s = Substrate(tmp_path / "weft.db", scope_engine=engine)
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=engine)
     _seed_source(s, sorted(KNOWN))
     _seed_source(s, sorted(KNOWN))
     yield s
@@ -156,7 +156,7 @@ def test_F7_correct_requires_read_of_original(sub):
 
 # F8: authorization happened outside the write lock (TOCTOU on delete).
 def test_F8_delete_authorization_runs_under_write_lock(tmp_path, engine, monkeypatch):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     s = Substrate(db, scope_engine=engine, busy_timeout=0.2)
     _seed_source(s, sorted(KNOWN))
     s.put(rec("r1", "memory-providers", "x"), ALL)
@@ -229,7 +229,7 @@ def test_F12_journal_without_context_is_empty(sub):
 
 # F13: a lock error during denial journalling masked the denial.
 def test_F13_denial_is_refused_even_when_audit_write_is_locked(tmp_path, engine):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     s = Substrate(db, scope_engine=engine, busy_timeout=0.2)
     _seed_source(s, sorted(KNOWN))
     holder = sqlite3.connect(str(db), isolation_level=None)
@@ -245,7 +245,7 @@ def test_F13_denial_is_refused_even_when_audit_write_is_locked(tmp_path, engine)
 
 # F14: ROLLBACK with no open transaction replaced the real error.
 def test_F14_real_lock_error_is_not_masked_by_rollback(tmp_path, engine):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     s = Substrate(db, scope_engine=engine, busy_timeout=0.2)
     _seed_source(s, sorted(KNOWN))
     holder = sqlite3.connect(str(db), isolation_level=None)
@@ -375,7 +375,7 @@ def test_F_D_read_denial_reason_names_no_other_scope(engine):
 
 # F-E / F21: the database file must not be readable by other local users.
 def test_F_E_database_file_is_owner_only(tmp_path, engine):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     s = Substrate(db, scope_engine=engine)
     _seed_source(s, sorted(KNOWN))
     s.put(rec("r1", "memory-providers", "x"), ALL)
@@ -385,12 +385,12 @@ def test_F_E_database_file_is_owner_only(tmp_path, engine):
 
 # F17: concurrent writers, same ids, no silent last-writer-wins.
 def test_F17_same_id_race_has_exactly_one_winner_across_processes(tmp_path, engine):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     Substrate(db, scope_engine=ScopeEngine(known_scopes=KNOWN)).close()
     script = (
         "import sys; sys.path.insert(0, %r)\n"
-        "from weft.scope import ScopeContext, ScopeEngine\n"
-        "from weft.substrate import Record, RecordConflict, Substrate\n"
+        "from aletheia.scope import ScopeContext, ScopeEngine\n"
+        "from aletheia.substrate import Record, RecordConflict, Substrate\n"
         "s = Substrate(%r, scope_engine=ScopeEngine(known_scopes=%r), busy_timeout=10)\n"
         "s._conn.execute(\"INSERT OR IGNORE INTO records (record_id, record_type, scope, epistemic_status, payload, created_at, effective_at, supersedes, source_ids, provenance, attribution) VALUES ('src-1-memory-providers','Source','memory-providers','stated','{}',0.0,NULL,NULL,'[]','{}','document')\")\n"
         "s._conn.commit()\n"

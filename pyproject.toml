@@ -3,8 +3,8 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "weft-memory"
-version = "1.1.1"
+name = "aletheia"
+version = "2.0.0"
 description = "Evidence-bound scoped memory substrate for people and their agents"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
@@ -50,13 +50,13 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ousiaresearch/weft"
-Repository = "https://github.com/ousiaresearch/weft"
-Issues = "https://github.com/ousiaresearch/weft/issues"
+Homepage = "https://github.com/ousiaresearch/aletheia"
+Repository = "https://github.com/ousiaresearch/aletheia"
+Issues = "https://github.com/ousiaresearch/aletheia/issues"
 
 [project.scripts]
-weft = "weft.cli:entrypoint"
-weft-server = "weft.server:main"
+aletheia = "aletheia.cli:entrypoint"
+aletheia-server = "aletheia.server:main"
 
 [tool.setuptools]
-packages = ["weft", "weft.providers"]
+packages = ["aletheia", "aletheia.providers"]

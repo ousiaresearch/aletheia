@@ -4,9 +4,9 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
-from weft.server import app
-from weft.substrate import Substrate, Record
-from weft.scope import ScopeContext, ScopeEngine
+from aletheia.server import app
+from aletheia.substrate import Substrate, Record
+from aletheia.scope import ScopeContext, ScopeEngine
 
 KNOWN = {"s"}
 
@@ -22,15 +22,15 @@ def _seed(sub, scope):
 
 
 def _env_with_known_scopes(monkeypatch, tmp_path):
-    monkeypatch.setenv("WEFT_API_KEY", "test-key")
-    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+    monkeypatch.setenv("ALETHEIA_API_KEY", "test-key")
+    monkeypatch.setenv("ALETHEIA_KNOWN_SCOPES", "s")
     monkeypatch.setenv("HOME", str(tmp_path))
-    os.makedirs(tmp_path / ".weft", exist_ok=True)
+    os.makedirs(tmp_path / ".aletheia", exist_ok=True)
 
 
 def test_health_endpoint(tmp_path, monkeypatch):
-    monkeypatch.setenv("WEFT_API_KEY", "test-key")
-    monkeypatch.setenv("WEFT_KNOWN_SCOPES", "s")
+    monkeypatch.setenv("ALETHEIA_API_KEY", "test-key")
+    monkeypatch.setenv("ALETHEIA_KNOWN_SCOPES", "s")
     client = TestClient(app)
     resp = client.get("/health", headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
@@ -38,7 +38,7 @@ def test_health_endpoint(tmp_path, monkeypatch):
 
 
 def test_query_endpoint_returns_matches(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     sub = Substrate(db_path, engine)
     try:
@@ -50,7 +50,7 @@ def test_query_endpoint_returns_matches(tmp_path, monkeypatch):
     finally:
         sub.close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.post("/query", json={"scope": "s", "query": "hello", "limit": 5}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
@@ -68,7 +68,7 @@ def test_query_endpoint_rejects_unknown_scope(tmp_path, monkeypatch):
 
 
 def test_get_record_returns_detail(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     sub = Substrate(db_path, engine)
     try:
@@ -80,7 +80,7 @@ def test_get_record_returns_detail(tmp_path, monkeypatch):
     finally:
         sub.close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.get("/record/r1", params={"scope": "s"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
@@ -88,18 +88,18 @@ def test_get_record_returns_detail(tmp_path, monkeypatch):
 
 
 def test_get_record_missing_returns_404(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     Substrate(db_path, engine).close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.get("/record/nonexistent", params={"scope": "s"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 404
 
 
 def test_export_endpoint_returns_payload(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     sub = Substrate(db_path, engine)
     try:
@@ -111,7 +111,7 @@ def test_export_endpoint_returns_payload(tmp_path, monkeypatch):
     finally:
         sub.close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.post("/export", json={"scope": "s"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
@@ -121,7 +121,7 @@ def test_export_endpoint_returns_payload(tmp_path, monkeypatch):
 
 
 def test_shadow_recall_returns_matches(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     sub = Substrate(db_path, engine)
     try:
@@ -133,7 +133,7 @@ def test_shadow_recall_returns_matches(tmp_path, monkeypatch):
     finally:
         sub.close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.post("/shadow/recall", json={"scope": "s", "query": "hello"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
@@ -145,7 +145,7 @@ def test_shadow_recall_returns_matches(tmp_path, monkeypatch):
 
 
 def test_shadow_reason_returns_evidence(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     sub = Substrate(db_path, engine)
     try:
@@ -157,7 +157,7 @@ def test_shadow_reason_returns_evidence(tmp_path, monkeypatch):
     finally:
         sub.close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.post("/shadow/reason", json={"scope": "s", "query": "lighthouse"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200
@@ -168,7 +168,7 @@ def test_shadow_reason_returns_evidence(tmp_path, monkeypatch):
 
 
 def test_shadow_compare_diffs_active_and_shadow(tmp_path, monkeypatch):
-    db_path = tmp_path / "weft.db"
+    db_path = tmp_path / "aletheia.db"
     engine = ScopeEngine(known_scopes=KNOWN)
     sub = Substrate(db_path, engine)
     try:
@@ -180,7 +180,7 @@ def test_shadow_compare_diffs_active_and_shadow(tmp_path, monkeypatch):
     finally:
         sub.close()
     _env_with_known_scopes(monkeypatch, tmp_path)
-    os.replace(db_path, tmp_path / ".weft" / "weft.sqlite3")
+    os.replace(db_path, tmp_path / ".aletheia" / "aletheia.sqlite3")
     client = TestClient(app)
     resp = client.post("/shadow/compare", json={"scope": "s", "query": "visible"}, headers={"Authorization": "Bearer test-key"})
     assert resp.status_code == 200

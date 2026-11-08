@@ -1,8 +1,8 @@
 import pytest
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
-from weft.procedural import ProposedRule, propose_rule, promote_rule, list_active_rules
-from weft.knowledge import KnowledgeRefusal
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
+from aletheia.procedural import ProposedRule, propose_rule, promote_rule, list_active_rules
+from aletheia.knowledge import KnowledgeRefusal
 
 
 def setup_rule(tmp_path):
@@ -38,7 +38,7 @@ def test_superseded_proposal_cannot_be_promoted(tmp_path):
 
 
 def test_entity_link_requires_scope_and_record_authority(tmp_path):
-    from weft.entity_link import link_entities
+    from aletheia.entity_link import link_entities
     engine = ScopeEngine(known_scopes={'a', 'b'})
     sub = Substrate(str(tmp_path / 'db'), engine)
     both = ScopeContext(granted_scopes=frozenset({'a', 'b'}), user_authored=True)
@@ -53,7 +53,7 @@ def test_entity_link_requires_scope_and_record_authority(tmp_path):
 
 
 def test_entity_frequency_ignores_unreadable_and_other_scope(tmp_path):
-    from weft.entity_link import link_entities, entity_boost
+    from aletheia.entity_link import link_entities, entity_boost
     engine = ScopeEngine(known_scopes={'a', 'b'})
     sub = Substrate(str(tmp_path / 'db'), engine)
     both = ScopeContext(granted_scopes=frozenset({'a', 'b'}), user_authored=True)
@@ -69,8 +69,8 @@ def test_entity_frequency_ignores_unreadable_and_other_scope(tmp_path):
 
 @pytest.mark.parametrize('layer', ['graph_boost', 'temporal_boost'])
 def test_boost_reorders_and_receipt_reports_applied_layer(tmp_path, monkeypatch, layer):
-    import weft.retrieval as retrieval
-    import weft.temporal as temporal
+    import aletheia.retrieval as retrieval
+    import aletheia.temporal as temporal
     sub = Substrate(str(tmp_path / 'db'), ScopeEngine(known_scopes={'a'}))
     ctx = ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True)
     for rid in ('first', 'second'):
@@ -89,7 +89,7 @@ def test_boost_reorders_and_receipt_reports_applied_layer(tmp_path, monkeypatch,
 
 
 def test_failed_boost_is_not_reported(tmp_path, monkeypatch):
-    import weft.retrieval as retrieval
+    import aletheia.retrieval as retrieval
     sub = Substrate(str(tmp_path / 'db'), ScopeEngine(known_scopes={'a'}))
     ctx = ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True)
     sub.put(Record(record_id='r', record_type='Source', scope='a', payload={'text': 'needle'}, attribution='user'), ctx)
@@ -99,7 +99,7 @@ def test_failed_boost_is_not_reported(tmp_path, monkeypatch):
 
 
 def test_confidence_sort_reorders_claims(tmp_path):
-    from weft.retrieval import recall
+    from aletheia.retrieval import recall
     sub = Substrate(str(tmp_path / 'db'), ScopeEngine(known_scopes={'a'}))
     ctx = ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True)
     sub.put(Record(record_id='source', record_type='Source', scope='a', payload={'text': 'source'}, attribution='user'), ctx)

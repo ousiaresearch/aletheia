@@ -4,7 +4,7 @@ import json, os, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 
-REPO = "/content/weft"
+REPO = "/content/aletheia"
 
 def run(cmd):
     r = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -14,7 +14,7 @@ def run(cmd):
     return r.stdout.strip()
 
 if not os.path.exists(REPO):
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, REPO)
 
@@ -70,7 +70,7 @@ for m in [JUDGE_MODEL, ANSWER_MODEL]:
 print("[run] Loading dataset...", flush=True)
 from benchmarks.full.locomo import _load_dataset, convert_sample
 from benchmarks.full.common import make_engine, make_ctx, create_substrate, run_recall
-from weft.scope import ScopeEngine
+from aletheia.scope import ScopeEngine
 
 class STEmbedder:
     def __init__(self, name="BAAI/bge-m3"):

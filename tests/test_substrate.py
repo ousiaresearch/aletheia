@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate
 
 REPO = Path(__file__).resolve().parents[1]
 KNOWN = {"ariel-continuity", "acs-project", "memory-providers"}
@@ -55,7 +55,7 @@ def engine():
 
 @pytest.fixture
 def substrate(tmp_path, engine):
-    s = Substrate(tmp_path / "weft.db", scope_engine=engine)
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=engine)
     _seed_source(s, sorted(KNOWN))
     _seed_source(s, sorted(KNOWN))
     yield s
@@ -226,7 +226,7 @@ class TestProjectionIsDerived:
 class TestFaultInjection:
     def test_kill_mid_write_leaves_no_partial_record(self, tmp_path):
         """Kill the real write path between the record insert and its journal entry."""
-        db = tmp_path / "weft.db"
+        db = tmp_path / "aletheia.db"
         setup = Substrate(db, scope_engine=ScopeEngine(known_scopes=KNOWN))
         _seed_source(setup, sorted(KNOWN))
         setup.put(make_record("committed"), CTX)
@@ -236,8 +236,8 @@ class TestFaultInjection:
             f"""
             import os, signal, sys
             sys.path.insert(0, {str(REPO)!r})
-            from weft.scope import ScopeContext, ScopeEngine
-            from weft.substrate import Record, Substrate
+            from aletheia.scope import ScopeContext, ScopeEngine
+            from aletheia.substrate import Record, Substrate
             s = Substrate({str(db)!r}, scope_engine=ScopeEngine(known_scopes={sorted(KNOWN)!r}))
             def boom(*a, **k):
                 os.kill(os.getpid(), signal.SIGKILL)
@@ -278,7 +278,7 @@ class TestFaultInjection:
 
     def test_concurrent_writers_no_lost_or_duplicate_record(self, tmp_path):
         """Two processes race for the same ids. Each id is created exactly once."""
-        db = tmp_path / "weft.db"
+        db = tmp_path / "aletheia.db"
         setup = Substrate(db, scope_engine=ScopeEngine(known_scopes=KNOWN))
         _seed_source(setup, sorted(KNOWN))
         setup.close()
@@ -287,8 +287,8 @@ class TestFaultInjection:
             f"""
             import sys
             sys.path.insert(0, {str(REPO)!r})
-            from weft.scope import ScopeContext, ScopeEngine
-            from weft.substrate import Record, RecordConflict, Substrate
+            from aletheia.scope import ScopeContext, ScopeEngine
+            from aletheia.substrate import Record, RecordConflict, Substrate
             s = Substrate({str(db)!r}, scope_engine=ScopeEngine(known_scopes={sorted(KNOWN)!r}), busy_timeout=10)
             ctx = ScopeContext(granted_scopes=frozenset({sorted(KNOWN)[0], "memory-providers"}))
             won = 0
@@ -363,7 +363,7 @@ class TestGatedWritesAndReads:
 
 
 def test_new_database_parent_directories_are_owner_only(tmp_path):
-    db_path = tmp_path / "private" / "nested" / "weft.db"
+    db_path = tmp_path / "private" / "nested" / "aletheia.db"
     sub = Substrate(db_path, ScopeEngine(known_scopes=KNOWN))
     try:
         assert os.stat(db_path.parent).st_mode & 0o777 == 0o700
@@ -383,7 +383,7 @@ def test_constructor_closes_connection_when_database_is_malformed(tmp_path, monk
         connections.append(connection)
         return connection
 
-    monkeypatch.setattr("weft.substrate.sqlite3.connect", tracking_connect)
+    monkeypatch.setattr("aletheia.substrate.sqlite3.connect", tracking_connect)
     with pytest.raises(sqlite3.DatabaseError):
         Substrate(malformed, ScopeEngine(known_scopes=KNOWN))
     assert len(connections) == 1
@@ -391,7 +391,7 @@ def test_constructor_closes_connection_when_database_is_malformed(tmp_path, monk
 
 def test_crash_mid_write_leaves_no_partial_record_in_raw_tables(tmp_path):
     """Kill mid-write, then verify raw records and journal tables are clean."""
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     setup = Substrate(db, scope_engine=ScopeEngine(known_scopes=KNOWN))
     _seed_source(setup, sorted(KNOWN))
     setup.put(make_record("committed"), CTX)
@@ -401,8 +401,8 @@ def test_crash_mid_write_leaves_no_partial_record_in_raw_tables(tmp_path):
         f"""
         import os, signal, sys
         sys.path.insert(0, {str(REPO)!r})
-        from weft.scope import ScopeContext, ScopeEngine
-        from weft.substrate import Record, Substrate
+        from aletheia.scope import ScopeContext, ScopeEngine
+        from aletheia.substrate import Record, Substrate
         s = Substrate({str(db)!r}, scope_engine=ScopeEngine(known_scopes={sorted(KNOWN)!r}))
         def boom(*a, **k):
             os.kill(os.getpid(), signal.SIGKILL)

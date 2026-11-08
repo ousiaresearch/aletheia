@@ -7,9 +7,9 @@ import inspect
 
 import pytest
 
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Substrate
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Substrate
 
 KNOWN = {"acs-project"}
 CTX = ScopeContext(granted_scopes=frozenset(KNOWN), actor="x")

@@ -1,6 +1,6 @@
-# Weft HTTP deployment
+# Aletheia HTTP deployment
 
-The image and `weft-server` run `weft.server`, which serves the desktop API and
+The image and `aletheia-server` run `aletheia.server`, which serves the desktop API and
 custom `/mcp/*` HTTP routes. Despite their names, these routes are **not an MCP
 protocol server**: they do not implement MCP transport or JSON-RPC and cannot be
 assumed to work with MCP clients.
@@ -8,12 +8,12 @@ assumed to work with MCP clients.
 ## Docker Compose
 
 ```bash
-export WEFT_API_KEY='replace-with-a-long-random-secret'
+export ALETHEIA_API_KEY='replace-with-a-long-random-secret'
 docker compose up --build
-curl -H "Authorization: Bearer $WEFT_API_KEY" http://localhost:8765/health
+curl -H "Authorization: Bearer $ALETHEIA_API_KEY" http://localhost:8765/health
 ```
 
-Compose publishes port 8765 on host loopback (127.0.0.1), persists data in the `weft-data`
+Compose publishes port 8765 on host loopback (127.0.0.1), persists data in the `aletheia-data`
 volume, and configures the scopes `default,benchmark`. Protect the key and the
 volume. The service has no built-in TLS or per-client identities: anyone with the
 key can access **all** configured scopes. Do not expose it to untrusted networks;
@@ -21,9 +21,9 @@ use appropriate network restrictions and TLS termination where needed.
 
 | Variable | Meaning |
 |----------|---------|
-| `WEFT_API_KEY` | Required bearer secret; absent or incorrect credentials are rejected. Compose requires it at startup. |
-| `WEFT_KNOWN_SCOPES` | Comma-separated allowed scopes; absent or empty denies all scopes. Compose sets `default,benchmark`; change the Compose configuration to change them. |
-| `WEFT_DB_PATH` | Database path; defaults to `~/.weft/weft.sqlite3`. Compose sets `/home/weft/.weft/weft.sqlite3`. |
+| `ALETHEIA_API_KEY` | Required bearer secret; absent or incorrect credentials are rejected. Compose requires it at startup. |
+| `ALETHEIA_KNOWN_SCOPES` | Comma-separated allowed scopes; absent or empty denies all scopes. Compose sets `default,benchmark`; change the Compose configuration to change them. |
+| `ALETHEIA_DB_PATH` | Database path; defaults to `~/.aletheia/aletheia.sqlite3`. Compose sets `/home/aletheia/.aletheia/aletheia.sqlite3`. |
 
 All endpoints, including `/health`, require the bearer header. Every scoped
 request names a configured scope. This single shared key does not distinguish
@@ -46,7 +46,7 @@ users and does not establish that content is user-authored.
 For example:
 
 ```bash
-curl -H "Authorization: Bearer $WEFT_API_KEY" -H 'Content-Type: application/json' \
+curl -H "Authorization: Bearer $ALETHEIA_API_KEY" -H 'Content-Type: application/json' \
   -d '{"scope":"default","records":[{"record_id":"note-1","payload":{"text":"example"}}]}' \
   http://localhost:8765/mcp/ingest
 ```
@@ -64,14 +64,14 @@ extra does not install sentence-transformers or any embedder, and deployed HTTP 
 lexical-only by design.
 
 HTTP recall errors: an incomplete or stale full-text index returns **503** with a
-detail naming the recovery step (`weft --db <path> rebuild-fts --scope <scope>`, run by an
+detail naming the recovery step (`aletheia --db <path> rebuild-fts --scope <scope>`, run by an
 operator against the same database; the message names the requested scope). `limit` must be an integer from 1 to 100;
 other values are rejected with a 4xx. Every request on a non-HTTP ASGI scope
 (for example WebSocket) is denied.
 
 ## Operational notes
 
-- **Credentials in examples.** Every `curl` example sends `$WEFT_API_KEY`;
+- **Credentials in examples.** Every `curl` example sends `$ALETHEIA_API_KEY`;
   export it first and substitute your own secret. Never paste a real key into
   shared scripts.
 - **Rule approval.** A rule is approved only by a user-attributed `Decision` or
@@ -85,7 +85,7 @@ other values are rejected with a 4xx. Every request on a non-HTTP ASGI scope
   0.51 s at 30,000; ingesting 30,000 records takes 3.1 s. The `python:3.12-slim`
   image ships SQLite 3.40, which was not tested, and Docker was not run for
   these numbers. If the check fails, an operator rebuilds the index with
-  `weft --db <path> rebuild-fts --scope <scope>`. Orphaned records (records
+  `aletheia --db <path> rebuild-fts --scope <scope>`. Orphaned records (records
   whose scope is not the one being served) need a rebuild of the orphan's own
   scope, not of the requested one. `limit` is capped at 100.
 - **`/mcp/*` is not the MCP protocol.** These are custom JSON-over-HTTP routes
@@ -181,7 +181,7 @@ that rule already exists identically.
 
 Sources and Claims ingested over HTTP have **no vectors**: HTTP ingest never computes
 embeddings, and deployed HTTP recall is lexical-only by design. Hybrid recall is a
-desktop/CLI feature. `weft ingest`, `weft recall` (hybrid) and `weft reembed` all need the
+desktop/CLI feature. `aletheia ingest`, `aletheia recall` (hybrid) and `aletheia reembed` all need the
 local embedder, and `default_text_embedder` loads an MLX BGE-M3 snapshot from the local
 Hugging Face cache; its dependencies (`mlx`, `mlx-embeddings`, the `local-embedding` extra)
 are available on darwin/arm64 only. The `local-recall` extra (sentence-transformers) backs
@@ -194,19 +194,19 @@ To get hybrid recall over such records, copy or export the data to a darwin/arm6
 with the model cached and run, against that database:
 
 ```bash
-weft --db <path> reembed --scope <scope>
+aletheia --db <path> reembed --scope <scope>
 ```
 
 It embeds records that lack a vector; records with no text cannot be embedded and are
 reported as skipped. CLI hybrid recall refuses a scope until its vector index is complete.
 HTTP lexical recall is unaffected.
 
-## `weft serve`
+## `aletheia serve`
 
-`weft --db <path> serve` exports `--db` as `WEFT_DB_PATH` for the server process
-when `WEFT_DB_PATH` is not already set; if both are set and differ, the
+`aletheia --db <path> serve` exports `--db` as `ALETHEIA_DB_PATH` for the server process
+when `ALETHEIA_DB_PATH` is not already set; if both are set and differ, the
 environment variable wins and a warning goes to stderr. `serve` also warns on
-stderr when `WEFT_API_KEY` or `WEFT_KNOWN_SCOPES` is unset (the server fails
+stderr when `ALETHEIA_API_KEY` or `ALETHEIA_KNOWN_SCOPES` is unset (the server fails
 closed); secret values are never printed.
 
 The Compose health check is defined in the Compose file, not the image. The
@@ -215,18 +215,18 @@ layer. Neither image build nor runtime has been verified here with Docker.
 
 ## Local install
 
-From a checkout, install `pip install '.[server]'`, set `WEFT_API_KEY` and
-`WEFT_KNOWN_SCOPES`, then run `weft-server --host 127.0.0.1 --port 8765`.
-Choose a writable `WEFT_DB_PATH` if the default location is unsuitable. The
+From a checkout, install `pip install '.[server]'`, set `ALETHEIA_API_KEY` and
+`ALETHEIA_KNOWN_SCOPES`, then run `aletheia-server --host 127.0.0.1 --port 8765`.
+Choose a writable `ALETHEIA_DB_PATH` if the default location is unsuitable. The
 Docker build and runtime are unverified and need to be verified on a machine with Docker; this guide
 is not evidence of a successful deployment.
 
-## `weft extract` sends scope text to an external service
+## `aletheia extract` sends scope text to an external service
 
-`weft extract` (and `weft.extraction.extract_facts`) sends record text to the
+`aletheia extract` (and `aletheia.extraction.extract_facts`) sends record text to the
 third-party endpoint `https://tokenharbor.ai/v1` (TokenHarbor). It is **disabled
 by default**. It runs only when you pass `--allow-external` or set
-`WEFT_EXTRACT_ALLOW_EXTERNAL=1`; the destination host is printed to stderr before
+`ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1`; the destination host is printed to stderr before
 anything is sent. The credential is read from `TOKENHARBOR_API_KEY` only (no
 credential file is read). Only records the caller's scope grant can read are sent.
 The HTTP server never calls this service. Not exercised against the real endpoint

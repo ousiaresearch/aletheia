@@ -1,4 +1,4 @@
-# Weft Benchmark Results (full run — Colab)
+# Aletheia Benchmark Results (full run — Colab)
 
 **Generated:** 2026-10-29T22:11:18Z
 **Methodology:** Retrieval hit@k + MRR when evidence_ids available; token F1 fallback.
@@ -48,9 +48,9 @@
 
 | System | LoCoMo | BEAM | Method |
 |--------|--------|------|--------|
-| **Weft (lexical)** | **55.3% hit@10** | **5.0–5.5%** | Retrieval MRR / F1 |
+| **Aletheia (lexical)** | **55.3% hit@10** | **5.0–5.5%** | Retrieval MRR / F1 |
 | Mem0 | 67.1% | — | LLM judge |
 | Zep / Graphiti | 75.1% | — | LLM judge |
 | MemHQ | 83.2% | — | LLM judge |
 
-> Methodology note: Competitors (Mem0, Zep, MemHQ) generate answers and score with an LLM judge. Weft's numbers use retrieval hit@k + MRR (LoCoMo) and token F1 (BEAM, LongMemEval-S), which are strict retrieval metrics, not generative QA. A direct apples-to-apples comparison requires the same scoring method; the 55.3% is Weft's recall quality, not its end-to-end QA accuracy.
+> Methodology note: Competitors (Mem0, Zep, MemHQ) generate answers and score with an LLM judge. Aletheia's numbers use retrieval hit@k + MRR (LoCoMo) and token F1 (BEAM, LongMemEval-S), which are strict retrieval metrics, not generative QA. A direct apples-to-apples comparison requires the same scoring method; the 55.3% is Aletheia's recall quality, not its end-to-end QA accuracy.

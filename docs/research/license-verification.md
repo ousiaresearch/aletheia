@@ -6,7 +6,7 @@
 
 ## Summary
 
-No AGPL component may be copied, linked, or bundled into Weft. Additionally, **Arsumbris components are under a non-commercial "Sustainable Use License" and may not be bundled into a distributable product.** Weft is therefore **Arsumbris-free by necessity and by prior user decision (Option C: our own code for everything).**
+No AGPL component may be copied, linked, or bundled into Aletheia. Additionally, **Arsumbris components are under a non-commercial "Sustainable Use License" and may not be bundled into a distributable product.** Aletheia is therefore **Arsumbris-free by necessity and by prior user decision (Option C: our own code for everything).**
 
 | Component | License | Distribution implication | Decision |
 |---|---|---|---|
@@ -30,7 +30,7 @@ No AGPL component may be copied, linked, or bundled into Weft. Additionally, **A
 Apache-2.0, Supermemory MIT, RetainDB Apache-2.0, OpenViking's crates/examples/hermes-plugin
 Apache-2.0/MIT). This *loosens* the constraint relative to the first revision, which had asserted
 "every reference is study-only except Hindsight" without having screened the rest. It does not
-change the Option C decision: the user chose independently-written code, and Weft will not bundle any
+change the Option C decision: the user chose independently-written code, and Aletheia will not bundle any
 of these. They are study and reference material, and the MIT Hermes plugin is specifically useful as
 an adapter-design reference.
 
@@ -49,13 +49,13 @@ prominent "you have modified this" notice; patent license terminates if you asse
 infringes a patent; license terminates on violation with a 30-day cure window; non-transferable,
 non-sublicensable.
 
-**Implication:** Weft — a self-hostable memory provider intended for distribution and market
+**Implication:** Aletheia — a self-hostable memory provider intended for distribution and market
 competition — may not ship any of these components. This is stricter than AGPL: it also blocks
 non-commercial redistribution of a product containing them.
 
-## Rules adopted for Weft
+## Rules adopted for Aletheia
 
-1. **Weft's own code:** independently written. Permissive license (MIT or Apache-2.0, final choice pending).
+1. **Aletheia's own code:** independently written. Permissive license (MIT or Apache-2.0, final choice pending).
 2. **No AGPL source copied, linked, or bundled.** Honcho and OpenViking are study references and external benchmark baselines only.
 3. **No Arsumbris component bundled, linked, or shipped** in any form. Study their documented architecture and behavior; implement our own typed substrate.
 4. **Dependency screening at intake:** every new third-party dependency must have its license read and recorded before it enters the tree. Absence of a license declaration means "not usable" until resolved.
@@ -65,6 +65,6 @@ non-commercial redistribution of a product containing them.
 ## Open items
 
 - [ ] Resolve au-host / UI SDK licenses (no license file located; owner contact may be required).
-- [ ] Confirm final Weft license (MIT vs Apache-2.0) — user decision, not yet made.
+- [ ] Confirm final Aletheia license (MIT vs Apache-2.0) — user decision, not yet made.
 - [ ] Verify Hindsight's suitability independently of its permissive license.
 - [ ] Full transitive dependency audit once the codebase exists.

@@ -2,9 +2,9 @@ import threading
 
 import pytest
 
-from weft.ingest import Ingestor
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import RecordConflict, Substrate
+from aletheia.ingest import Ingestor
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import RecordConflict, Substrate
 
 
 def test_completed_document_retry_does_not_recreate_deleted_observation(tmp_path):

@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 ROOT = Path(__file__).resolve().parents[1]
 H = {'Authorization': 'Bearer key'}
@@ -21,17 +21,17 @@ def _store(tmp_path):
 
 
 def _client(tmp_path, monkeypatch):
-    from weft.server import app
-    monkeypatch.setenv('WEFT_API_KEY', 'key')
-    monkeypatch.setenv('WEFT_KNOWN_SCOPES', 's')
-    monkeypatch.setenv('WEFT_DB_PATH', str(tmp_path / 'db'))
+    from aletheia.server import app
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'key')
+    monkeypatch.setenv('ALETHEIA_KNOWN_SCOPES', 's')
+    monkeypatch.setenv('ALETHEIA_DB_PATH', str(tmp_path / 'db'))
     return TestClient(app, raise_server_exceptions=False)
 
 
 # ---- (2) ranking -----------------------------------------------------------
 
 def test_agent_claim_confidence_cannot_displace_rank_one(tmp_path):
-    from weft.retrieval import recall
+    from aletheia.retrieval import recall
     sub, ctx = _store(tmp_path)
     sub.put(Record('src', 'Source', 'a', {'text': 'seed'}, attribution='user'), ctx)
     sub.put(Record('c1', 'Claim', 'a', {'text': 'needle needle needle needle', 'confidence': 0.0},
@@ -47,8 +47,8 @@ def test_agent_claim_confidence_cannot_displace_rank_one(tmp_path):
 
 @pytest.mark.parametrize('position', [1, 2])
 def test_boosts_cannot_displace_strongest_lexical_hit(tmp_path, monkeypatch, position):
-    import weft.retrieval as retrieval
-    import weft.temporal as temporal
+    import aletheia.retrieval as retrieval
+    import aletheia.temporal as temporal
     sub, ctx = _store(tmp_path)
     for i in range(4):
         sub.put(Record(f'r{i}', 'Source', 'a', {'text': 'needle ' * (8 - i)}, attribution='user'), ctx)
@@ -101,10 +101,10 @@ def test_valid_limit_still_recalls(tmp_path, monkeypatch):
 
 # ---- (4) auth --------------------------------------------------------------
 
-@pytest.mark.parametrize('module', ['weft.server', 'weft.mcp_server'])
+@pytest.mark.parametrize('module', ['aletheia.server', 'aletheia.mcp_server'])
 @pytest.mark.parametrize('stype', ['websocket', 'bogus'])
 def test_non_http_scopes_are_denied(monkeypatch, module, stype):
-    monkeypatch.setenv('WEFT_API_KEY', 'key')
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'key')
     called = []
 
     async def inner(scope, receive, send):
@@ -126,16 +126,16 @@ def test_lifespan_scope_still_passes(monkeypatch):
 
     async def inner(scope, receive, send): called.append(scope['type'])
 
-    from weft.server import _AuthMiddleware
+    from aletheia.server import _AuthMiddleware
     asyncio.run(_AuthMiddleware(inner)({'type': 'lifespan'}, None, None))
     assert called == ['lifespan']
 
 
 def test_auth_logic_has_single_implementation():
     for name in ('server', 'mcp_server', 'shadow'):
-        text = (ROOT / 'weft' / f'{name}.py').read_text()
+        text = (ROOT / 'aletheia' / f'{name}.py').read_text()
         assert 'compare_digest' not in text, name
-    assert 'compare_digest' in (ROOT / 'weft' / 'server_common.py').read_text()
+    assert 'compare_digest' in (ROOT / 'aletheia' / 'server_common.py').read_text()
 
 
 @pytest.mark.parametrize('auth,key,status', [
@@ -144,7 +144,7 @@ def test_auth_logic_has_single_implementation():
 ])
 def test_bearer_behaviour_preserved(tmp_path, monkeypatch, auth, key, status):
     c = _client(tmp_path, monkeypatch)
-    monkeypatch.setenv('WEFT_API_KEY', key)
+    monkeypatch.setenv('ALETHEIA_API_KEY', key)
     h = {'Authorization': auth} if auth else {}
     for path in ('/health', '/mcp/health'):
         if path == '/mcp/health':
@@ -157,7 +157,7 @@ def test_bearer_behaviour_preserved(tmp_path, monkeypatch, auth, key, status):
 def test_docs_quickstart_uses_real_key_and_documents_restore_policy():
     text = (ROOT / 'docs' / 'turnkey-deployment.md').read_text()
     assert 'Bearer ***' not in text
-    assert text.count('Bearer $WEFT_API_KEY') >= 2
+    assert text.count('Bearer $ALETHEIA_API_KEY') >= 2
     low = text.lower()
     assert 'active rule' in low and 'not' in low and 'restor' in low
     assert 'fresh approval' in low

@@ -1,8 +1,8 @@
 import pytest
 import sqlite_vec
 
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 
 def test_direct_vector_search_refuses_legacy_nonfinite_visible_row(tmp_path):

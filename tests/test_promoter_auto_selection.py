@@ -2,10 +2,10 @@ import time
 
 import pytest
 
-from weft.knowledge import KnowledgeRefusal
-from weft.procedural import ProposedRule, propose_rule, promote_rule
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, ScopeViolation, Substrate
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.procedural import ProposedRule, propose_rule, promote_rule
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, ScopeViolation, Substrate
 
 
 @pytest.mark.parametrize('invalid', ['expired', 'bounded', 'future_start', 'future_effective', 'superseded'])

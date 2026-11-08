@@ -1,4 +1,4 @@
-# Weft Competitive Feature Extraction — REA Report
+# Aletheia Competitive Feature Extraction — REA Report
 
 **Date:** 2026-10-29
 **Scope:** Clean-room feature extraction from Mem0, Honcho, Cognee, Zep/Graphiti, LangMem, Letta, OpenViking, memorywire
@@ -78,9 +78,9 @@
 
 ---
 
-## 2. What Weft already has (do not rebuild)
+## 2. What Aletheia already has (do not rebuild)
 
-| Weft feature | Competitor analog |
+| Aletheia feature | Competitor analog |
 |-------------|------------------|
 | Hybrid lexical + vector + RRF | Honcho, Zep, memorywire |
 | L0/L1/L2 tier loading | OpenViking |
@@ -97,7 +97,7 @@
 
 ### 3.1 The evaluation metric is wrong (primary cause)
 
-Weft's full benchmark (`benchmarks/full/common.py`) scores "exact" as:
+Aletheia's full benchmark (`benchmarks/full/common.py`) scores "exact" as:
 
 ```python
 exact = gold_lower in combined  # substring match on retrieved text
@@ -110,11 +110,11 @@ exact = gold_lower in combined  # substring match on retrieved text
 
 A memory system that retrieves the right context but fails substring match gets a zero — even if an LLM could answer correctly from that context.
 
-**Effect:** Weft's 42.1% LoCoMo "exact" is measuring a retrieval-to-verbatim-matching pipeline, not a memory-to-answer pipeline. Competitors scoring 52–83% use LLM generation + LLM judge.
+**Effect:** Aletheia's 42.1% LoCoMo "exact" is measuring a retrieval-to-verbatim-matching pipeline, not a memory-to-answer pipeline. Competitors scoring 52–83% use LLM generation + LLM judge.
 
 ### 3.2 No reranking (secondary cause)
 
-Weft fuses lexical and vector results with RRF (good), but returns raw fused order. Every major competitor adds a reranking pass:
+Aletheia fuses lexical and vector results with RRF (good), but returns raw fused order. Every major competitor adds a reranking pass:
 - Mem0: cross-encoder or LLM reranker (+150ms, +5–15% precision)
 - Zep: cross-encoder reranker on fused candidates
 - OpenViking: rerank after global retrieval
@@ -128,11 +128,11 @@ LangMem and memorywire both weight recall by:
 - **Recency** (how recently the memory was accessed/formed)
 - **Frequency** (how often recalled)
 
-Weft treats all records as equally authoritative. A record that was just confirmed by a Correction should outrank a 6-month-old observation.
+Aletheia treats all records as equally authoritative. A record that was just confirmed by a Correction should outrank a 6-month-old observation.
 
 ### 3.4 No multi-query expansion
 
-OpenViking expands one user query into 0–5 typed queries via LLM intent analysis. Weft passes the raw query directly to FTS5 and the embedder. Ambiguous or paraphrased queries miss records that use different wording.
+OpenViking expands one user query into 0–5 typed queries via LLM intent analysis. Aletheia passes the raw query directly to FTS5 and the embedder. Ambiguous or paraphrased queries miss records that use different wording.
 
 ### 3.5 No answer generation in the benchmark
 
@@ -203,8 +203,8 @@ The full benchmark stops at retrieval and never calls an LLM to generate an answ
 
 ### Phase 9.2 — Reranker (next)
 
-1. Add `weft/rerank.py` — optional cross-encoder reranker.
-2. Update `weft/retrieval.py` `recall()`: if `rerank=True`, expand pool to `limit*4`, run reranker, reorder.
+1. Add `aletheia/rerank.py` — optional cross-encoder reranker.
+2. Update `aletheia/retrieval.py` `recall()`: if `rerank=True`, expand pool to `limit*4`, run reranker, reorder.
 3. Add `rerank.provider`, `rerank.model` config.
 4. Fallback: if model unavailable, warn and return raw fused order.
 5. Adversarial review.
@@ -224,21 +224,21 @@ Move extraction and graph work earlier in the sequence, since they directly impr
 
 ## 6. What we will NOT do (clean-room / AGPL constraints)
 
-| Competitor feature | Why not copied | Weft alternative |
+| Competitor feature | Why not copied | Aletheia alternative |
 |-------------------|---------------|------------------|
 | Mem0 managed graph memory | Closed-source platform feature | Phase 12 local graph |
 | Honcho Dialectic agent | Closed-source reasoning engine | LLM-backed query expansion + reranker |
 | Cognee Ladybug / Kuzu graph DB | External dependency | SQLite-adjacency local graph |
 | Zep bi-temporal model | External graph DB required | SQLite `valid_from`/`valid_to` columns (Phase 12) |
-| Letta memory blocks | Architectural choice; blocks ≠ scoped records | Weft's scope + tier model already cleaner |
-| OpenViking VikingFS | Filesystem abstraction; not aligned with Weft's evidence-bound model | Keep Weft's record/substrate model |
-| memorywire wire format | Useful interop layer but adds complexity | Weft's public `put()/recall()/rebuild_fts()` already serves |
+| Letta memory blocks | Architectural choice; blocks ≠ scoped records | Aletheia's scope + tier model already cleaner |
+| OpenViking VikingFS | Filesystem abstraction; not aligned with Aletheia's evidence-bound model | Keep Aletheia's record/substrate model |
+| memorywire wire format | Useful interop layer but adds complexity | Aletheia's public `put()/recall()/rebuild_fts()` already serves |
 
 ---
 
 ## 7. Competitive positioning after refinements
 
-| Dimension | Weft today | After P0–P1 | Differentiator vs. peers |
+| Dimension | Aletheia today | After P0–P1 | Differentiator vs. peers |
 |-----------|-----------|-------------|------------------------|
 | Retrieval precision | 42.1% (exact match) | ~65–75% (LLM-judge) | Comparable to Zep, behind MemHQ |
 | Reranking | None | Cross-encoder | Matches Mem0/Zep |

@@ -1,12 +1,12 @@
 import json
 import logging
 import pytest
-from weft.logging_config import setup_logging, log_event, RedactingFormatter
+from aletheia.logging_config import setup_logging, log_event, RedactingFormatter
 
 
 def test_redacting_formatter_strips_untrusted_tokens(capsys):
     setup_logging(level="INFO")
-    logger = logging.getLogger("weft.test")
+    logger = logging.getLogger("aletheia.test")
     logger.info("<UNTRUSTED_DOCUMENT>secret</UNTRUSTED_DOCUMENT> [REDACTED INJECTION]")
     out = capsys.readouterr().out
     assert "<UNTRUSTED_DOCUMENT>" not in out
@@ -17,7 +17,7 @@ def test_redacting_formatter_strips_untrusted_tokens(capsys):
 
 def test_redacting_formatter_case_insensitive_and_whitespace_variants(capsys):
     setup_logging(level="INFO")
-    logger = logging.getLogger("weft.test")
+    logger = logging.getLogger("aletheia.test")
     logger.info("<untrusted_document>secret</untrusted_document> <UNTRUSTED_DOCUMENT >secret2</UNTRUSTED_DOCUMENT > [redacted injection]")
     out = capsys.readouterr().out
     assert "UNTRUSTED_DOCUMENT" not in out

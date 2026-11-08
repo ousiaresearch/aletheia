@@ -7,21 +7,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd --create-home weft
-WORKDIR /home/weft
+RUN useradd --create-home aletheia
+WORKDIR /home/aletheia
 
 # Copy source first so pip can install the local package
-COPY weft/ weft/
+COPY aletheia/ aletheia/
 COPY pyproject.toml README.md ./
 
-# Install Weft with server extras; source changes invalidate this layer.
+# Install Aletheia with server extras; source changes invalidate this layer.
 RUN pip install --no-cache-dir ".[server]"
 
 # Create data directory
-RUN mkdir -p /home/weft/.weft && chown -R weft:weft /home/weft
+RUN mkdir -p /home/aletheia/.aletheia && chown -R aletheia:aletheia /home/aletheia
 
-USER weft
+USER aletheia
 EXPOSE 8765
 
 # Default command
-CMD ["python", "-m", "weft.server", "--host", "0.0.0.0", "--port", "8765"]
+CMD ["python", "-m", "aletheia.server", "--host", "0.0.0.0", "--port", "8765"]

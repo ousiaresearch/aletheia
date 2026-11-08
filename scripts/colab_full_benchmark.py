@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 CACHE = REPO / "benchmarks" / "full" / "cache"
 
 def run(cmd: str, check: bool = True) -> str:
@@ -25,7 +25,7 @@ def run(cmd: str, check: bool = True) -> str:
 
 # Clone repo if missing
 if not (REPO / ".git").exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
     os.chdir(REPO)
 else:
     os.chdir(REPO)
@@ -36,7 +36,7 @@ run("pip install -e . -q")
 run("pip install datasets pytest -q")
 
 # Verify
-import weft  # noqa: E402
+import aletheia  # noqa: E402
 from benchmarks.full.locomo import run as run_locomo  # noqa: E402
 from benchmarks.full.longmemeval import run as run_longmemeval  # noqa: E402
 from benchmarks.full.beam import run as run_beam  # noqa: E402
@@ -73,7 +73,7 @@ for name, runner in suites:
 (REPO / "benchmarks" / "full-results.json").write_text(json.dumps(results, indent=2) + "\n")
 
 lines = [
-    "# Weft Benchmark Results (full run — Colab)",
+    "# Aletheia Benchmark Results (full run — Colab)",
     "",
     f"**Generated:** {results['generated']}",
     "**Methodology:** Retrieval hit@k + MRR when evidence_ids available; token F1 fallback.",
@@ -101,4 +101,4 @@ for name, res in results["suites"].items():
 
 (REPO / "benchmarks" / "full-results.md").write_text("\n".join(lines))
 (REPO / "benchmarks" / "run-complete.txt").write_text(time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-print("\n[setup] Done. Artifacts in /content/weft/benchmarks/")
+print("\n[setup] Done. Artifacts in /content/aletheia/benchmarks/")

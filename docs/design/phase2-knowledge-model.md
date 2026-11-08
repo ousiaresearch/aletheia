@@ -2,7 +2,7 @@
 
 Status: **implemented, pending review.** Work is uncommitted. Commit and the Phase 2 adversarial review run in separate turns, per the phase gate.
 
-Source: `~/.hermes/plans/2026-10-24_weft-memory-system-full-plan.md` §4 (knowledge model) and §5 (scope engine). Inherits the Phase 1 closure in `docs/adr/0001-phase1-decisions.md`, including residuals R1–R11.
+Source: `~/.hermes/plans/2026-10-24_aletheia-system-full-plan.md` §4 (knowledge model) and §5 (scope engine). Inherits the Phase 1 closure in `docs/adr/0001-phase1-decisions.md`, including residuals R1–R11.
 
 ## 1. Scope of Phase 2
 
@@ -127,7 +127,7 @@ None blocking Phase 2 implementation.
 
 ## 9. Implementation notes (as built, for the reviewer)
 
-- **Rules table:** `weft/knowledge.py` (`RULES`, `check_record`). Runs inside the write transaction, after lineage is set. Refusals are generic (G4/G10).
+- **Rules table:** `aletheia/knowledge.py` (`RULES`, `check_record`). Runs inside the write transaction, after lineage is set. Refusals are generic (G4/G10).
 - **Attribution:** `Record.attribution`, required. Column added by migration 2 (`PRAGMA user_version`), with legacy rows backfilled to `system`. Migration is transactional; a failure rolls back (tested with a SQL trigger).
 - **User-authored:** `ScopeContext.user_authored` (default False). Required for attribution `user` and for any cross-scope request. The library trusts this flag from the context it is given. It refuses the request when the flag is absent, but it cannot verify who built the context. The agent-minted cross-scope path is closed only at the Phase 6 service boundary (review residual R-1).
 - **Verifiers:** table `verifiers`, populated only through `register_verifier(actor, ctx)`, which requires `user_authored`. A verifier must be registered before it can write `verifier`-attributed records.

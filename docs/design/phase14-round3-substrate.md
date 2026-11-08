@@ -60,7 +60,7 @@
   `delete()`'s transitive lineage cascade (shared `_lineage`): dependents, their fts rows, vectors,
   entity links and jobs go too. Returns records removed (pruned plus cascaded).
 - **Vectors after a correction.** A record superseded by a Correction loses its vectors and is
-  exempt from `vector_index_complete`. `weft extract` now embeds the Claims it writes.
+  exempt from `vector_index_complete`. `aletheia extract` now embeds the Claims it writes.
 - **Concurrent first open.** `PRAGMA journal_mode=WAL` and the schema script retry
   `database is locked` up to the busy timeout.
 - **Import idempotence.** A bundle record identical (as serialized) to the stored one is skipped, so
@@ -93,7 +93,7 @@
   scans; a store already at schema 7 is not re-checked.
 - **Re-embedding.** `Substrate.reembed_missing(scope, ctx, embedder, limit=None)` embeds readable
   Source/Observation/Claim records lacking a vector for the embedder's model (write grant needed,
-  text bounded to 2000 chars, idempotent). CLI: `weft --db PATH reembed --scope S [--limit N]`.
+  text bounded to 2000 chars, idempotent). CLI: `aletheia --db PATH reembed --scope S [--limit N]`.
 
 ## Round 7 (Sonnet R6-03..07)
 

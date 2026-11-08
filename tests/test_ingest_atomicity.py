@@ -2,9 +2,9 @@ import sqlite3
 
 import pytest
 
-from weft.ingest import Ingestor
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Substrate
+from aletheia.ingest import Ingestor
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Substrate
 
 
 def test_document_database_failure_rolls_back_all_outputs_and_can_retry(tmp_path):

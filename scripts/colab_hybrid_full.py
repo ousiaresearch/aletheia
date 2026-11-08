@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 
 def run(cmd: str, check: bool = True) -> str:
     print(f"[setup] {cmd}")
@@ -23,7 +23,7 @@ def run(cmd: str, check: bool = True) -> str:
     return out
 
 if not REPO.exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, str(REPO))
 

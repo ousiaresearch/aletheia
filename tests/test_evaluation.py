@@ -1,4 +1,4 @@
-"""Phase 7 evaluation runner for Weft reasoning loop.
+"""Phase 7 evaluation runner for Aletheia reasoning loop.
 
 Runs the gold evaluation set from docs/evaluation/set-v1.md against the
 reasoning functions and reports per-case pass/fail plus aggregate metrics.
@@ -13,16 +13,16 @@ from pathlib import Path
 
 import pytest
 
-from weft.models import ModelLayer
-from weft.reasoning import (
+from aletheia.models import ModelLayer
+from aletheia.reasoning import (
     Abstention,
     _authorize_read,
     _candidates,
     contradict,
     synthesize,
 )
-from weft.scope import ScopeEngine, ScopeContext
-from weft.substrate import Record, Substrate
+from aletheia.scope import ScopeEngine, ScopeContext
+from aletheia.substrate import Record, Substrate
 
 
 KNOWN = {"s", "t"}
@@ -140,7 +140,7 @@ def _build_substrate(tmp_path, case):
             "INSERT OR IGNORE INTO records (record_id, record_type, scope, epistemic_status, payload, "
             "created_at, effective_at, supersedes, source_ids, provenance, attribution) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            ("doc-1", "Document", "s", "stated", json.dumps({"text": "Weft Phase 6 integrates shadow mode for project Alpha."}), 0.0, None, None, "[]", "{}", "document"),
+            ("doc-1", "Document", "s", "stated", json.dumps({"text": "Aletheia Phase 6 integrates shadow mode for project Alpha."}), 0.0, None, None, "[]", "{}", "document"),
         )
     elif case["case_id"] == "E6":
         sub._conn.execute(

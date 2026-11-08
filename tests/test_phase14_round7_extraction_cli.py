@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from weft import cli, extraction
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia import cli, extraction
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -43,7 +43,7 @@ def _no_network(monkeypatch):
 def test_extract_facts_ungranted_caller_gets_nothing_and_sends_nothing(tmp_path, monkeypatch):
     sub, ctx_a, _ = _store(tmp_path)
     monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
-    monkeypatch.setenv('WEFT_EXTRACT_ALLOW_EXTERNAL', '1')
+    monkeypatch.setenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', '1')
     calls = _no_network(monkeypatch)
     try:
         assert extraction.extract_facts(sub, ctx_a, 'b') == []
@@ -65,7 +65,7 @@ def test_extract_facts_respects_content_marker_gate(tmp_path, monkeypatch):
     """A record the read gate withholds is never sent, even inside a granted scope."""
     sub, _, root = _store(tmp_path)
     monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
-    monkeypatch.setenv('WEFT_EXTRACT_ALLOW_EXTERNAL', '1')
+    monkeypatch.setenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', '1')
     sent = []
     monkeypatch.setattr(extraction, '_extract_facts', lambda text, scope: sent.append(text) or [])
     try:
@@ -81,7 +81,7 @@ def test_extract_facts_respects_content_marker_gate(tmp_path, monkeypatch):
 def test_library_extraction_requires_explicit_opt_in(tmp_path, monkeypatch):
     sub, _, root = _store(tmp_path)
     monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
-    monkeypatch.delenv('WEFT_EXTRACT_ALLOW_EXTERNAL', raising=False)
+    monkeypatch.delenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', raising=False)
     calls = _no_network(monkeypatch)
     try:
         assert extraction.extract_facts(sub, root, 'b') == []
@@ -94,7 +94,7 @@ def test_cli_extract_refuses_without_opt_in(tmp_path, monkeypatch, capsys):
     sub, _, _ = _store(tmp_path)
     sub.close()
     monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
-    monkeypatch.delenv('WEFT_EXTRACT_ALLOW_EXTERNAL', raising=False)
+    monkeypatch.delenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', raising=False)
     calls = _no_network(monkeypatch)
     rc = cli.main(['--db', str(tmp_path / 'w.db'), 'extract', '--scope', 'b'])
     assert rc != 0
@@ -106,7 +106,7 @@ def test_cli_extract_with_flag_prints_destination_host_first(tmp_path, monkeypat
     sub, _, _ = _store(tmp_path)
     sub.close()
     monkeypatch.setenv('TOKENHARBOR_API_KEY', 'dummy')
-    monkeypatch.delenv('WEFT_EXTRACT_ALLOW_EXTERNAL', raising=False)
+    monkeypatch.delenv('ALETHEIA_EXTRACT_ALLOW_EXTERNAL', raising=False)
     monkeypatch.setattr(extraction, '_extract_facts', lambda text, scope: [])
     rc = cli.main(['--db', str(tmp_path / 'w.db'), 'extract', '--scope', 'b', '--allow-external'])
     assert rc == 0
@@ -114,7 +114,7 @@ def test_cli_extract_with_flag_prints_destination_host_first(tmp_path, monkeypat
 
 
 def test_no_personal_credential_path(tmp_path, monkeypatch):
-    assert 'vireth' not in (ROOT / 'weft' / 'extraction.py').read_text()
+    assert 'vireth' not in (ROOT / 'aletheia' / 'extraction.py').read_text()
     monkeypatch.setenv('HOME', str(tmp_path))
     (tmp_path / '.config' / 'vireth').mkdir(parents=True)
     (tmp_path / '.config' / 'vireth' / 'th_token').write_text('personal')
@@ -129,9 +129,9 @@ def test_no_personal_credential_path(tmp_path, monkeypatch):
 _PROBE = r'''
 import json, sys, tempfile
 from pathlib import Path
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 d = tempfile.mkdtemp()
 sub = Substrate(Path(d) / 'w.db', ScopeEngine(known_scopes={'a'}))
 ctx = ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True, actor='u')
@@ -165,7 +165,7 @@ def test_neighbors_never_displace_matching_records():
 
 
 def test_neighbor_expand_ties_and_missing_created_at_are_stable(tmp_path):
-    from weft.retrieval import _neighbor_expand
+    from aletheia.retrieval import _neighbor_expand
     sub = Substrate(tmp_path / 'w.db', ScopeEngine(known_scopes={'a'}))
     ctx = ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True, actor='u')
     try:
@@ -183,12 +183,12 @@ def test_neighbor_expand_ties_and_missing_created_at_are_stable(tmp_path):
 # ---- R6-10 -----------------------------------------------------------------------------------
 
 def test_adapters_no_hardcoded_profile_and_no_import_time_mkdir(tmp_path):
-    src = (ROOT / 'weft' / 'adapters.py').read_text()
+    src = (ROOT / 'aletheia' / 'adapters.py').read_text()
     assert 'hermes' not in src and 'arien' not in src
     env = {k: v for k, v in os.environ.items() if k not in ('PYTHONPATH', 'PYTHONHOME')}
     target = tmp_path / 'scratch'
-    env['WEFT_SCRATCH_DIR'] = str(target)
-    code = ('import os, weft.adapters as a; '
+    env['ALETHEIA_SCRATCH_DIR'] = str(target)
+    code = ('import os, aletheia.adapters as a; '
             f'assert not os.path.exists({str(target)!r}); '
             'print(a._scratch_dir())')
     out = subprocess.run([sys.executable, '-c', code], cwd=ROOT, env=env,
@@ -198,9 +198,9 @@ def test_adapters_no_hardcoded_profile_and_no_import_time_mkdir(tmp_path):
 
 def test_adapters_default_is_tempdir(monkeypatch):
     import tempfile
-    from weft import adapters
-    monkeypatch.delenv('WEFT_SCRATCH_DIR', raising=False)
-    assert adapters._scratch_dir().startswith(tempfile.gettempdir()) or 'weft' in adapters._scratch_dir()
+    from aletheia import adapters
+    monkeypatch.delenv('ALETHEIA_SCRATCH_DIR', raising=False)
+    assert adapters._scratch_dir().startswith(tempfile.gettempdir()) or 'aletheia' in adapters._scratch_dir()
     assert 'hermes' not in adapters._scratch_dir()
 
 

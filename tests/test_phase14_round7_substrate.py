@@ -8,9 +8,9 @@ import sqlite3
 
 import pytest
 
-from weft.knowledge import KnowledgeRefusal
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import SCHEMA_VERSION, VEC_DIM, Record, ScopeViolation, Substrate
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import SCHEMA_VERSION, VEC_DIM, Record, ScopeViolation, Substrate
 
 MODEL = 'm@1'
 VEC = [1.0] + [0.0] * (VEC_DIM - 1)

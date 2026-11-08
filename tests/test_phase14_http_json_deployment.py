@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from weft.server import app
+from aletheia.server import app
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +25,7 @@ def test_documented_curl_examples_use_configured_key():
     document = (ROOT / 'docs/turnkey-deployment.md').read_text()
     curl_lines = [line for line in document.splitlines() if line.startswith('curl ')]
     assert len(curl_lines) >= 2
-    assert all('Authorization: Bearer $WEFT_API_KEY' in line for line in curl_lines)
+    assert all('Authorization: Bearer $ALETHEIA_API_KEY' in line for line in curl_lines)
 
 
 @pytest.mark.parametrize('path', ['/mcp/ingest', '/mcp/call'])
@@ -37,9 +37,9 @@ def test_documented_curl_examples_use_configured_key():
     {'record_id': '\ud800', 'payload': {'text': 'bad'}},
 ])
 def test_invalid_json_values_rejected_atomically_without_poisoning_export(tmp_path, monkeypatch, path, bad_record):
-    monkeypatch.setenv('WEFT_API_KEY', 'key')
-    monkeypatch.setenv('WEFT_KNOWN_SCOPES', 's')
-    monkeypatch.setenv('WEFT_DB_PATH', str(tmp_path / 'db'))
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'key')
+    monkeypatch.setenv('ALETHEIA_KNOWN_SCOPES', 's')
+    monkeypatch.setenv('ALETHEIA_DB_PATH', str(tmp_path / 'db'))
     client = TestClient(app, raise_server_exceptions=False)
     headers = {'Authorization': 'Bearer key', 'Content-Type': 'application/json'}
     good = {'record_id': 'good', 'payload': {'text': 'ok'}}

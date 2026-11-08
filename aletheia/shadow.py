@@ -1,0 +1,151 @@
+"""Phase 6: shadow-mode read path with journal isolation."""
+
+from __future__ import annotations
+
+import difflib
+import json
+import os
+from typing import Any
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+
+from aletheia.substrate import Substrate, Record
+from aletheia.scope import ScopeEngine, ScopeContext
+from aletheia.server_common import known_scopes as _known_scopes, scope_engine_for as _scope_engine_for, _db_path, require_api_key as _require_api_key, MAX_RECALL_LIMIT
+
+
+class ShadowRecallRequest(BaseModel):
+    scope: str
+    query: str
+    limit: int = Field(default=5, ge=1, le=MAX_RECALL_LIMIT)
+
+
+class ShadowReasonRequest(BaseModel):
+    scope: str
+    query: str
+
+
+def _shadow_ctx(scope: str) -> tuple[ScopeEngine, ScopeContext]:
+    engine = _scope_engine_for(scope)
+    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor="shadow")
+    return engine, ctx
+
+
+def _diff_records(active: list[dict], shadow: list[dict]) -> dict[str, Any]:
+    active_ids = {r["record_id"] for r in active}
+    shadow_ids = {r["record_id"] for r in shadow}
+    added = sorted(shadow_ids - active_ids)
+    removed = sorted(active_ids - shadow_ids)
+    common = sorted(active_ids & shadow_ids)
+    return {
+        "added": added,
+        "removed": removed,
+        "common": common,
+        "active_count": len(active),
+        "shadow_count": len(shadow),
+    }
+
+
+def _append(app: FastAPI) -> None:
+    @app.post("/shadow/recall")
+    def shadow_recall(request: Request, req: ShadowRecallRequest) -> JSONResponse:
+        _require_api_key(request)
+        engine, ctx = _shadow_ctx(req.scope)
+        sub = Substrate(_db_path(), engine)
+        try:
+            readable, _ = sub.query(ctx)
+            q = req.query.lower()
+            matches = []
+            for r in readable:
+                text = r.payload.get("text", "") or ""
+                if q in text.lower():
+                    matches.append({
+                        "record_id": r.record_id,
+                        "record_type": r.record_type,
+                        "text": text[:500],
+                        "effective_at": r.effective_at,
+                        "supersedes": r.supersedes,
+                    })
+            matches = matches[: req.limit]
+            return JSONResponse({
+                "matches": matches,
+                "total": len(matches),
+                "actor": "shadow",
+                "user_authored": False,
+            })
+        finally:
+            sub.close()
+
+    @app.post("/shadow/reason")
+    def shadow_reason(request: Request, req: ShadowReasonRequest) -> JSONResponse:
+        _require_api_key(request)
+        engine, ctx = _shadow_ctx(req.scope)
+        sub = Substrate(_db_path(), engine)
+        try:
+            readable, _ = sub.query(ctx)
+            q = req.query.lower()
+            evidence = []
+            for r in readable:
+                text = r.payload.get("text", "") or ""
+                if q in text.lower():
+                    evidence.append({
+                        "record_id": r.record_id,
+                        "text": text[:800],
+                        "epistemic_status": r.epistemic_status,
+                    })
+            evidence = evidence[:5]
+            return JSONResponse({
+                "query": req.query,
+                "evidence": evidence,
+                "actor": "shadow",
+                "user_authored": False,
+                "note": "shadow reasoning does not write to the active session journal",
+            })
+        finally:
+            sub.close()
+
+    @app.post("/shadow/compare")
+    def shadow_compare(request: Request, req: ShadowRecallRequest) -> JSONResponse:
+        _require_api_key(request)
+        engine_active, ctx_active = _ctx_for(req.scope)
+        engine_shadow, ctx_shadow = _shadow_ctx(req.scope)
+        sub_active = Substrate(_db_path(), engine_active)
+        sub_shadow = Substrate(_db_path(), engine_shadow)
+        try:
+            readable_active, _ = sub_active.query(ctx_active)
+            readable_shadow, _ = sub_shadow.query(ctx_shadow)
+            q = req.query.lower()
+
+            def _filter(records):
+                out = []
+                for r in records:
+                    text = r.payload.get("text", "") or ""
+                    if q in text.lower():
+                        out.append({
+                            "record_id": r.record_id,
+                            "record_type": r.record_type,
+                            "text": text[:500],
+                            "effective_at": r.effective_at,
+                            "supersedes": r.supersedes,
+                        })
+                return out
+
+            active_matches = _filter(readable_active)[: req.limit]
+            shadow_matches = _filter(readable_shadow)[: req.limit]
+            diff = _diff_records(active_matches, shadow_matches)
+            return JSONResponse({
+                "active": active_matches,
+                "shadow": shadow_matches,
+                "diff": diff,
+            })
+        finally:
+            sub_active.close()
+            sub_shadow.close()
+
+
+def _ctx_for(scope: str, actor: str = "http-client") -> tuple[ScopeEngine, ScopeContext]:
+    engine = _scope_engine_for(scope)
+    ctx = ScopeContext(granted_scopes=frozenset({scope}), user_authored=False, actor=actor)
+    return engine, ctx

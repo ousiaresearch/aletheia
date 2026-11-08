@@ -1,4 +1,4 @@
-# Weft Full Benchmark Results
+# Aletheia Full Benchmark Results
 
 Generated: 2026-10-29
 

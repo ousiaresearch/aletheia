@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from weft.extraction import extract_facts, write_claims, consolidate_scope, _extract_facts
-from weft.knowledge import RULES
-from weft.scope import ScopeEngine, ScopeContext
-from weft.substrate import Record, Substrate
+from aletheia.extraction import extract_facts, write_claims, consolidate_scope, _extract_facts
+from aletheia.knowledge import RULES
+from aletheia.scope import ScopeEngine, ScopeContext
+from aletheia.substrate import Record, Substrate
 
 
 def _make_sub():
@@ -75,7 +75,7 @@ def test_consolidate_empty_scope():
 
 
 def test_consolidate_deduplicates():
-    """consolidate_scope identifies duplicate claims (Correction requires user attribution in Weft)."""
+    """consolidate_scope identifies duplicate claims (Correction requires user attribution in Aletheia)."""
     sub, ctx, tmp = _make_sub()
     try:
         src = Record(
@@ -111,7 +111,7 @@ def test_consolidate_deduplicates():
         sub.put(claim2, ctx)
         
         result = consolidate_scope(sub, ctx, "test")
-        # Weft design: Corrections require user attribution, so automated
+        # Aletheia design: Corrections require user attribution, so automated
         # consolidation reports duplicates but cannot auto-supersede.
         assert result["claims_reviewed"] == 2
         assert result["duplicate_count"] == 1

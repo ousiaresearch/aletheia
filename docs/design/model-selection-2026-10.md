@@ -1,7 +1,7 @@
-# Weft Model Selection and Open-Item Decisions (Oct 2026)
+# Aletheia Model Selection and Open-Item Decisions (Oct 2026)
 
 **Status:** Evidence-backed proposal. Supersedes the model table in `alpha-formats-models-retrieval.md` §3 and the open items in its §8.
-**Method:** Licences and parameter counts were read from the Hugging Face model API (`/api/models/<id>`, `license:*` tag and `safetensors.total`) and PyPI/GitHub metadata on 2026-10-24. Benchmark numbers come from the model card where stated; where they come from a leaderboard snapshot or a blog, the source is named and the figure is marked **[secondary]**. Nothing here is a Weft measurement. Phase 3 and 4 measure everything on this machine.
+**Method:** Licences and parameter counts were read from the Hugging Face model API (`/api/models/<id>`, `license:*` tag and `safetensors.total`) and PyPI/GitHub metadata on 2026-10-24. Benchmark numbers come from the model card where stated; where they come from a leaderboard snapshot or a blog, the source is named and the figure is marked **[secondary]**. Nothing here is a Aletheia measurement. Phase 3 and 4 measure everything on this machine.
 
 ---
 
@@ -111,7 +111,7 @@ The 4-bit numbers are estimates from parameter counts, not measurements. Phase 4
 
 | # | Item | Proposed resolution | Status |
 |---|---|---|---|
-| 1 | "Clean room" reading | Weft's own code is written from specs. No copying of Arsumbris, Honcho, or OpenViking code, types, schemas, or fixtures. Libraries and model weights are dependencies with recorded licences. | Your answer ("clean room operations only") matches this reading. **Settled**, unless you say otherwise. |
+| 1 | "Clean room" reading | Aletheia's own code is written from specs. No copying of Arsumbris, Honcho, or OpenViking code, types, schemas, or fixtures. Libraries and model weights are dependencies with recorded licences. | Your answer ("clean room operations only") matches this reading. **Settled**, unless you say otherwise. |
 | 2 | Reading Arsumbris material | Public docs may be studied for behaviour. The implementation role never reads Arsumbris source. Protocol in design doc §9. | Follows from item 1. **Settled.** |
 | 3 | ffmpeg build | **LGPL build, pinned**, with no GPL-only components (no x264/x265). Verify with `ffmpeg -buildconf` and record the build hash. Decoding mp3, m4a/AAC, Opus, FLAC, and WAV is covered by the LGPL build. | **Proposed.** I'll confirm the build and record it in the inventory before Phase 3. |
 | 4 | Default egress level | **Local-only.** External calls require explicit confirmation per task, with the preview shown. | **Proposed.** Low-stakes; I'll proceed unless you object. |

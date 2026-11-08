@@ -4,11 +4,11 @@
 
 ## Intended experience
 
-One person installs and operates Weft on a device they control. Memory is local by default, understandable, inspectable, correctable, exportable and deletable. Local models are the default; external model processing requires explicit informed user consent showing the provider and data involved. The intended desktop should make these controls accessible without requiring a command line. Self-hosted and multi-user service modes are future work, not implied by this decision.
+One person installs and operates Aletheia on a device they control. Memory is local by default, understandable, inspectable, correctable, exportable and deletable. Local models are the default; external model processing requires explicit informed user consent showing the provider and data involved. The intended desktop should make these controls accessible without requiring a command line. Self-hosted and multi-user service modes are future work, not implied by this decision.
 
 ## Trust boundary and limitations
 
-The first alpha is a single-user local application, not a network service. The person and code running as that OS user are trusted; Weft does not claim protection from malicious same-user processes, administrators, compromised devices, or direct database access by such processes. File permissions do not create isolation between same-user profiles. A device compromise or unprotected backup can expose plaintext memory. Local storage alone is not encryption, and an exposed service would require separately designed and verified authentication and isolation.
+The first alpha is a single-user local application, not a network service. The person and code running as that OS user are trusted; Aletheia does not claim protection from malicious same-user processes, administrators, compromised devices, or direct database access by such processes. File permissions do not create isolation between same-user profiles. A device compromise or unprotected backup can expose plaintext memory. Local storage alone is not encryption, and an exposed service would require separately designed and verified authentication and isolation.
 
 The stronger design in `vector-identity-consolidated-proposal.md` remains a proposed possible future tier, not an alpha prerequisite or an approved specification. This decision does not adopt its separate OS identity, independent external ledger, or whole-host rollback detection. Nor does it waive data integrity, deletion, provenance, or scope defects within the local trust boundary. Do not imply protection against historical rollback, backup resurrection, physical erasure, timing side channels, or external-provider retention unless a specific mechanism is implemented and tested.
 

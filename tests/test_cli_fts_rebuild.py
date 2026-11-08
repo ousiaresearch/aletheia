@@ -1,10 +1,10 @@
 import json
 
-from weft import cli
-from weft.ingest import Ingestor
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia import cli
+from aletheia.ingest import Ingestor
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 
 class Embedder:

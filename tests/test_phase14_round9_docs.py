@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from weft import cli
+from aletheia import cli
 
 ROOT = Path(__file__).resolve().parents[1]
 DOC = (ROOT / 'docs' / 'turnkey-deployment.md').read_text()
@@ -91,9 +91,9 @@ def _commands(text):
     for block in re.findall(r'```(?:bash|sh)?\n(.*?)```', text, re.S):
         for line in re.sub(r'\\\n', ' ', block).splitlines():
             line = line.strip()
-            if line.startswith('weft ') and not line.startswith('weft-server'):
+            if line.startswith('aletheia ') and not line.startswith('aletheia-server'):
                 out.append(line)
-    out += re.findall(r'`(weft [^`]*--[^`]*)`', text)
+    out += re.findall(r'`(aletheia [^`]*--[^`]*)`', text)
     return out
 
 

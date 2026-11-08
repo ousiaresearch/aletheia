@@ -1,4 +1,4 @@
-# Weft Benchmark Results (full run — Colab)
+# Aletheia Benchmark Results (full run — Colab)
 
 **Generated:** 2026-10-29T21:20:07Z
 **Methodology:** Retrieval hit@k + MRR when evidence_ids available; token F1 fallback.

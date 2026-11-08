@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# verify-install.sh — fresh-venv install, smoke test, and uninstall for Weft alpha.
+# verify-install.sh — fresh-venv install, smoke test, and uninstall for Aletheia alpha.
 # Requires: python3.11+, pip, wheel in dist/
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,8 +14,8 @@ if [ ! -d "dist" ] || [ -z "$(ls dist/*.whl 2>/dev/null)" ]; then
 fi
 
 WHEEL="$(ls dist/*.whl | head -n 1)"
-VENV="$(mktemp -d -t weft-install-verify-XXXXXXXXXX)"
-PYTHON_BIN="${WEFT_PYTHON:-python3.11}"
+VENV="$(mktemp -d -t aletheia-install-verify-XXXXXXXXXX)"
+PYTHON_BIN="${ALETHEIA_PYTHON:-python3.11}"
 if ! command -v "${PYTHON_BIN}" >/dev/null 2>&1; then
   PYTHON_BIN="python3"
 fi
@@ -23,7 +23,7 @@ PY_VER="$("${PYTHON_BIN}" -c 'import sys; print(".".join(map(str, sys.version_in
 PY_MAJOR="$("${PYTHON_BIN}" -c 'import sys; print(sys.version_info.major)')"
 PY_MINOR="$("${PYTHON_BIN}" -c 'import sys; print(sys.version_info.minor)')"
 if [ "${PY_MAJOR}" -lt 3 ] || [ "${PY_MAJOR}" -eq 3 -a "${PY_MINOR}" -lt 11 ]; then
-  echo "Error: ${PYTHON_BIN} is ${PY_VER}, but Weft requires Python >= 3.11" >&2
+  echo "Error: ${PYTHON_BIN} is ${PY_VER}, but Aletheia requires Python >= 3.11" >&2
   exit 1
 fi
 umask 0077
@@ -31,19 +31,19 @@ umask 0077
 "${VENV}/bin/python" -m pip install --quiet "${WHEEL}"
 
 echo "==> Checking entrypoint"
-"${VENV}/bin/weft" --help >/dev/null
-"${VENV}/bin/weft" --db /tmp/weft-install-test.db serve --help >/dev/null
+"${VENV}/bin/aletheia" --help >/dev/null
+"${VENV}/bin/aletheia" --db /tmp/aletheia-install-test.db serve --help >/dev/null
 
 echo "==> Uninstalling"
-"${VENV}/bin/python" -m pip uninstall -y weft-memory >/dev/null
+"${VENV}/bin/python" -m pip uninstall -y aletheia >/dev/null
 
 echo "==> Verifying uninstall"
-if [ -x "${VENV}/bin/weft" ]; then
-  echo "Error: weft entrypoint still exists after uninstall" >&2
+if [ -x "${VENV}/bin/aletheia" ]; then
+  echo "Error: aletheia entrypoint still exists after uninstall" >&2
   exit 1
 fi
-if "${VENV}/bin/python" -c "import sys; sys.path = [p for p in sys.path if p]; import weft" 2>/dev/null; then
-  echo "Error: weft package still importable after uninstall" >&2
+if "${VENV}/bin/python" -c "import sys; sys.path = [p for p in sys.path if p]; import aletheia" 2>/dev/null; then
+  echo "Error: aletheia package still importable after uninstall" >&2
   exit 1
 fi
 

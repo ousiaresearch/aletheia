@@ -1,5 +1,5 @@
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate, VEC_DIM
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate, VEC_DIM
 
 
 def test_vector_completeness_scans_projection_once(tmp_path):

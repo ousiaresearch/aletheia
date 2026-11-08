@@ -20,7 +20,7 @@ from benchmarks.full.common import (
     run_recall,
     score_answer,
 )
-from weft.substrate import Record
+from aletheia.substrate import Record
 
 
 def _load_dataset():

@@ -1,6 +1,6 @@
 # Alpha Release Checklist
 
-**Target:** Weft 0.1.0a0 — first alpha distribution
+**Target:** Aletheia 0.1.0a0 — first alpha distribution
 **Status:** Pre-release verification
 
 ## Gates
@@ -13,14 +13,14 @@ Each gate must be verified before the alpha tag is cut.
 - [x] **G4: pyproject.toml valid** — `python3 -m build --wheel` succeeds without error. Verified via `scripts/build-release.sh`.
 - [x] **G5: README accurate** — Status, install, quick-start, and invariants match current code.
 - [x] **G6: Docs present** — `docs/operational-requirements.md` includes resource limits and crash recovery.
-- [x] **G7: Clean-room provenance** — `docs/clean-room-provenance.md` lists all inspected components and reuse decisions. All 5 systems named with dates, sources, access modes, recorded use, and Weft spec citations.
+- [x] **G7: Clean-room provenance** — `docs/clean-room-provenance.md` lists all inspected components and reuse decisions. All 5 systems named with dates, sources, access modes, recorded use, and Aletheia spec citations.
 - [x] **G8: No secrets in repo** — `git secret` scan or equivalent returns clean.
-- [x] **G9: Wheel buildable** — `dist/weft_memory-0.1.0a0-py3-none-any.whl` exists and installs in a fresh venv. Verified via `scripts/build-release.sh`.
-- [x] **G10: Entrypoint works** — `weft --help` and `weft --db /tmp/test.db serve --help` succeed.
+- [x] **G9: Wheel buildable** — `dist/aletheia-0.1.0a0-py3-none-any.whl` exists and installs in a fresh venv. Verified via `scripts/build-release.sh`.
+- [x] **G10: Entrypoint works** — `aletheia --help` and `aletheia --db /tmp/test.db serve --help` succeed.
 
 ## Artifacts
 
-- Wheel: `dist/weft_memory-0.1.0a0-py3-none-any.whl`
+- Wheel: `dist/aletheia-0.1.0a0-py3-none-any.whl`
 - LICENSE: `LICENSE`
 - README: `README.md`
 - Install docs: `docs/local-cli.md`

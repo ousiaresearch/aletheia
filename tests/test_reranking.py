@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from weft.retrieval import Item
-from weft.reranking import CrossEncoderReranker
+from aletheia.retrieval import Item
+from aletheia.reranking import CrossEncoderReranker
 
 
 def test_reranker_empty_items():

@@ -21,7 +21,7 @@ from benchmarks.full.common import (
     run_recall,
     score_answer,
 )
-from weft.substrate import Record
+from aletheia.substrate import Record
 
 DATA_FILE = CACHE_DIR / "longmemeval_s_cleaned.json"
 URL = "https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned/resolve/main/longmemeval_s_cleaned.json"

@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path("/content/weft")
+REPO = Path("/content/aletheia")
 
 def run(cmd: str, check: bool = True) -> str:
     print(f"[setup] {cmd}", flush=True)
@@ -23,7 +23,7 @@ def run(cmd: str, check: bool = True) -> str:
     return out
 
 if not REPO.exists():
-    run("git clone https://github.com/ousiaresearch/weft.git /content/weft")
+    run("git clone https://github.com/ousiaresearch/aletheia.git /content/aletheia")
 os.chdir(REPO)
 sys.path.insert(0, str(REPO))
 
@@ -60,7 +60,7 @@ print(f"[setup] Wrapper: {embedder.model_id}", flush=True)
 
 from benchmarks.full.locomo import _load_dataset, convert_sample, _aggregate  # noqa: E402
 from benchmarks.full.common import make_engine, make_ctx, create_substrate, run_recall, score_answer  # noqa: E402
-from weft.scope import ScopeEngine  # noqa: E402
+from aletheia.scope import ScopeEngine  # noqa: E402
 
 print("\n[run] Loading LoCoMo dataset...", flush=True)
 ds = _load_dataset()

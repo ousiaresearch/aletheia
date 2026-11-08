@@ -12,11 +12,11 @@ import time
 
 import pytest
 
-from weft import cli
-from weft.knowledge import KnowledgeRefusal
-from weft.procedural import list_active_rules, promote_rule
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import VEC_DIM, Record, Substrate
+from aletheia import cli
+from aletheia.knowledge import KnowledgeRefusal
+from aletheia.procedural import list_active_rules, promote_rule
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import VEC_DIM, Record, Substrate
 
 MODEL = 'm@1'
 VEC = [1.0] + [0.0] * (VEC_DIM - 1)
@@ -262,7 +262,7 @@ def test_cli_extract_keeps_vector_index_complete(tmp_path, monkeypatch, capsys):
     s0.close()
     claim = Record(record_id='xc1', record_type='Claim', scope='k', attribution='agent',
                    epistemic_status='derived', source_ids=[src], payload={'text': 'alice lives in paris'})
-    import weft.extraction as extraction
+    import aletheia.extraction as extraction
     monkeypatch.setattr(extraction, 'extract_facts', lambda *a, **k: [claim])
     assert cli.main(['--db', str(db), 'extract', '--scope', 'k', '--allow-external']) == 0
     out = json.loads(capsys.readouterr().out)

@@ -1,10 +1,10 @@
-# Weft Alpha: Formats, Models, and Vector Retrieval
+# Aletheia Alpha: Formats, Models, and Vector Retrieval
 
-**Status:** Design proposal. Not approved. Supports `2026-10-24_weft-memory-system-full-plan.md` §7, §8, §9.2.
+**Status:** Design proposal. Not approved. Supports `2026-10-24_aletheia-system-full-plan.md` §7, §8, §9.2.
 **Scope:** Open decisions 3 and 4 from the full plan, elaborated. Decision 5 (delete policy) and 6 (hosted service) are deferred.
-**Clean-room posture (user decision, Oct 24):** Weft's own code is written from specifications. Nothing here copies Arsumbris, Honcho, or OpenViking source, types, or SDKs. Third-party *libraries* and *model weights* are dependencies with their own licenses, recorded in the inventory (§6). This reading of "clean room" is an assumption; it is listed in §8 for confirmation.
+**Clean-room posture (user decision, Oct 24):** Aletheia's own code is written from specifications. Nothing here copies Arsumbris, Honcho, or OpenViking source, types, or SDKs. Third-party *libraries* and *model weights* are dependencies with their own licenses, recorded in the inventory (§6). This reading of "clean room" is an assumption; it is listed in §8 for confirmation.
 
-**Evidence base.** Facts below come from public model cards, package license declarations, and public benchmark summaries retrieved 2026-10-24. Items marked **[verify]** have not been checked against the artifact itself. Nothing here is a measured Weft result. Phase 3 must measure everything marked as a choice.
+**Evidence base.** Facts below come from public model cards, package license declarations, and public benchmark summaries retrieved 2026-10-24. Items marked **[verify]** have not been checked against the artifact itself. Nothing here is a measured Aletheia result. Phase 3 must measure everything marked as a choice.
 
 ---
 
@@ -53,7 +53,7 @@
 
 ### 2.3 Why these defaults
 
-- **pypdf over PyMuPDF.** PyMuPDF is AGPL-3.0 or commercial (Artifex) and wraps a C engine. Weft is now AGPL, so PyMuPDF is *legally* usable, but it would make a commercial path depend on a vendor license and adds a native dependency. pypdf is pure Python, BSD-3, and enough for text-layer extraction. Revisit if pypdf's text quality on real PDFs fails Phase 3 evaluation. Measure it before switching.
+- **pypdf over PyMuPDF.** PyMuPDF is AGPL-3.0 or commercial (Artifex) and wraps a C engine. Aletheia is now AGPL, so PyMuPDF is *legally* usable, but it would make a commercial path depend on a vendor license and adds a native dependency. pypdf is pure Python, BSD-3, and enough for text-layer extraction. Revisit if pypdf's text quality on real PDFs fails Phase 3 evaluation. Measure it before switching.
 - **python-docx** is the straightforward choice for DOCX structure. It does not render; tracked changes need explicit handling, which is why revisions are surfaced rather than ignored.
 - **Whisper large-v3-turbo over larger Whisper variants.** Turbo keeps a full-size encoder and a 4-layer decoder. Published numbers put its quality within 1–2 WER points of large-v3 at a fraction of the decode cost. A quantized build is ~574 MB (q5_0). On an M3 Pro, a 11-second clip took ~0.85 s on Metal [source: a benchmark post, not measured on Arien's M3 base; **verify**].
 - **Qwen2.5-VL-3B over 7B locally.** 3B fits. 7B at Q4 is ~6 GB and does not fit the 8 GB machine with the service running.
@@ -104,7 +104,7 @@ Defaults are **configuration**. Each task has a default, an alternative, and the
 2. **Local, external on confirmation.** Each external call needs a confirmation that shows what leaves.
 3. **External allowed for a named task.** For example, "external for synthesis only," with the preview still shown per batch.
 
-Weft never switches a task to an external model silently. A missing local model is a visible failure, not a fallback to the cloud.
+Aletheia never switches a task to an external model silently. A missing local model is a visible failure, not a fallback to the cloud.
 
 **Specialized 2–4B memory model** (decision 7, deferred): it would sit in the same task table. It is evaluated against the default on the same gold set (plan §9.3). No capability is assumed from size.
 
@@ -234,8 +234,8 @@ The inventory is produced by a script that reads installed package metadata, not
 
 ## 8. Open items for the user
 
-1. **"Clean room" reading.** I read it as: Weft's own code is written from specs; no copying of Arsumbris, Honcho, or OpenViking code, types, or SDKs; third-party libraries and model weights are allowed as dependencies with recorded licenses. Confirm, or say what should be stricter.
-2. **Reading Arsumbris material.** Public documentation (README, SAFETY, au-engine.md, au-mcp.md) may be studied for ideas. Source code must not be read by the team that writes Weft's specs. See §9.
+1. **"Clean room" reading.** I read it as: Aletheia's own code is written from specs; no copying of Arsumbris, Honcho, or OpenViking code, types, or SDKs; third-party libraries and model weights are allowed as dependencies with recorded licenses. Confirm, or say what should be stricter.
+2. **Reading Arsumbris material.** Public documentation (README, SAFETY, au-engine.md, au-mcp.md) may be studied for ideas. Source code must not be read by the team that writes Aletheia's specs. See §9.
 3. **ffmpeg build choice.** LGPL build (simpler to ship) or GPL build (more codecs). Decide before Phase 3.
 4. **Default egress level.** Proposed: Local-only. Confirm.
 5. **Batch confirmation thresholds.** Proposed: 10 files or 30 minutes of audio. Confirm.
@@ -244,22 +244,22 @@ The inventory is produced by a script that reads installed package metadata, not
 
 ## 9. Clean-room protocol (applies to all external systems, including Arsumbris)
 
-Arsumbris is strong work: detailed, exhaustive, and carefully reasoned. The plan should take ideas from it, not code. The protocol below separates reading from writing so that Weft's implementation can be defended as independent.
+Arsumbris is strong work: detailed, exhaustive, and carefully reasoned. The plan should take ideas from it, not code. The protocol below separates reading from writing so that Aletheia's implementation can be defended as independent.
 
 **Two roles, kept separate per session.**
 - **Study role** reads public documentation and writes *behavioural* notes: what a component promises, what it refuses, what it fails on, and why. It writes no implementation and copies no text. Notes are in our words, with the source URL and access date.
-- **Implementation role** works only from the Weft spec and the study notes. It does not open Arsumbris, Honcho, or OpenViking source. If it needs something the notes lack, it sends a question back to the study role, not to the source.
+- **Implementation role** works only from the Aletheia spec and the study notes. It does not open Arsumbris, Honcho, or OpenViking source. If it needs something the notes lack, it sends a question back to the study role, not to the source.
 
 **Provenance log.** One entry per absorbed idea:
-`idea` · `source (URL, date)` · `study note file` · `spec section in Weft` · `implementer` · `tests that cover it`.
+`idea` · `source (URL, date)` · `study note file` · `spec section in Aletheia` · `implementer` · `tests that cover it`.
 
 **Prohibited.** Reading source files in external repositories for the purpose of implementation. Copying identifiers, comments, schemas, or test fixtures. Using the earlier REA-style "reverse-engineer anything" workflow on these repositories, because that workflow reads source.
 
 **Permitted.** Reading documentation, running a system we have legitimate access to and observing behaviour, and writing down what it does. Behavioural experiments are recorded with inputs and outputs in our own files.
 
 **Ideas already identified for study (behavioural level only):**
-- typed record concept and advisory validation (the engine shows that advisory diagnostics do not block saves; Weft will make scope checks authoritative instead),
-- hook shapes for governance (mediator, stamper, session-start) as a concept: Weft's version is a write-boundary check, fail-closed,
+- typed record concept and advisory validation (the engine shows that advisory diagnostics do not block saves; Aletheia will make scope checks authoritative instead),
+- hook shapes for governance (mediator, stamper, session-start) as a concept: Aletheia's version is a write-boundary check, fail-closed,
 - tiered loading L0 → L1 → L2, which is independently useful and already in the plan,
 - the observation that Arsumbris mediation fails open when its daemon is unreachable. This is a *failure* to avoid, and it is recorded as a negative requirement.
 

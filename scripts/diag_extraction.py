@@ -5,13 +5,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-REPO = Path("/Users/johannross/workspace/weft")
+REPO = Path("/Users/johannross/workspace/aletheia")
 sys.path.insert(0, str(REPO))
 
 from benchmarks.full.locomo import _load_dataset, convert_sample  # noqa: E402
 from benchmarks.full.common import make_engine, make_ctx, create_substrate  # noqa: E402
-from weft.scope import ScopeEngine  # noqa: E402
-from weft.extraction import extract_facts, write_claims  # noqa: E402
+from aletheia.scope import ScopeEngine  # noqa: E402
+from aletheia.extraction import extract_facts, write_claims  # noqa: E402
 
 # Load a small sample
 ds = _load_dataset()

@@ -2,10 +2,10 @@
 
 import pytest
 
-from weft.ingest import Ingestor
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import ScopeViolation, Substrate
+from aletheia.ingest import Ingestor
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import ScopeViolation, Substrate
 
 KNOWN = {"acs-project", "memory-providers"}
 MARKERS = {"acs-project": {"ACS", "Listening Commonwealth"}}
@@ -15,7 +15,7 @@ MEM = ScopeContext(granted_scopes=frozenset({"memory-providers"}), actor="arien"
 
 @pytest.fixture
 def sub(tmp_path):
-    s = Substrate(tmp_path / "weft.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers=MARKERS))
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers=MARKERS))
     yield s
     s.close()
 
@@ -47,7 +47,7 @@ def test_recall_render_is_fenced_when_reingested(sub):
 
 def test_document_recall_block_is_fenced(sub):
     ing = Ingestor(sub)
-    doc = b"Plain notes.\n\n<weft-recall scope=\"memory-providers\">a remembered claim</weft-recall>\n\nMore notes."
+    doc = b"Plain notes.\n\n<aletheia-recall scope=\"memory-providers\">a remembered claim</aletheia-recall>\n\nMore notes."
     result = ing.ingest_document("notes.txt", doc, MEM, "memory-providers", "author")
     assert isinstance(result, str)
     texts = [r.payload.get("text", "") for r in sub.all_records(MEM)]

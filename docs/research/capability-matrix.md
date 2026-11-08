@@ -1,7 +1,7 @@
 # Capability Matrix
 
 **Phase:** 0 — Capability study
-**Purpose:** Establish what each reference system does, so Weft's implementation is informed rather than naive.
+**Purpose:** Establish what each reference system does, so Aletheia's implementation is informed rather than naive.
 **Method:** Documented behavior and configuration inspection. No source copied. Observations, inferences, and unknowns are separated.
 
 ## Reference systems
@@ -18,9 +18,9 @@
 | **RetainDB** | Cloud memory w/ delta compression | Incremental delta encoding | Compact storage; 10 tools | Cloud, paid; fidelity of compression unverified |
 | **Arsumbris** | Typed knowledge workspace (Sustainable Use — **not bundleable**) | Typed markdown/YAML graph; engine + host UI + MCP agent layer with plugins and hooks | **Type system** makes records inspectable and structured; **hook shapes** (mediator/stamper/session-start) for governance; typed tool inputs | Non-commercial license; no sandboxing; diagnostics advisory only; mediation fails open if daemon unreachable |
 
-## Capability → Weft requirement map
+## Capability → Aletheia requirement map
 
-| Capability | Source system(s) | Weft requirement | Priority |
+| Capability | Source system(s) | Aletheia requirement | Priority |
 |---|---|---|---|
 | Peer/identity modeling that evolves | Honcho | Models of people and agents that change over time, distinguishing their statements from our inferences | Alpha |
 | Relevance-gated context injection | *(the gap Honcho left)* | Nothing enters a conversation without a scope + relevance decision | **Alpha — core** |
@@ -36,16 +36,16 @@
 | Evidence-linked reasoning | Honcho (grounded chat) | Conclusions cite source IDs; abstain when evidence absent/contradictory | Alpha |
 | Trust / confidence handling | Holographic | Confidence recorded per observation; never upgrade inference to fact via retrieval | Alpha |
 
-## What Weft must build itself (no reuse — license)
+## What Aletheia must build itself (no reuse — license)
 
-Per `license-verification.md`, Weft bundles nothing. Honcho and OpenViking core are AGPL (study
+Per `license-verification.md`, Aletheia bundles nothing. Honcho and OpenViking core are AGPL (study
 only); ByteRover is ELv2 (not reusable); Arsumbris is non-commercial (unbundleable); Holographic has
 no identified canonical source. Five systems *are* permissively licensed (Hindsight MIT, Mem0
 Apache-2.0, Supermemory MIT, RetainDB Apache-2.0, OpenViking crates/examples Apache-2.0 + the
-`examples/hermes-plugin` MIT), but per the user's Option C decision Weft implements everything
+`examples/hermes-plugin` MIT), but per the user's Option C decision Aletheia implements everything
 independently and treats these as study and reference material only.
 
-Weft therefore needs original implementations of:
+Aletheia therefore needs original implementations of:
 
 1. **Typed file substrate** — Arsumbris's role. Schemas over structured files, with validation.
 2. **Peer/identity model** — Honcho's role. Evolving representations with provenance.

@@ -1,0 +1,1 @@
+Alice lives in Paris. Bob works at Acme Corporation. The deadline is Friday.

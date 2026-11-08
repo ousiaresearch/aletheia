@@ -2,9 +2,9 @@ import hashlib
 
 import pytest
 
-from weft.ingest import Ingestor, _digest, _record_digest
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, RecordConflict, Substrate
+from aletheia.ingest import Ingestor, _digest, _record_digest
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, RecordConflict, Substrate
 
 
 def test_forged_completed_media_job_cannot_authorize_reuse(tmp_path):

@@ -1,6 +1,40 @@
 # Changelog
 
-All notable changes to Weft are documented here.
+All notable changes to Aletheia are documented here.
+
+## [2.0.0] — 2026-11-07
+
+One name. Everything the product is called is now Aletheia: the distribution (`aletheia`), the
+import path (`import aletheia`), the CLI (`aletheia`, `aletheia-server`), the environment variables
+(`ALETHEIA_*`), the tool names (`aletheia_recall`, `aletheia_ingest`, `aletheia_forget`,
+`aletheia_receipt`), the default store (`<profile>/aletheia/aletheia.sqlite3`) and the plugin repo.
+The substrate was called Weft; that word is gone from the package, the docs, the manifests and the
+fixtures, except for the pre-rename evidence under `docs/reviews/`, which quotes reviewers verbatim
+and is left as it was written.
+
+### Changed
+- **The plugin lives in this repository.** `plugin.yaml` and the loader entry point sit at the root
+  beside the package, so one repo is both the substrate and the Hermes plugin. The catalog install
+  path is unchanged: `hermes plugins install ousiaresearch/aletheia`.
+- **The recall block's tag matches the ingester's fence.** It emits `<aletheia-recall>`, which
+  `Ingestor.ingest_turn` recognises, so a recalled block that arrives inside a user message is
+  stripped and stored with attribution `system` (D3-5) instead of being recorded as the user's own
+  speech.
+
+### Added
+- **Store migration on first run** (`aletheia/paths.py`): `<profile>/weft/weft.sqlite3` with its
+  `-wal`/`-shm`, `<profile>/weft/provider-config.json`, and the CLI's `~/.weft/weft.sqlite3` move to
+  the Aletheia paths once. A store already at the new path wins; a legacy store that loses the race
+  is left in place and never deleted; an unmovable legacy store is reported and startup continues
+  on a fresh path rather than failing.
+- **A hero card** (`docs/images/hero-card.jpg`, `hero.jpg`, and the `hero-card.html` source it is
+  rendered from) in the house editorial standard.
+
+### Tests
+- `tests/test_paths_migration.py` (5 checks): the store move with its WAL, the new-store-wins case,
+  the no-legacy-file case, the provider config move, and the CLI store move.
+- Media smoke fixtures regenerated with the new name; the VLM and Whisper integration tests read
+  the new fixture text. Suite: **1051**.
 
 ## [1.1.1] — 2026-11-07
 
@@ -16,7 +50,7 @@ All notable changes to Weft are documented here.
 - **Ambiguity resolves downward.** A speaker the store does not recognise is recorded as the agent
   side, never as the user: `user` attribution is authority-bearing (D2-2), so the fallback must not
   hand it out. Callers that know a turn is the human's pass `attribution="user"`.
-- **The agent's own tool can no longer mint `user` records.** `weft_ingest` records with
+- **The agent's own tool can no longer mint `user` records.** `aletheia_ingest` records with
   `attribution="agent"` whatever speaker it is given; only the turn mirror can write the human side.
 - **One half of a turn could cost the other.** The two writes shared one `try`; a failure on the user
   half aborted the agent half. Each half is now independent, and the turn is counted by outcome.
@@ -33,7 +67,7 @@ All notable changes to Weft are documented here.
   fence markers is now stored with attribution `system` as well as `provenance.fenced` (D3-5).
 
 ### Added
-- Turn bookkeeping in `weft_receipt`'s status: `turn_writes.{seen,skipped,stored,partial,failed,
+- Turn bookkeeping in `aletheia_receipt`'s status: `turn_writes.{seen,skipped,stored,partial,failed,
   halves_written,halves_failed}`, `skipped_because` and `last_error`, plus `primary`. `seen` is
   turns; `halves_*` is halves. `stored + partial + failed + skipped == seen`, so a host that stopped
   reaching the write path is visible instead of silent. Note what `seen == 0` does and does not mean:
@@ -52,13 +86,13 @@ All notable changes to Weft are documented here.
 ## [1.1.0] — 2026-11-06
 
 ### Added
-- **Aletheia**: the Hermes memory provider now registers as `aletheia` (was `weft`), so the catalog
-  entry, the manifest name and `memory.provider` are one word. The substrate keeps the name Weft, and
-  the tools keep their `weft_*` names because they operate on the substrate.
+- **Aletheia**: the Hermes memory provider now registers as `aletheia` (was `aletheia`), so the catalog
+  entry, the manifest name and `memory.provider` are one word. The substrate keeps the name Aletheia, and
+  the tools keep their `aletheia_*` names because they operate on the substrate.
 - `aletheia/` replaces `hermes-plugin/` as the plugin directory the catalog pins.
 
 ### Changed
-- No behaviour change: same store path (`<profile>/weft/weft.sqlite3`), same scope derivation, same
+- No behaviour change: same store path (`<profile>/aletheia/aletheia.sqlite3`), same scope derivation, same
   recall path and receipts. Only the names a reader types.
 
 ## [1.0.0] — 2026-11-06
@@ -67,11 +101,11 @@ The substrate and the Hermes provider surface are stable; the operational eviden
 which is what the beta classifier is for.
 
 ### Added
-- **Hermes memory provider** (`weft/providers/hermes.py`, `hermes-plugin/`): in-process memory for
+- **Hermes memory provider** (`aletheia/providers/hermes.py`, `hermes-plugin/`): in-process memory for
   Hermes agents. The store and scope bind to the profile the manager hands in; recall runs on a worker
   thread so the turn's prefetch is free (measured: 30 ms for hybrid recall, 8.6 s to load models at
-  startup); every recall carries a receipt; tools `weft_recall`, `weft_ingest`, `weft_forget`,
-  `weft_receipt`.
+  startup); every recall carries a receipt; tools `aletheia_recall`, `aletheia_ingest`, `aletheia_forget`,
+  `aletheia_receipt`.
 - Turnkey deployment (Dockerfile, compose, HTTP tool routes).
 - Procedural memory with a deny-by-default promotion gate.
 - Graph and temporal reasoning: entity links in SQLite, date extraction, temporal boosting.
@@ -81,13 +115,13 @@ which is what the beta classifier is for.
 - Retrieval quality is part of the contract: the local embedder and cross-encoder reranker are always
   on, and a missing model is reported rather than replaced by a keyword fallback.
 - Test suite: 429 checks at 0.1.0a0 → **1014** at this commit.
-- Stable version numbering: the dependency spec is now `weft-memory>=1.0,<2`, so a plain
-  `pip install weft-memory` resolves it (a pre-release would not have).
+- Stable version numbering: the dependency spec is now `aletheia>=1.0,<2`, so a plain
+  `pip install aletheia` resolves it (a pre-release would not have).
 
 ### Fixed
 - Authentication: actor derived from the bearer token, middleware placement, `/health` and tool routes
   authenticated, client-supplied actor removed.
-- Packaging: `weft.providers` is declared in `pyproject.toml` (the first a1 wheel silently omitted it),
+- Packaging: `aletheia.providers` is declared in `pyproject.toml` (the first a1 wheel silently omitted it),
   with a test that fails whenever a package directory is undeclared. Built wheels are no longer tracked.
 
 ### Security
@@ -100,7 +134,7 @@ The alpha that carries the hardening: 109 commits since a0, and the first releas
 memory-provider surface.
 
 ### Added
-- **Hermes memory provider** (`weft/providers/hermes.py`, `hermes-plugin/`): Weft runs in-process as
+- **Hermes memory provider** (`aletheia/providers/hermes.py`, `hermes-plugin/`): Aletheia runs in-process as
   an external memory provider — turns are ingested per scope, recall is served from a worker thread so
   the turn's prefetch stays free, and recall reports a receipt. The provider imports the substrate
   only: an import-graph test fails if it ever pulls in the FastAPI surfaces, and a subprocess test
@@ -139,7 +173,7 @@ memory-provider surface.
 - Plan document updated to mark Phases 1–6 closed.
 
 ### Fixed
-- Phase 6 adversarial review findings: scope allowlist via `WEFT_KNOWN_SCOPES`, `import_scope` validation, `get_at` effective_at guard, logging regex redaction.
+- Phase 6 adversarial review findings: scope allowlist via `ALETHEIA_KNOWN_SCOPES`, `import_scope` validation, `get_at` effective_at guard, logging regex redaction.
 
 ### Security
 - Content-conflict detection prevents mis-filed records from being read across scope boundaries.

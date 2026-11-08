@@ -18,7 +18,7 @@ def main():
     embedder = None
     # Try BGE-M3 embedder for hybrid mode
     try:
-        from weft.adapters import BgeM3Embedder
+        from aletheia.adapters import BgeM3Embedder
         from pathlib import Path
         model_dir = (
             Path.home()

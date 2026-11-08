@@ -1,0 +1,1 @@
+The lighthouse keeps a record of rare tides.

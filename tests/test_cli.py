@@ -2,7 +2,7 @@
 
 import json
 
-from weft import cli
+from aletheia import cli
 
 
 class FakeEmbedder:
@@ -17,7 +17,7 @@ class FakeEmbedder:
 
 def test_ingest_and_recall_are_local_single_scope_and_vectorized(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli, "default_text_embedder", lambda: FakeEmbedder())
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "note.md"
     note.write_text("The lighthouse keepers record the tides each night.", encoding="utf-8")
 
@@ -26,8 +26,8 @@ def test_ingest_and_recall_are_local_single_scope_and_vectorized(tmp_path, monke
     assert ingested["status"] == "ingested"
     assert ingested["scope"] == "coast"
     assert ingested["vector_indexed"] is True
-    from weft.scope import ScopeContext, ScopeEngine
-    from weft.substrate import Substrate
+    from aletheia.scope import ScopeContext, ScopeEngine
+    from aletheia.substrate import Substrate
     check = Substrate(db, ScopeEngine(known_scopes={"coast"}))
     try:
         assert check.vector_has_record(
@@ -51,7 +51,7 @@ def test_cli_rejects_missing_model_without_silent_fallback(tmp_path, monkeypatch
     monkeypatch.setattr(cli, "default_text_embedder", missing)
     note = tmp_path / "note.txt"
     note.write_text("Local memory text", encoding="utf-8")
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     code = cli.main(["--db", str(db), "ingest", "--scope", "local", "--file", str(note)])
     assert code != 0
     assert "embedding model not present" in capsys.readouterr().err
@@ -60,7 +60,7 @@ def test_cli_rejects_missing_model_without_silent_fallback(tmp_path, monkeypatch
 
 def test_cli_scope_isolation_has_positive_control(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli, "default_text_embedder", lambda: FakeEmbedder())
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "secret.txt"
     secret = "Only the coastal archivist records the rare blue tide."
     note.write_text(secret, encoding="utf-8")
@@ -82,7 +82,7 @@ def test_cli_scope_isolation_has_positive_control(tmp_path, monkeypatch, capsys)
 
 
 def test_cli_refuses_hybrid_when_model_index_does_not_match(tmp_path, monkeypatch, capsys):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "coast.md"
     note.write_text("The lighthouse keeps a record of rare tides.", encoding="utf-8")
     embedders = [FakeEmbedder(), FakeEmbedder()]
@@ -98,7 +98,7 @@ def test_cli_refuses_hybrid_when_model_index_does_not_match(tmp_path, monkeypatc
 
 def test_cli_rejects_empty_document_instead_of_claiming_vectors(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli, "default_text_embedder", lambda: FakeEmbedder())
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "empty.md"
     note.write_text("  \n\n", encoding="utf-8")
 
@@ -107,8 +107,8 @@ def test_cli_rejects_empty_document_instead_of_claiming_vectors(tmp_path, monkey
     assert code == 2
     assert result["status"] == "rejected"
     assert result["reason"] == "empty_document"
-    from weft.scope import ScopeEngine
-    from weft.substrate import Substrate
+    from aletheia.scope import ScopeEngine
+    from aletheia.substrate import Substrate
     sub = Substrate(db, ScopeEngine(known_scopes={"coast"}))
     try:
         assert sub._conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 0
@@ -118,7 +118,7 @@ def test_cli_rejects_empty_document_instead_of_claiming_vectors(tmp_path, monkey
 
 
 def test_cli_rejects_wrong_query_vector_dimension(tmp_path, monkeypatch, capsys):
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "coast.md"
     note.write_text("The lighthouse keeps a record of rare tides.", encoding="utf-8")
 
@@ -152,13 +152,13 @@ def test_malformed_database_is_a_clean_nonzero_cli_error(tmp_path, monkeypatch, 
     code = cli.main(["--db", str(db), "recall", "--scope", "coast", "--query", "tides"])
     assert code != 0
     error = capsys.readouterr().err
-    assert "weft:" in error
+    assert "aletheia:" in error
     assert "Traceback" not in error
 
 
 def test_scope_isolation_recall_succeeds_with_empty_other_scope(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cli, "default_text_embedder", lambda: FakeEmbedder())
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "coast.md"
     note.write_text("coast phrase retained", encoding="utf-8")
     assert cli.main(["--db", str(db), "ingest", "--scope", "coast", "--file", str(note)]) == 0
@@ -174,14 +174,14 @@ def test_embedder_failure_does_not_leave_partial_ingestion(tmp_path, monkeypatch
             raise RuntimeError("model load failed")
 
     monkeypatch.setattr(cli, "default_text_embedder", lambda: FailingEmbedder())
-    db = tmp_path / "weft.db"
+    db = tmp_path / "aletheia.db"
     note = tmp_path / "failure.md"
     note.write_text("A non-empty document that should not be stored half-processed.", encoding="utf-8")
     assert cli.main(["--db", str(db), "ingest", "--scope", "coast", "--file", str(note)]) != 0
     assert "model load failed" in capsys.readouterr().err
 
-    from weft.scope import ScopeEngine
-    from weft.substrate import Substrate
+    from aletheia.scope import ScopeEngine
+    from aletheia.substrate import Substrate
     sub = Substrate(db, ScopeEngine(known_scopes={"coast"}))
     try:
         assert sub._conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 0

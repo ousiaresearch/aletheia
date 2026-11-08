@@ -18,7 +18,7 @@ def test_local_recall_dependency_requires_cross_encoder_local_files_only_support
 
 
 def test_bundled_plugin_requires_cross_encoder_local_files_only_support():
-    manifest = (ROOT / "aletheia" / "plugin.yaml").read_text()
+    manifest = (ROOT / "plugin.yaml").read_text()
     requirement = next(
         Requirement(line.strip()[3:-1])
         for line in manifest.splitlines()

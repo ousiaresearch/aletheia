@@ -1,8 +1,8 @@
 import pytest
 
-from weft.ingest import Ingestor
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, ScopeViolation, Substrate
+from aletheia.ingest import Ingestor
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, ScopeViolation, Substrate
 
 
 def test_unjournaled_denials_do_not_claim_audit(tmp_path):

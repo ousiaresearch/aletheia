@@ -6,7 +6,7 @@
 
 ## Entrypoints
 
-- `weft/cli.py:entrypoint()` is the single entrypoint.
+- `aletheia/cli.py:entrypoint()` is the single entrypoint.
 - Subcommands: `ingest`, `recall`, `rebuild-fts`, `serve`, `export`, `delete`.
 - No shell=True in subprocess calls.
 - No `eval` or `exec` on user input.
@@ -14,10 +14,10 @@
 
 ## Temp files
 
-- Release/verification scripts create temp dirs via `mktemp -d` under the platform temp location (`/tmp` on Linux, `$TMPDIR` on macOS). `mktemp -d` creates private directories; umask 0077 additionally restricts venv contents. Scripts leave temp venv dirs in place after verification; cleanup is manual or deferred to OS tempdir policy. `/tmp/weft-install-test.db` is only passed to `weft ... serve --help` and is not created.
-- `tests/test_install.py` uses `tempfile.mkdtemp` under the platform temp location with umask 0077; `/tmp/weft-install-pytest.db` is only passed to `weft ... serve --help` and is not created.
-- `weft/adapters.py:67,95,100` uses `tempfile.mkstemp` for adapter scratch files in the Hermes scratch dir.
-- `weft/substrate.py:1554` creates sibling `.tmp-*.part` files during writes; `weft/substrate.py:207-240` sets umask 0o077 and chmod 0o600 on the database and sidecars.
+- Release/verification scripts create temp dirs via `mktemp -d` under the platform temp location (`/tmp` on Linux, `$TMPDIR` on macOS). `mktemp -d` creates private directories; umask 0077 additionally restricts venv contents. Scripts leave temp venv dirs in place after verification; cleanup is manual or deferred to OS tempdir policy. `/tmp/aletheia-install-test.db` is only passed to `aletheia ... serve --help` and is not created.
+- `tests/test_install.py` uses `tempfile.mkdtemp` under the platform temp location with umask 0077; `/tmp/aletheia-install-pytest.db` is only passed to `aletheia ... serve --help` and is not created.
+- `aletheia/adapters.py:67,95,100` uses `tempfile.mkstemp` for adapter scratch files in the Hermes scratch dir.
+- `aletheia/substrate.py:1554` creates sibling `.tmp-*.part` files during writes; `aletheia/substrate.py:207-240` sets umask 0o077 and chmod 0o600 on the database and sidecars.
 - Temp file permissions are enforced via umask 0077 in substrate.py and release/verification scripts.
 
 ## Egress surfaces
@@ -36,7 +36,7 @@
 ## Residual risks
 
 - ML model adapters fetched from Hugging Face without integrity check (SHA-256 not pinned for all models).
-- `weft serve` does not implement authentication; localhost only.
+- `aletheia serve` does not implement authentication; localhost only.
 
 ## Status
 

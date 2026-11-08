@@ -68,8 +68,8 @@ from losing an accepted write, and it is the correct one.
 
 ## Phase 1 deliverables
 
-1. `weft/substrate/` — record store, journal, schema validation, projection writer.
-2. `weft/scope/` — deterministic scope engine (deny-by-default, content-based scoping).
+1. `aletheia/substrate/` — record store, journal, schema validation, projection writer.
+2. `aletheia/scope/` — deterministic scope engine (deny-by-default, content-based scoping).
 3. `tests/` — including the fault-injection suite above.
 4. `docs/adr/0001-phase1-decisions.md` — this record.
 
@@ -211,7 +211,7 @@ Verdict APPROVE_WITH_RESIDUALS, no gate-class findings. Build pass 2 addresses t
   - Not acceptance evidence: the gold set is an unapproved draft. Four of the five hybrid misses are one query ("moltbook heartbeat receipt") that matches four near-identical receipts, so the gold set is ambiguous there.
   - Default mode in code stays "lexical". Vector is not enabled by default until the gold set is approved and the gate re-run.
   - Index time for 249 notes: about 1,300 s on this Mac (single-item embedding; batching is a later optimisation).
-- Dependency licences added: sqlite-vec 0.1.9 (MIT per package metadata; Apache-2.0 also listed), mlx-embeddings 0.1.0 (GPL-3.0, compatible with an AGPL-3.0 Weft distribution; record and review), harrier-oss-v1-0.6b model weights (MIT).
+- Dependency licences added: sqlite-vec 0.1.9 (MIT per package metadata; Apache-2.0 also listed), mlx-embeddings 0.1.0 (GPL-3.0, compatible with an AGPL-3.0 Aletheia distribution; record and review), harrier-oss-v1-0.6b model weights (MIT).
 
 ### Recall gate result on gold set v0.2 (approved by user, Oct 26)
 
@@ -224,7 +224,7 @@ Verdict APPROVE_WITH_RESIDUALS, no gate-class findings. Build pass 2 addresses t
 ### Gold set v0.3 gate run (50 entries: 40 keyword, 10 paraphrase) and two fixes
 
 - First v0.3 run (before stopword fix): overall recall@5 lexical 0.78, vector 0.82, hybrid 0.80. Keyword entries lexical 0.975 / vector 0.95 / hybrid 0.975. Paraphrase entries lexical 0.0, vector 0.3, hybrid 0.1. Floor not met overall; vector not enabled.
-- Diagnosis of hybrid < vector on paraphrases: the lexical query included function words ("the", "is"), which matched unrelated notes and outranked vector hits in reciprocal-rank fusion. Fixed: function words are excluded from the lexical match (STOPWORDS in weft/retrieval.py), with a red-then-green test (tests/test_phase3_build7.py). The gate must be rerun to measure this.
+- Diagnosis of hybrid < vector on paraphrases: the lexical query included function words ("the", "is"), which matched unrelated notes and outranked vector hits in reciprocal-rank fusion. Fixed: function words are excluded from the lexical match (STOPWORDS in aletheia/retrieval.py), with a red-then-green test (tests/test_phase3_build7.py). The gate must be rerun to measure this.
 - Test flakiness root cause (closed): an inherited PYTHONPATH from the agent runtime made numpy load from another install when pytest was launched from the agent process, so the real-model tests failed intermittently. Fixed by scripts/test.sh, which runs pytest with PYTHONPATH, PYTHONHOME and VIRTUAL_ENV removed. Run the suite through that script.
 
 
@@ -266,7 +266,7 @@ Verdict APPROVE_WITH_RESIDUALS, no gate-class findings. Build pass 2 addresses t
 - Full-precision BGE-M3 (mlx-community/bge-m3-mlx-fp16) download stalled at 455 MB of ~1.1 GB; not measured. Partial cache removed. The harness supports `bge-fp16` for a retry.
 - Removed: Harrier-0.6B and Qwen3-Embedding-0.6B Hugging Face caches; their embedding caches; recall_gate WAL/SHM files; models/qwen_dl.log.
 - Kept: BGE-M3 4-bit (adopted, in use); Qwen3.5-2B 8-bit (OCR/description adapter and tests); whisper large-v3-turbo q5_0 (transcription and tests); smoke fixtures.
-- Other Hugging Face caches in ~/.cache/huggingface (Wan, MiniMax, neucodec, depth-anything, faster-whisper-base, etc.) are not created by Weft and were not touched.
+- Other Hugging Face caches in ~/.cache/huggingface (Wan, MiniMax, neucodec, depth-anything, faster-whisper-base, etc.) are not created by Aletheia and were not touched.
 
 
 ### Quantisation decision: BGE-M3 4-bit adopted (user, 2026-10-26)
@@ -321,7 +321,7 @@ Verdict APPROVE_WITH_RESIDUALS, no gate-class findings. Build pass 2 addresses t
 
 ### Embedder wiring (2026-10-27)
 
-- weft/adapters.py: default_text_embedder() returns BGE-M3 4-bit (MIT) from the local Hugging Face cache. Missing weights raise RuntimeError (visible; no cloud or lexical fallback).
+- aletheia/adapters.py: default_text_embedder() returns BGE-M3 4-bit (MIT) from the local Hugging Face cache. Missing weights raise RuntimeError (visible; no cloud or lexical fallback).
 - Ingestor still takes an explicit embedder. The library has no production entry point yet; the composition root (the Phase 6 service or a CLI) must pass default_text_embedder(). Until one exists, records ingested without an embedder have no vectors and hybrid recall covers them lexically only.
 - Tests: tests/test_review10.py. The real-model test runs when the weights are present and ingests a turn, then finds it by vector under the adopted model id.
 - Process note: the factory and its tests were written in one step, so the tests did not fail first. They are new functions, so there was no earlier red state to show.

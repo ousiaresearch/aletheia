@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from weft.query_expansion import expand_query, _fuse_rrf
+from aletheia.query_expansion import expand_query, _fuse_rrf
 
 
 def test_expand_query_returns_list_on_success():

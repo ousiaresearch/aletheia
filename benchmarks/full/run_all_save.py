@@ -18,7 +18,7 @@ OUT_FILE = BENCH_DIR / "full-results.json"
 # Try BGE-M3 embedder
 embedder = None
 try:
-    from weft.adapters import BgeM3Embedder
+    from aletheia.adapters import BgeM3Embedder
     from pathlib import Path
     model_dir = (
         Path.home()

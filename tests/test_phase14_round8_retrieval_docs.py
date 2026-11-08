@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from weft import cli
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate
+from aletheia import cli
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate
 
 ROOT = Path(__file__).resolve().parents[1]
 DIM = 1024
@@ -103,7 +103,7 @@ def test_matches_keep_ranked_order_through_rerank(tmp_path):
 
 
 def test_requested_cross_encoder_reranks_even_when_all_matches_fit(tmp_path, monkeypatch):
-    import weft.retrieval as retrieval
+    import aletheia.retrieval as retrieval
     sub, ctx = _store(tmp_path, 'Decision')
     class Reranker:
         def rerank(self, query, items, top_k):
@@ -116,7 +116,7 @@ def test_requested_cross_encoder_reranks_even_when_all_matches_fit(tmp_path, mon
 
 
 def test_requested_cross_encoder_constructor_failure_propagates(tmp_path, monkeypatch):
-    import weft.retrieval as retrieval
+    import aletheia.retrieval as retrieval
     sub, ctx = _store(tmp_path, 'Decision')
     def broken():
         raise RuntimeError('reranker unavailable')
@@ -137,9 +137,9 @@ def _commands(text):
         joined = re.sub(r'\\\n', ' ', block)
         for line in joined.splitlines():
             line = line.strip()
-            if line.startswith('weft ') and not line.startswith('weft-server'):
+            if line.startswith('aletheia ') and not line.startswith('aletheia-server'):
                 out.append(line)
-    for m in re.findall(r'`(weft [^`]*--[^`]*)`', text):  # inline snippets carrying flags
+    for m in re.findall(r'`(aletheia [^`]*--[^`]*)`', text):  # inline snippets carrying flags
         out.append(m)
     return out
 
@@ -182,7 +182,7 @@ def test_readme_current_state():
     assert '430 tests' not in README
     assert not re.search(r'\b\d{3} tests passing', README)
     assert 'scripts/test.sh' in README
-    assert 'WEFT_API_KEY' in README and 'WEFT_KNOWN_SCOPES' in README
+    assert 'ALETHEIA_API_KEY' in README and 'ALETHEIA_KNOWN_SCOPES' in README
     assert '401' in README and '403' in README
     assert '--allow-external' in README
     assert 'unverified' in README.lower() and 'docker' in README.lower()

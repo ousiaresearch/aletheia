@@ -10,10 +10,10 @@ from pathlib import Path
 
 import pytest
 
-from weft.ingest import Ingestor, Rejection
-from weft.retrieval import recall
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, ScopeViolation, Substrate
+from aletheia.ingest import Ingestor, Rejection
+from aletheia.retrieval import recall
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, ScopeViolation, Substrate
 
 REPO = Path(__file__).resolve().parents[1]
 VLM_DIR = REPO / "models" / "qwen3.5-2b-8bit-mlx"
@@ -29,7 +29,7 @@ MEM_AGENT = ScopeContext(granted_scopes=frozenset({"memory-providers"}), actor="
 
 @pytest.fixture
 def sub(tmp_path):
-    s = Substrate(tmp_path / "weft.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers=MARKERS))
+    s = Substrate(tmp_path / "aletheia.db", scope_engine=ScopeEngine(known_scopes=KNOWN, markers=MARKERS))
     yield s
     s.close()
 
@@ -114,22 +114,22 @@ needs_whisper = pytest.mark.skipif(not WHISPER.exists(), reason="whisper model n
 
 @needs_vlm
 def test_real_vlm_reads_text_in_smoke_image(sub, ing):
-    from weft.adapters import QwenVLM
+    from aletheia.adapters import QwenVLM
     adapter = QwenVLM(VLM_DIR)
     sid = ing.ingest_media("smoke.png", SMOKE_PNG.read_bytes(), "image", USER, "memory-providers",
                            describer=adapter)
     rec = sub.get(sid, USER)
-    assert "weft memory test 42" in rec.payload["text"].lower()
+    assert "aletheia memory test 42" in rec.payload["text"].lower()
     assert rec.provenance["machine_derived"] is True
     assert rec.provenance["model"].startswith("Qwen3.5-2B")
 
 
 @needs_whisper
 def test_real_whisper_transcribes_smoke_audio(sub, ing):
-    from weft.adapters import WhisperTranscriber
+    from aletheia.adapters import WhisperTranscriber
     adapter = WhisperTranscriber(WHISPER)
     sid = ing.ingest_media("smoke.wav", SMOKE_WAV.read_bytes(), "audio", USER, "memory-providers",
                            transcriber=adapter)
     text = sub.get(sid, USER).payload["text"].lower()
-    assert "weft" in text and "thread" in text
+    assert "aletheia" in text and "thread" in text
     assert sub.get(sid, USER).provenance["model"].startswith("whisper")

@@ -6,7 +6,7 @@
 
 ## Scope
 
-This set exercises the Weft reasoning loop against a closed, deterministic ground truth. It does not test external model capability; it tests that Weft's loop correctly scopes, cites, abstains, and detects contradictions.
+This set exercises the Aletheia reasoning loop against a closed, deterministic ground truth. It does not test external model capability; it tests that Aletheia's loop correctly scopes, cites, abstains, and detects contradictions.
 
 ## Metrics
 

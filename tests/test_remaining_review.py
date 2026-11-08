@@ -1,9 +1,9 @@
 import hashlib
 import threading
 import pytest
-from weft.ingest import Ingestor, _digest
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, RecordConflict, ScopeViolation, Substrate
+from aletheia.ingest import Ingestor, _digest
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, RecordConflict, ScopeViolation, Substrate
 
 CTX = ScopeContext(granted_scopes=frozenset({'coast'}))
 def record(rid, text):

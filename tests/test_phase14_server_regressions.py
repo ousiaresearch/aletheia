@@ -1,16 +1,16 @@
 """Behavioural regressions for the deployed HTTP service."""
 import pytest
 from fastapi.testclient import TestClient
-from weft.mcp_server import app as tool_app
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Substrate
-from weft.server import app
+from aletheia.mcp_server import app as tool_app
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Substrate
+from aletheia.server import app
 
 
 def test_deployed_app_serves_scoped_custom_status(tmp_path, monkeypatch):
-    monkeypatch.setenv('WEFT_API_KEY', 'test-key')
-    monkeypatch.setenv('WEFT_KNOWN_SCOPES', 'coast')
-    monkeypatch.setenv('WEFT_DB_PATH', str(tmp_path / 'store.db'))
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'test-key')
+    monkeypatch.setenv('ALETHEIA_KNOWN_SCOPES', 'coast')
+    monkeypatch.setenv('ALETHEIA_DB_PATH', str(tmp_path / 'store.db'))
     client = TestClient(app)
     assert client.post('/mcp/status', json={'scope': 'coast'}).status_code == 401
     headers = {'Authorization': 'Bearer test-key'}
@@ -22,10 +22,10 @@ def test_deployed_app_serves_scoped_custom_status(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize('path', ['/mcp/ingest', '/mcp/call'])
 def test_ingest_writes_agent_source_without_user_authority(tmp_path, monkeypatch, path):
-    monkeypatch.setenv('WEFT_API_KEY', 'prefix-very-secret')
-    monkeypatch.setenv('WEFT_KNOWN_SCOPES', 'coast')
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'prefix-very-secret')
+    monkeypatch.setenv('ALETHEIA_KNOWN_SCOPES', 'coast')
     db = tmp_path / 'store.db'
-    monkeypatch.setenv('WEFT_DB_PATH', str(db))
+    monkeypatch.setenv('ALETHEIA_DB_PATH', str(db))
     args = {'scope': 'coast', 'records': [{'record_id': 'src', 'record_type': 'Source',
             'epistemic_status': 'stated', 'payload': {'text': 'hello'}}]}
     body = args if path.endswith('ingest') else {'tool': 'ingest', 'arguments': args}
@@ -39,11 +39,11 @@ def test_ingest_writes_agent_source_without_user_authority(tmp_path, monkeypatch
         sub.close()
 
 
-@pytest.mark.parametrize('module', ['weft.server', 'weft.mcp_server'])
+@pytest.mark.parametrize('module', ['aletheia.server', 'aletheia.mcp_server'])
 def test_http_context_has_no_key_material_or_user_attribution(monkeypatch, module):
     import importlib
-    monkeypatch.setenv('WEFT_API_KEY', 'prefix-very-secret')
-    monkeypatch.setenv('WEFT_KNOWN_SCOPES', 'coast')
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'prefix-very-secret')
+    monkeypatch.setenv('ALETHEIA_KNOWN_SCOPES', 'coast')
     _, ctx = importlib.import_module(module)._ctx_for('coast')
     assert 'prefix-' not in repr(ctx)
     assert not ctx.user_authored
@@ -51,9 +51,9 @@ def test_http_context_has_no_key_material_or_user_attribution(monkeypatch, modul
 
 @pytest.mark.parametrize('path', ['/mcp/ingest', '/mcp/call'])
 def test_invalid_ingest_is_generic_refusal_and_batch_is_atomic(tmp_path, monkeypatch, path):
-    monkeypatch.setenv('WEFT_API_KEY', 'test-key')
-    monkeypatch.setenv('WEFT_KNOWN_SCOPES', 'coast')
-    monkeypatch.setenv('WEFT_DB_PATH', str(tmp_path / 'store.db'))
+    monkeypatch.setenv('ALETHEIA_API_KEY', 'test-key')
+    monkeypatch.setenv('ALETHEIA_KNOWN_SCOPES', 'coast')
+    monkeypatch.setenv('ALETHEIA_DB_PATH', str(tmp_path / 'store.db'))
     args = {'scope': 'coast', 'records': [
         {'record_id': 'src', 'record_type': 'Source', 'epistemic_status': 'stated', 'payload': {'text': 'hello'}},
         {'record_id': 'decision', 'record_type': 'Decision', 'epistemic_status': 'stated', 'attribution': 'user', 'payload': {'text': 'not user authored'}}]}

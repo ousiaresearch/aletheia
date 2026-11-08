@@ -1,7 +1,7 @@
 import copy
 import pytest
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import Record, Substrate, SCHEMA_VERSION, ScopeViolation
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import Record, Substrate, SCHEMA_VERSION, ScopeViolation
 
 @pytest.fixture
 def store(tmp_path):

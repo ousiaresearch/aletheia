@@ -1,8 +1,8 @@
 import pytest
 
-from weft import cli
-from weft.scope import ScopeContext, ScopeEngine
-from weft.substrate import ScopeViolation, Substrate
+from aletheia import cli
+from aletheia.scope import ScopeContext, ScopeEngine
+from aletheia.substrate import ScopeViolation, Substrate
 
 
 def test_unknown_granted_scope_cannot_delete_orphan_index(tmp_path):
