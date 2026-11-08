@@ -29,8 +29,11 @@ and is left as it was written.
   the Aletheia paths once. A store already at the new path wins; a legacy store that loses the race
   is left in place and never deleted; an unmovable legacy store is reported and startup continues
   on a fresh path rather than failing.
-- **A hero card** (`docs/images/hero-card.jpg`, `hero.jpg`, and the `hero-card.html` source it is
-  rendered from) in the house editorial standard.
+- **A hero card** (`docs/images/hero-card.jpg`, `hero.jpg`) in the house imprint standard: the scene
+  is generated with Codex image generation from the Nous branding lane (analog newspaper direct
+  response — halftone, paper tooth, one red signal ink), and the copy is typeset deterministically
+  over it as two plates multiplied together, so the product name is never model-improvised. Prompt
+  and typeset source live in `docs/images/source/`.
 
 ### Tests
 - `tests/test_paths_migration.py` (5 checks): the store move with its WAL, the new-store-wins case,

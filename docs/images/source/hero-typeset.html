@@ -7,12 +7,12 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%;overflow:hidden;background:#E3DCC7}
   #stage{position:relative;width:1600px;height:100vh;min-height:800px;overflow:hidden;background:#E3DCC7}
-  #bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:60% 50%}
+  #bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:56% 50%}
 
   /* ink, not overlay: the type multiplies into the newsprint */
-  .copy{position:absolute;left:92px;top:0;height:100%;width:660px;display:flex;flex-direction:column;
-        padding-top:104px;padding-bottom:70px;z-index:4;
-        color:#151411;mix-blend-mode:multiply}
+  .copy{position:absolute;left:84px;top:0;height:100%;width:480px;display:flex;flex-direction:column;
+        padding-top:100px;padding-bottom:66px;z-index:4;
+        color:#1A1712;mix-blend-mode:multiply;filter:url(#ink)}
 
   .eyebrow{display:flex;align-items:center;gap:14px;margin-bottom:26px}
   .eyebrow .t{font-family:"HelveticaNeue-CondensedBold","Helvetica Neue",Arial,sans-serif;
@@ -20,28 +20,28 @@
   .eyebrow .bar{flex:0 0 64px;height:3px;background:#9B2F24}
 
   .title{font-family:"HelveticaNeue-CondensedBlack","HelveticaNeue-CondensedBold","Helvetica Neue",Arial,sans-serif;
-         font-weight:900;font-size:132px;line-height:.86;letter-spacing:.005em;text-transform:uppercase;
+         font-weight:900;font-size:118px;line-height:.86;letter-spacing:.005em;text-transform:uppercase;
          /* a second plate landing a hair off, the way a two-colour press misses */
          text-shadow:3px 2px 0 rgba(155,47,36,.28)}
 
   .rule{width:100%;height:2px;background:#151411;margin:30px 0 8px;opacity:.85}
   .rule.thin{height:1px;margin:0 0 24px;opacity:.45}
 
-  .tagline{font-family:Didot,"Baskerville",Georgia,serif;font-style:italic;font-size:33px;line-height:1.18;
-           color:#151411;max-width:520px}
-  .support{margin-top:16px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.5;
-           color:#3A3A34;max-width:470px;font-weight:400}
+  .tagline{font-family:Didot,"Baskerville",Georgia,serif;font-style:italic;font-size:32px;line-height:1.2;
+           color:#151411;max-width:470px}
+  .support{margin-top:18px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:20px;line-height:1.45;
+           color:#26261F;max-width:430px;font-weight:400}
 
   .spacer{flex:1}
 
   .footer{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-  .capsule{border:2px solid #151411;padding:7px 12px 6px;
+  .capsule{border:1.6px solid #1A1712;padding:6px 11px 5px;transform:rotate(-.7deg);opacity:.94;
            font-family:"HelveticaNeue-CondensedBold","Helvetica Neue",Arial,sans-serif;
-           font-size:12px;letter-spacing:.24em;font-weight:700}
-  .url{font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;letter-spacing:.01em;color:#2B2B26}
+           font-size:13px;letter-spacing:.22em;font-weight:700}
+  .url{font-family:"Helvetica Neue",Arial,sans-serif;font-size:18px;letter-spacing:.01em;color:#232320}
 
   /* registration marks, printed into the sheet */
-  .reg{position:absolute;width:26px;height:26px;z-index:3;opacity:.5}
+  .reg{position:absolute;width:24px;height:24px;z-index:3;opacity:.34;filter:url(#ink)}
   .reg::before,.reg::after{content:"";position:absolute;background:#9B2F24}
   .reg::before{left:50%;top:0;width:1px;height:100%}
   .reg::after{top:50%;left:0;height:1px;width:100%}
@@ -49,11 +49,18 @@
   .r2{left:52px;bottom:52px}
 
   /* paper tooth over everything, so type and photo share one print */
-  .tooth{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.14;mix-blend-mode:multiply;
+  .tooth{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.20;mix-blend-mode:multiply;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='t'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='260' height='260' filter='url(%23t)'/></svg>")}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="ink" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="0.28"/>
+  </filter>
+</svg>
 <div id="stage">
   <img id="bg" src="hero-bg.png" alt="">
   <div class="reg r1"></div>
@@ -65,7 +72,7 @@
     <div class="rule"></div>
     <div class="rule thin"></div>
     <div class="tagline">Every memory carries a receipt.</div>
-    <div class="support">Scoped before it is ranked. Turns, decisions and documents are kept in one SQLite store inside your own profile — never pooled with anyone else's.</div>
+    <div class="support">Scoped before it is ranked. One SQLite store per profile — never pooled.</div>
     <div class="spacer"></div>
     <div class="footer">
       <div class="capsule">HERMES MEMORY PROVIDER</div>
