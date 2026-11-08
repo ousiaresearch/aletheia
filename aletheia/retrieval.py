@@ -13,6 +13,7 @@ gate passes (see eval/recall_gate.py).
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass, field
 
@@ -270,16 +271,22 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
     
     # Optional query expansion: generate alternative phrasings and fuse results.
     expanded_queries = [query]
-    if token_getter is not None and mode in ("hybrid", "lexical"):
+    expansion_requested = (
+        token_getter is not None
+        or os.environ.get("ALETHEIA_QUERY_EXPANSION") == "1"
+    )
+    if expansion_requested and mode in ("hybrid", "lexical"):
         try:
-            from aletheia.query_expansion import expand_query, expand_query_hyde, expand_query_multihop
+            from aletheia.query_expansion import (
+                expand_query,
+                expand_query_hyde,
+                expand_query_multihop,
+            )
             expanded_queries = expand_query(token_getter, query, n=2)
-            # P1: HyDE adds a hypothetical answer to the candidate pool.
-            hyde = expand_query_hyde(token_getter, query)
-            expanded_queries.extend(hyde[1:])
-            # P1: multi-hop adds sub-questions for compound queries.
-            multihop = expand_query_multihop(token_getter, query)
-            expanded_queries.extend(multihop[1:])
+            # HyDE adds a hypothetical answer to the candidate pool.
+            expanded_queries.extend(expand_query_hyde(token_getter, query)[1:])
+            # Multi-hop adds sub-questions for compound queries.
+            expanded_queries.extend(expand_query_multihop(token_getter, query)[1:])
             # Deduplicate while preserving order.
             seen = set()
             deduped = []

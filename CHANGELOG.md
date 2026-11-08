@@ -2,6 +2,24 @@
 
 All notable changes to Aletheia are documented here.
 
+## [2.0.1] — 2026-11-08
+
+### Added
+- Provider-agnostic LLM transport for the package's optional extraction and query-expansion paths:
+  native OpenAI, native Anthropic, and OpenAI-compatible endpoints with user-selected provider,
+  model, base URL, and API-key environment-variable name.
+- Fail-closed handling for missing or invalid configuration, with API keys excluded from config reprs.
+
+### Changed
+- Optional extraction and query expansion no longer select TokenHarbor or any other provider by
+  default. Extraction still requires explicit egress opt-in; query expansion remains separately
+  opt-in. The Hermes plugin does not make background LLM calls as part of this release.
+- Documented provider setup and the fact that Aletheia does not read Hermes auth files directly.
+
+### Verified
+- Mocked transport tests exercise OpenAI, Anthropic, compatible endpoints, disabled integrations,
+  and secret redaction. No live provider endpoint was called.
+
 ## [2.0.0] — 2026-11-07
 
 One name. Everything the product is called is now Aletheia: the import path (`import aletheia`), the
