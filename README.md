@@ -7,6 +7,8 @@ selected and the tier.
 
 This repository is the plugin. The substrate ships as the [`weft-memory`](https://pypi.org/project/weft-memory/)
 package (AGPL-3.0), so the plugin here is only a manifest and an entry point.
+Version 1.1.1 requires `weft-memory>=1.1.1,<2`; earlier substrate releases do not satisfy
+the dependency. The 1.1.1 substrate must be published before a normal installation can resolve it.
 
 ## Install
 
@@ -32,15 +34,21 @@ additive, not a swap.
 
 ## What it needs
 
-Retrieval quality is part of the contract, so Aletheia does not fall back to keyword search. It needs:
+Retrieval quality is part of the contract, so Aletheia does not fall back to keyword search. The
+default embedder requires Apple Silicon macOS. It needs:
 
-- the `bge-m3` embedder (~640 MB) and the `cross-encoder/ms-marco-MiniLM-L-6-v2` reranker (~90 MB),
-  fetched once at setup from their official Hugging Face repositories;
-- `weft-memory` (declared as a Python dependency), `sentence-transformers`, and on Apple silicon
+- the `mlx-community/bge-m3-mlx-4bit` embedder and the `cross-encoder/ms-marco-MiniLM-L-6-v2`
+  reranker, downloaded separately into the Hugging Face cache as described in
+  [Weft's model setup](https://github.com/ousiaresearch/weft#models); the provider does not download
+  them at runtime;
+- `weft-memory` (declared as a Python dependency), `sentence-transformers>=3.0,<6`, and on Apple silicon
   `mlx-embeddings`.
 
-Media ingest is optional: with Qwen3.5-2B (2.5 GB) and Whisper large-v3-turbo (547 MB) it accepts
-images and audio; without them it refuses those types by name and text keeps working fully.
+The Hermes provider exposes text ingestion, not an image or audio ingestion setup. Weft's separate
+Python media-ingestion API accepts caller-supplied image describer or audio transcriber adapters;
+the supplied Qwen adapter additionally needs `mlx-vlm` and a local model, and the Whisper adapter
+needs `pywhispercpp`, a local model and `ffmpeg`. Installing models alone does not wire media into
+the Hermes provider.
 
 If a required model is missing, `is_available()` is false and `unavailable_reason()` says which model
 and how to fetch it — the provider never activates as a silent downgrade.
