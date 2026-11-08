@@ -2,6 +2,53 @@
 
 All notable changes to Weft are documented here.
 
+## [1.1.1] — 2026-11-07
+
+### Fixed
+- **Every turn was dropped by the Hermes provider.** `Ingestor.ingest_turn` derived the attribution
+  from the speaker name and refused anything it did not recognise, while the provider passed the
+  agent half as `aletheia` and the human half as whatever the channel called the speaker (an iMessage
+  handle, a display name). Each turn raised `unknown speaker` and was lost; the store stayed empty and
+  recall had nothing to return. Attribution is now the role (`user` / `agent` / `system`), resolved
+  from an explicit role first and the speaker's own role name second, with the name kept verbatim in
+  `provenance.speaker`. Existing `user` / `assistant` / `system` callers behave as before, and the
+  provider now passes both halves explicitly.
+- **Ambiguity resolves downward.** A speaker the store does not recognise is recorded as the agent
+  side, never as the user: `user` attribution is authority-bearing (D2-2), so the fallback must not
+  hand it out. Callers that know a turn is the human's pass `attribution="user"`.
+- **The agent's own tool can no longer mint `user` records.** `weft_ingest` records with
+  `attribution="agent"` whatever speaker it is given; only the turn mirror can write the human side.
+- **One half of a turn could cost the other.** The two writes shared one `try`; a failure on the user
+  half aborted the agent half. Each half is now independent, and the turn is counted by outcome.
+- **A one-shot host closed the store under an in-flight write.** `sync_turn` writes on a worker
+  thread, and `hermes chat -q` shuts the provider down seconds later: the turn was lost to
+  `Cannot operate on a closed database`. `shutdown()` now refuses new turns before it drains, then
+  joins in-flight writes for up to `SYNC_DRAIN_SECONDS` (5 s) before closing. The wait is bounded; a
+  `Substrate.close()` queued behind a wedged write is not.
+- **A turn arriving mid-shutdown, or a write registered before it started, could still be lost.**
+  Acceptance and thread registration now happen under the provider lock, with the thread started
+  before it is tracked; a turn offered after shutdown began is a counted skip (`provider closing`),
+  not a doomed write.
+- **Fenced content could be stored as the user's own speech.** A turn that arrives carrying recall
+  fence markers is now stored with attribution `system` as well as `provenance.fenced` (D3-5).
+
+### Added
+- Turn bookkeeping in `weft_receipt`'s status: `turn_writes.{seen,skipped,stored,partial,failed,
+  halves_written,halves_failed}`, `skipped_because` and `last_error`, plus `primary`. `seen` is
+  turns; `halves_*` is halves. `stored + partial + failed + skipped == seen`, so a host that stopped
+  reaching the write path is visible instead of silent. Note what `seen == 0` does and does not mean:
+  the provider was never asked to write — which can be because the host produced no turn, or because
+  the host dropped it upstream in its own drain or stall gate.
+- An `INFO` line per provider instance naming its scope, store, primary flag and session, and a
+  `WARNING` when it activates without an embedder (the failure worth debugging).
+
+### Tests
+- `tests/test_turn_persistence.py` (16 checks): role resolution, downward ambiguity, unknown-speaker
+  storage, fencing, both-halves writes, handle-as-provenance, bot-authored turns, tool attribution,
+  half-failure isolation, bounded drain, drain under a hung write, a turn arriving mid-shutdown,
+  start-before-track, post-close accounting, non-primary accounting, receipt totals.
+  Suite: 1014 → **1030**.
+
 ## [1.1.0] — 2026-11-06
 
 ### Added

@@ -266,12 +266,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
     # None means "auto": rerank is on for hybrid/vector where we have an embedder.
     if rerank is None:
         rerank = mode in ("vector", "hybrid") and embedder is not None
-    cross_encoder = None
-    if use_cross_encoder:
-        try:
-            cross_encoder = CrossEncoderReranker()
-        except Exception:
-            pass
+    cross_encoder = CrossEncoderReranker() if use_cross_encoder else None
     
     # Optional query expansion: generate alternative phrasings and fuse results.
     expanded_queries = [query]
@@ -492,7 +487,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             applied = False
             if slots <= 0 or not group:
                 return [], applied
-            if use_cross_encoder and cross_encoder is not None and len(group) > slots:
+            if cross_encoder is not None and group:
                 applied = True
                 return cross_encoder.rerank(query, group, top_k=len(group))[:slots], applied
             # Skip bi-encoder when the cross-encoder already reranked: it is more accurate.

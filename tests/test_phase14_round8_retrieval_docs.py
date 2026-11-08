@@ -102,6 +102,29 @@ def test_matches_keep_ranked_order_through_rerank(tmp_path):
     assert {i.record_id for i in a} == {i.record_id for i in b} == {'m1', 'm2'}
 
 
+def test_requested_cross_encoder_reranks_even_when_all_matches_fit(tmp_path, monkeypatch):
+    import weft.retrieval as retrieval
+    sub, ctx = _store(tmp_path, 'Decision')
+    class Reranker:
+        def rerank(self, query, items, top_k):
+            return list(reversed(items))[:top_k]
+    monkeypatch.setattr(retrieval, 'CrossEncoderReranker', Reranker)
+    original, _ = recall(sub, 'harbor', ctx, limit=5, mode='lexical')
+    ranked, _ = recall(sub, 'harbor', ctx, limit=5, mode='lexical', use_cross_encoder=True)
+    assert [i.record_id for i in ranked] == ['m2', 'm1', 'near']
+    assert [i.record_id for i in original] == ['m1', 'm2', 'near']
+
+
+def test_requested_cross_encoder_constructor_failure_propagates(tmp_path, monkeypatch):
+    import weft.retrieval as retrieval
+    sub, ctx = _store(tmp_path, 'Decision')
+    def broken():
+        raise RuntimeError('reranker unavailable')
+    monkeypatch.setattr(retrieval, 'CrossEncoderReranker', broken)
+    with pytest.raises(RuntimeError, match='reranker unavailable'):
+        recall(sub, 'harbor', ctx, limit=5, mode='lexical', use_cross_encoder=True)
+
+
 # ---- docs ----------------------------------------------------------------------------------
 
 DOC = (ROOT / 'docs' / 'turnkey-deployment.md').read_text()

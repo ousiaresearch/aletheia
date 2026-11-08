@@ -14,6 +14,7 @@ import re
 import uuid
 import zipfile
 from dataclasses import dataclass
+from typing import Optional
 
 from weft.substrate import Record, RecordConflict, ScopeViolation
 
@@ -26,11 +27,19 @@ def _centroid(vectors: list) -> list:
 
 
 DOC_HEAD_CHARS = 2000  # opening text embedded per document when doc_vectors is on
-_TURN_ATTRIBUTION = {"user": "user", "assistant": "agent", "system": "system"}
-_FENCE = re.compile(r"<weft-recall\b[^>]*>.*?</weft-recall>", re.DOTALL | re.IGNORECASE)
-_STRAY = re.compile(r"</?weft-recall\b[^>]*>", re.IGNORECASE)
-_OPEN = re.compile(r"<weft-recall\b[^>]*>", re.IGNORECASE)
-_CLOSE = re.compile(r"</weft-recall>", re.IGNORECASE)
+# The role a turn is recorded as (spec §7.1). A role is not a name: hosts name the human side after
+# whoever spoke — an iMessage handle, a display name — and the agent side after the provider. Those
+# names are provenance, not attribution, so they are carried verbatim in ``provenance`` and never
+# decide whether the turn can be stored.
+_TURN_ATTRIBUTION = {"user": "user", "assistant": "agent", "agent": "agent", "system": "system"}
+_TURN_ROLES = frozenset({"user", "agent", "system"})
+_TURN_ROLE_ALIASES = {"assistant": "agent"}  # the role name a host uses, the attribution Weft stores
+# Ambiguity is never the human's voice: ``user`` is authority-bearing (D2-2), so an unrecognised
+# speaker falls to the agent side, and a caller that knows better passes ``attribution``.
+TURN_ROLE_FALLBACK = "agent"
+_STRAY = re.compile(r"</?weft-(?:recall|memory)\b[^>]*>", re.IGNORECASE)
+_OPEN = re.compile(r"<weft-(?:recall|memory)\b[^>]*>", re.IGNORECASE)
+_CLOSE = re.compile(r"</weft-(?:recall|memory)\s*>", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -106,6 +115,27 @@ def _parse(name: str, data: bytes):
     return Rejection(name, "unsupported_format")
 
 
+def turn_attribution(speaker: str, role: Optional[str] = None) -> str:
+    """The attribution a turn is stored with: the caller's role, else the speaker's own role name.
+
+    An unrecognised speaker is not a reason to lose a turn. Hermes names the human half after the
+    identity that spoke (an iMessage handle, a display name) and the agent half after the provider;
+    refusing those made every turn the provider tried to store fail. The role is what the store
+    reasons about, and the speaker name is kept verbatim in provenance either way.
+
+    Ambiguity resolves *downward*: ``user`` attribution is authority-bearing (D2-2), so a name the
+    store does not recognise is recorded as the agent side. A caller that knows the turn is the
+    human's passes ``role="user"``.
+    """
+    if role is not None:
+        wanted = str(role).strip().lower()
+        wanted = _TURN_ROLE_ALIASES.get(wanted, wanted)
+        if wanted not in _TURN_ROLES:
+            raise ValueError(f"unknown attribution: {role!r} (expected one of {sorted(_TURN_ROLES)})")
+        return wanted
+    return _TURN_ATTRIBUTION.get(str(speaker or "").strip().lower(), TURN_ROLE_FALLBACK)
+
+
 class Ingestor:
     """Writes Sources and Observations through the substrate. Holds no state of its own."""
 
@@ -130,19 +160,28 @@ class Ingestor:
                         'effective_at', 'supersedes', 'source_ids', 'provenance', 'attribution'))):
                 raise
 
-    def ingest_turn(self, text: str, speaker: str, ctx, scope: str, conversation_id: str) -> str:
-        """A conversation turn becomes a Source with the speaker's attribution (spec §7.1)."""
-        attribution = _TURN_ATTRIBUTION.get(speaker)
-        if attribution is None:
-            raise ValueError(f"unknown speaker: {speaker!r}")
+    def ingest_turn(self, text: str, speaker: str, ctx, scope: str, conversation_id: str,
+                    attribution: Optional[str] = None) -> str:
+        """A conversation turn becomes a Source with the turn's attribution (spec §7.1).
+
+        ``speaker`` is the identity that produced the turn and is kept verbatim in provenance;
+        ``attribution`` is the role the store reasons about (``user`` / ``agent`` / ``system``).
+        Callers that know which half of a turn this is should pass it explicitly — the speaker name
+        alone cannot tell an iMessage handle from a provider name.
+        """
+        role = turn_attribution(speaker, attribution)
         clean, changed = fence(text)
         provenance = {"conversation_id": conversation_id, "speaker": speaker}
         if changed:
+            # D3-5: text that arrived carrying recall fences is tagged, and tagged content is never
+            # citable as the user's own speech. The flag alone is not enough — the attribution is
+            # what recall and extraction reason about.
             provenance["fenced"] = True
+            role = "system"
         rid = "turn-" + uuid.uuid4().hex[:24]
         record = Record(
             record_id=rid, record_type="Source", scope=scope, payload={"text": clean},
-            attribution=attribution, source_ids=[], provenance=provenance,
+            attribution=role, source_ids=[], provenance=provenance,
         )
         if not self.sub.scope_engine.authorize_write(record, ctx).allowed:
             raise ScopeViolation("write not permitted", audit_recorded=False)

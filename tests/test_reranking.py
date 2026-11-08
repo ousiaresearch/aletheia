@@ -15,12 +15,27 @@ def test_reranker_empty_items():
     assert rr.rerank("query", []) == []
 
 
-def test_reranker_fallback_on_error(monkeypatch):
+def test_reranker_reports_prediction_failure():
     rr = CrossEncoderReranker.__new__(CrossEncoderReranker)
-    rr._model = "error"
-    items = [Item("a", "scope1", "text a", "L0"), Item("b", "scope1", "text b", "L0")]
-    result = rr.rerank("query", items, top_k=1)
-    assert result == items[:1]
+    rr._model = MagicMock()
+    rr._model.predict.side_effect = RuntimeError("bad weights")
+    items = [Item("a", "scope1", "text a", "L0")]
+    with pytest.raises(RuntimeError, match="bad weights"):
+        rr.rerank("query", items)
+
+
+def test_reranker_loads_local_only_and_reports_failure(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+
+    constructor = MagicMock(side_effect=RuntimeError("not cached"))
+    monkeypatch.setitem(sys.modules, "sentence_transformers", SimpleNamespace(CrossEncoder=constructor))
+    rr = CrossEncoderReranker.__new__(CrossEncoderReranker)
+    rr._model = None
+    with pytest.raises(RuntimeError, match="not cached"):
+        rr._load()
+    constructor.assert_called_once_with(rr.model_name, local_files_only=True)
+    assert rr._model is None
 
 
 def test_reranker_sorts_by_score():

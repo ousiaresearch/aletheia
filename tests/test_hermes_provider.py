@@ -25,6 +25,11 @@ PROVIDER_FILE = REPO / "weft" / "providers" / "hermes.py"
 FORBIDDEN_ROOTS = {"fastapi", "uvicorn", "starlette"}
 
 
+@pytest.fixture(autouse=True)
+def no_model_load_for_provider_tests(monkeypatch):
+    monkeypatch.setattr(provider_mod, "_preflight_reranker", lambda: None)
+
+
 class StubEmbedder:
     model_id = "stub-embedder"
     dim = 8
@@ -76,8 +81,33 @@ def test_provider_is_a_fresh_instance_per_profile():
     assert a._pending is not b._pending
 
 
+def test_readiness_rejects_unloadable_reranker(monkeypatch):
+    monkeypatch.setattr(provider_mod, "default_text_embedder", lambda: StubEmbedder())
+    def fail():
+        raise RuntimeError("broken local checkpoint")
+    monkeypatch.setattr(provider_mod, "_preflight_reranker", fail, raising=False)
+    provider = WeftMemoryProvider()
+    assert not provider.is_available()
+    assert "reranker" in provider.unavailable_reason()
+    assert "broken local checkpoint" in provider.unavailable_reason()
+
+
+def test_initialize_rejects_unloadable_reranker(tmp_path, monkeypatch):
+    monkeypatch.setattr(provider_mod, "default_text_embedder", lambda: StubEmbedder())
+    def fail():
+        raise RuntimeError("broken local checkpoint")
+    monkeypatch.setattr(provider_mod, "_preflight_reranker", fail, raising=False)
+    provider = WeftMemoryProvider()
+    provider.initialize("s", hermes_home=str(tmp_path))
+    assert not provider._ready
+    assert "reranker" in provider._error
+
+
 def test_readiness_names_the_missing_model(monkeypatch):
-    monkeypatch.setattr(provider_mod, "_has_snapshot", lambda globs: False)
+    def missing():
+        raise RuntimeError("not present")
+    monkeypatch.setattr(provider_mod, "default_text_embedder", missing)
+    monkeypatch.setattr(provider_mod, "_preflight_reranker", missing)
     provider = WeftMemoryProvider()
     assert provider.is_available() is False
     reason = provider.unavailable_reason()
@@ -86,8 +116,8 @@ def test_readiness_names_the_missing_model(monkeypatch):
 
 
 def test_readiness_is_true_when_both_models_and_runtimes_are_present(monkeypatch):
-    monkeypatch.setattr(provider_mod, "_has_snapshot", lambda globs: True)
-    monkeypatch.setattr(provider_mod.importlib.util, "find_spec", lambda name: object())
+    monkeypatch.setattr(provider_mod, "default_text_embedder", lambda: StubEmbedder())
+    monkeypatch.setattr(provider_mod, "_preflight_reranker", lambda: None)
     provider = WeftMemoryProvider()
     assert provider.is_available() is True
     assert provider.unavailable_reason() == ""

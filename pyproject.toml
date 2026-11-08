@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "weft-memory"
-version = "1.1.0"
+version = "1.1.1"
 description = "Evidence-bound scoped memory substrate for people and their agents"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
@@ -36,7 +36,7 @@ local-embedding = [
   "mlx-embeddings==0.1.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
 ]
 local-recall = [
-  "sentence-transformers>=2.0",
+  "sentence-transformers>=3.0",
   "torch>=2.0",
 ]
 server = [

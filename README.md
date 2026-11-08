@@ -74,7 +74,25 @@ Deletion commits logical erasure immediately, but deleted text can remain in the
 
 ## Models
 
-Weft ships adapters, not weights. Model licences are shown at fetch time with consent. Default local embedder: BAAI/bge-m3 4-bit (MIT). Optional: Qwen3.5-2B for OCR/description (Apache-2.0), whisper large-v3-turbo for transcription (MIT/Apache-2.0).
+Weft ships adapters, not weights. Aletheia requires Apple Silicon macOS, the MLX BGE-M3
+embedder and the cross-encoder reranker; it does not fall back to keyword-only retrieval.
+In the **same Python environment as Hermes**, install Weft's model dependencies and download
+the models while online (review the model cards and licences before downloading):
+
+```bash
+python -m pip install 'weft-memory[local-embedding,local-recall]'
+python -c "from huggingface_hub import snapshot_download; snapshot_download('mlx-community/bge-m3-mlx-4bit'); snapshot_download('cross-encoder/ms-marco-MiniLM-L-6-v2')"
+```
+
+The `local-recall` extra requires `sentence-transformers>=3.0` for local-only cross-encoder loading.
+
+Model cards: [BGE-M3 MLX](https://huggingface.co/mlx-community/bge-m3-mlx-4bit) and
+[MiniLM reranker](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-6-v2). The embedder
+currently requires the default `~/.cache/huggingface/hub` location, so do not override `HF_HOME`
+or `HF_HUB_CACHE` for its download. The reranker uses the Hugging Face cache configuration.
+Restart the gateway after setup. Provider readiness loads and probes both models locally; this can
+take time and memory on startup. There is no `weft models fetch` command or built-in licence
+consent flow. Optional media models are separate.
 
 ## Design invariants
 
