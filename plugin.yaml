@@ -11,7 +11,10 @@ description: >-
   the plugin: the manifest below registers the provider, and the package it depends on ships here.
 requires_hermes: ">=0.22.5"
 python_dependencies:
-  - "aletheia>=2,<3"
+  # The distribution name is not yet on PyPI under our control (both `aletheia` and
+  # `aletheia-memory` belong to other people), so the dependency is this repository at a tag.
+  # Replace with the published name the moment one is reserved.
+  - "aletheia @ git+https://github.com/ousiaresearch/aletheia@v2.0.0"
   - "sentence-transformers>=3.0,<6"
   - "mlx-embeddings==0.1.0; sys_platform == 'darwin' and platform_machine == 'arm64'"
 config_keys:
