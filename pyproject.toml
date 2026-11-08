@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aletheia"
+name = "ousia-aletheia"
 version = "2.0.0"
 description = "Evidence-bound scoped memory substrate for people and their agents"
 readme = "README.md"

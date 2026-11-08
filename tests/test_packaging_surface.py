@@ -41,5 +41,5 @@ def test_the_plugin_manifest_sits_beside_its_entry_point():
     manifest = REPO / "plugin.yaml"
     assert manifest.is_file() and (manifest.parent / "__init__.py").is_file()
     text = manifest.read_text()
-    # Either a version spec (published) or a direct reference (not yet on PyPI under our name).
-    assert "aletheia>=" in text or "aletheia @" in text, "the manifest must name the package it needs"
+    # The distribution is namespaced (`ousia-aletheia`); the bare name belongs to someone else on PyPI.
+    assert "ousia-aletheia>=" in text, "the manifest must depend on the published distribution"

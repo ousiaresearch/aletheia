@@ -4,8 +4,10 @@ All notable changes to Aletheia are documented here.
 
 ## [2.0.0] — 2026-11-07
 
-One name. Everything the product is called is now Aletheia: the distribution (`aletheia`), the
-import path (`import aletheia`), the CLI (`aletheia`, `aletheia-server`), the environment variables
+One name. Everything the product is called is now Aletheia: the import path (`import aletheia`), the
+distribution (`ousia-aletheia` — the bare `aletheia` and `aletheia-memory` project names belong to
+other people on PyPI, so the project is namespaced and the import is not), the CLI (`aletheia`,
+`aletheia-server`), the environment variables
 (`ALETHEIA_*`), the tool names (`aletheia_recall`, `aletheia_ingest`, `aletheia_forget`,
 `aletheia_receipt`), the default store (`<profile>/aletheia/aletheia.sqlite3`) and the plugin repo.
 The substrate was called Weft; that word is gone from the package, the docs, the manifests and the

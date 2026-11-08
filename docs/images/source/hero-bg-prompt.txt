@@ -1,0 +1,33 @@
+USECASE: branded release hero background for a developer product announcement page.
+ASSET TYPE: a wide horizontal banner background, 16:9, at least 2560x1440, to be typeset later.
+
+SCENE — an archived mail-order broadside for a printed index-card memory archive.
+A fanned stack of printed index cards, bound along one edge, sits on a sheet of washed newsprint
+that has been handled for decades: cards slightly rotated against each other, one card pulled a
+few degrees out of the pack, a small red stamped tab folded over the top card's edge, a punched
+hole and a thin red margin rule on the top card. Thin press column rules cross the newsprint
+behind the cards. The paper is creased and scuffed where it was folded twice.
+
+COMPOSITION:
+- The card stack occupies the RIGHT 55-60% of the frame and bleeds off the right, top and bottom
+  edges, so it reads as an object photographed on a page rather than an illustration.
+- The LEFT 40% is quiet washed newsprint: faint column rules, subtle ink mottle, a couple of small
+  registration marks. Leave this band EMPTY of objects and heavy texture — real type will be set
+  there later, and anything busy will fight it.
+- Camera slightly above the page, a shallow perspective, soft even light from the upper left, no
+  dramatic spotlight.
+
+STYLE — underground technical-art imprint, analog newspaper direct-response lane:
+- printed on newsprint, not rendered: fine halftone dot screen, paper fibers, ink mottle, uneven
+  inking, slight plate misregistration, faint scan haze, worn edges.
+- 2-4 inks only: newsprint cream #E3DCC7, xerox black #151411, washed gray-green #5F625C, aged tan
+  #CDBE9C, with ONE signal accent: coupon red #9B2F24 used only on the stamped tab and the thin
+  margin rule.
+
+CONSTRAINTS:
+- Generate NO text, letters, numbers, logos, wordmarks, signage, labels, captions or writing of any
+  kind anywhere. The index cards and the newsprint must show only abstract non-legible line
+  impressions, ruled bars and blank fields — never real characters or numerals.
+- No faces, no hands, no figures, no UI, no mockups, no device screens.
+- No glossy 3D, no neon or cyberpunk glow, no gradients or lens flare, no stock "AI brain" or
+  neural-network lattice, no token or coin imagery, no clean corporate vector look.
