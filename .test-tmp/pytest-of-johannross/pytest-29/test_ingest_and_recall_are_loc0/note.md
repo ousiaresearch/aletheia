@@ -1,1 +1,0 @@
-The lighthouse keepers record the tides each night.

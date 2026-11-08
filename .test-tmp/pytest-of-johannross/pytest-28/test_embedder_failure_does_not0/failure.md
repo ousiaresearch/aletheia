@@ -1,1 +1,0 @@
-A non-empty document that should not be stored half-processed.
