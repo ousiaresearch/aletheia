@@ -36,8 +36,12 @@ Admission to the Hermes plugin catalog is a separate, human-reviewed PR; until t
 ### As a Python package
 
 ```bash
-pip install aletheia
+pip install "aletheia @ git+https://github.com/ousiaresearch/aletheia@v2.0.0"
 ```
+
+The import name is `aletheia`. The PyPI *project* name is not ours yet — `aletheia` and
+`aletheia-memory` both belong to other people, so `pip install aletheia` would install someone
+else's package. Until a name is reserved, install from the repository as above or from source.
 
 The provider needs the embedder and the cross-encoder reranker on disk; `aletheia models fetch`
 (`python -m aletheia.cli models fetch`) pulls them. A missing model is reported, never papered over
