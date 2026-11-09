@@ -63,8 +63,14 @@ def _parser() -> argparse.ArgumentParser:
               "ALETHEIA_LLM_PROVIDER/MODEL and a provider API key"),
     )
     
-    consolidate = commands.add_parser("consolidate", help="deduplicate Claims in a scope")
+    consolidate = commands.add_parser("consolidate", help="find near-duplicate Claims in a scope")
     consolidate.add_argument("--scope", required=True)
+    consolidate.add_argument("--threshold", type=float, default=0.9,
+                             help="similarity at or above which two records are the same claim")
+    consolidate.add_argument("--mark", action="store_true",
+                             help="write duplicate_of edges (default: report only)")
+    consolidate.add_argument("--dry-run", action="store_true",
+                             help="report what --mark would do without writing it")
 
     link_entities = commands.add_parser("link-entities", help="extract entity links from records")
     link_entities.add_argument("--scope", required=True)
@@ -288,7 +294,8 @@ def _run_consolidate(args) -> int:
     engine, ctx = _context(args.scope)
     sub = Substrate(db_path, engine)
     try:
-        result = consolidate_scope(sub, ctx, args.scope)
+        result = consolidate_scope(sub, ctx, args.scope, similarity_threshold=args.threshold,
+                                   mark=args.mark, dry_run=args.dry_run)
         print(json.dumps({
             "status": "consolidated",
             "scope": args.scope,

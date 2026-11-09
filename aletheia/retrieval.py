@@ -460,6 +460,19 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         # Graph expansion: records one edge away from the top matches, added as CONTEXT exactly
         # like neighbours. They never displace a matching record, they are capped, and every hop was
         # authorised inside graph.neighbours — an edge is not a permission.
+        # A record consolidation has marked as a duplicate yields its slot to the record it
+        # duplicates: both are still returned, but only the keeper can occupy a match slot. This is
+        # the one place the marking pays off, and it is deliberately a demotion rather than a drop —
+        # a caller can still see that the duplicate was written.
+        duplicate_keepers: dict = {}
+        try:
+            for subject_id, keeper_id in sub._conn.execute(
+                    "SELECT subject, object FROM relations WHERE predicate = 'duplicate_of' "
+                    f"AND scope IN ({', '.join('?' for _ in readable)})", tuple(readable)).fetchall():
+                duplicate_keepers[subject_id] = keeper_id
+        except Exception:
+            duplicate_keepers = {}
+
         graph_ids: set = set()
         try:
             from aletheia.graph import expand_candidates
@@ -471,6 +484,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
 
         items: list[Item] = []
         seen_record_ids: set = set()
+        candidate_set = set(candidate_ids)
         for rid in candidate_ids:
             if len(items) >= pool:
                 break
@@ -488,8 +502,11 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             tier, shown = _pick_tier(text, terms)
             derived = bool(isinstance(rec.provenance, dict) and rec.provenance.get("machine_derived"))
             is_summary = rec.record_type == "Summary" or "-ss-" in rid or "summary" in rid.lower()
+            keeper = duplicate_keepers.get(rid)
+            demoted = (keeper is not None and keeper != rid
+                       and keeper in candidate_set | seen_record_ids)
             items.append(Item(rid, rec.scope, text, tier, derived, is_summary=is_summary,
-                              neighbor=rid in neighbor_ids or rid in graph_ids))
+                              neighbor=rid in neighbor_ids or rid in graph_ids or demoted))
             receipt.selected.append(rid)
             if _TIER_ORDER[tier] > _TIER_ORDER[receipt.tier]:
                 receipt.tier = tier

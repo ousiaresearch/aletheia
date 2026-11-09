@@ -38,6 +38,8 @@ PREDICATES = frozenset({
     "contradicts",
     "supersedes",
     "derived_from",
+    # Written by consolidation, never by extraction: "this record says the same thing as that one".
+    "duplicate_of",
 })
 
 #: Rules for the rule-based extractor. Deliberately small and auditable: each pattern names the

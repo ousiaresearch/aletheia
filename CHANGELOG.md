@@ -56,6 +56,25 @@ All notable changes to Aletheia are documented here.
   - An ungranted scope yields an empty card, and building twice stores nothing (asserted by
     comparing the record count before and after).
   - `aletheia representation --scope <s> [--limit N]` prints the card as JSON.
+- **`aletheia/consolidation.py` — near-duplicates found and marked, never deleted (phase 12 / W2.3).**
+  `consolidate_scope` used to report exact-text duplicates in a comment that admitted "production
+  would use embeddings". This replaces it with clustering that is lexical by default and
+  embedding-based when an embedder is passed, and it *marks* what it finds with a `duplicate_of`
+  edge instead of counting it.
+  - Nothing is deleted, and nothing is superseded automatically: a `Correction` requires user
+    attribution, so an agent may mark a duplicate but may not rewrite what a person asserted. A test
+    asserts consolidation writes no `Correction` and leaves `supersedes` untouched — that failure
+    would be an agent laundering away a stated fact.
+  - The keeper is chosen deterministically — strongest confidence, then newest, then smallest id —
+    and grouping does not depend on row order. Two runs give the same answer, including the last
+    tiebreak.
+  - Clustering is per scope in both directions: an ungranted scope yields nothing, and two scopes
+    with the same sentence are not duplicates of each other.
+  - `aletheia consolidate --scope <s> [--threshold T] [--mark] [--dry-run]`; the default is to
+    report, because a threshold that is wrong for a corpus is not obvious until you have seen what
+    it would have marked.
+  - Recall uses the marking: a marked duplicate yields its match slot to its keeper and is returned
+    as context, so both are visible and only one is treated as a match.
 
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,
