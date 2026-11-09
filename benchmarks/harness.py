@@ -45,8 +45,13 @@ class Result:
     failure_reason: str | None = None
 
 
+#: Dataset name -> file stem. The scope inside a set is the short name; the file kept its longer one
+#: for longmem, which made `--datasets longmem` fail on a file that was present all along.
+DATASET_FILES = {"locoomo": "locoomo-v1", "longmem": "longmemeval-s-v1", "beam": "beam-sm-v1"}
+
+
 def _load_dataset(name: str) -> list[Case]:
-    path = DATASET_DIR / f"{name}-v1.json"
+    path = DATASET_DIR / f"{DATASET_FILES.get(name, f'{name}-v1')}.json"
     if not path.exists():
         raise FileNotFoundError(f"dataset not found: {path}")
     with open(path, "r", encoding="utf-8") as fh:
@@ -103,7 +108,7 @@ def _insert_records(sub: Substrate, ctx: ScopeContext, records: list[dict]) -> N
         sub.put(record, ctx)
 
 
-def _run_case(case: Case, embedder=None) -> Result:
+def _run_case(case: Case, embedder=None, vectors: dict[str, list[float]] | None = None) -> Result:
     engine = ScopeEngine(known_scopes=KNOWN)
     with tempfile.TemporaryDirectory(prefix="aletheia-bench-") as tmp:
         db_path = Path(tmp) / f"{case.case_id}.db"
@@ -112,6 +117,19 @@ def _run_case(case: Case, embedder=None) -> Result:
 
         try:
             _insert_records(sub, ctx, case.setup_records)
+            if vectors:
+                # The hybrid vector arm needs document vectors: without them a "hybrid" run embeds
+                # only the query and fuses against an empty index, which measures nothing new.
+                scopes = {rec["record_id"]: rec.get("scope", "default") for rec in case.setup_records}
+                model_id = getattr(embedder, "model_id", "benchmark")
+                for record_id, vector in vectors.items():
+                    scope = scopes.get(record_id)
+                    if scope is None or vector is None:
+                        continue
+                    try:
+                        sub.vector_put(record_id, scope, vector, ctx=ctx, model_id=model_id)
+                    except Exception:
+                        pass
             for scope in ["locoomo", "longmem", "beam"]:
                 try:
                     sub.rebuild_fts(scope, ctx)
