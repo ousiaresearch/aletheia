@@ -74,6 +74,11 @@ def _parser() -> argparse.ArgumentParser:
     relate.add_argument("--scope", required=True)
     relate.add_argument("--limit", type=int, default=100, help="max records to scan")
 
+    representation = commands.add_parser(
+        "representation", help="assemble a cited card of what one scope holds (nothing is stored)")
+    representation.add_argument("--scope", required=True)
+    representation.add_argument("--limit", type=int, default=20, help="max lines per group")
+
     graph = commands.add_parser("graph", help="rebuild or inspect one scope's relation graph")
     graph.add_argument("--scope", required=True)
     graph.add_argument("--rebuild-communities", action="store_true",
@@ -328,6 +333,21 @@ def _run_relate(args) -> int:
         sub.close()
 
 
+def _run_representation(args) -> int:
+    from aletheia.representation import build_card
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        card = build_card(sub, ctx, args.scope, limit=args.limit)
+        print(json.dumps({"status": "representation", **card.as_dict()}, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
 def _run_graph(args) -> int:
     from aletheia.graph import community_of, neighbours, relations_from, rebuild_communities
     db_path = Path(args.db).expanduser()
@@ -532,6 +552,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run_relate(args)
         if args.command == "graph":
             return _run_graph(args)
+        if args.command == "representation":
+            return _run_representation(args)
         if args.command == "temporal":
             return _run_temporal(args)
         if args.command == "propose-rule":
