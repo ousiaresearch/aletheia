@@ -39,6 +39,23 @@ All notable changes to Aletheia are documented here.
     `aletheia graph --scope <s> --rebuild-communities` recomputes the projection, and
     `aletheia graph --scope <s> --record-id <id>` shows that record's community, neighbours and
     relations. Without these the graph would be a table nothing fills.
+- **`aletheia/representation.py` — a cited card of what a scope holds (phase 12 / W2.2).** The plan
+  asked for a stored `Representation` record type. This deliberately stores nothing: a snapshot goes
+  stale without anything failing, cannot cite the records it was built from once they change, and
+  reading it is indistinguishable from reading an asserted fact. The card is a projection assembled
+  on demand from one scope — architecture rule 4 applied literally — with every line carrying the
+  `record_id` and `source_ids` it came from (`Card.record_ids()` returns the set a caller can check
+  it against).
+  - Contents are rule-based and boring: stated `Commitment` / `Decision` lines with their status,
+    `Claim`s above a confidence floor, relation counts by predicate, community sizes, and the most
+    recent record ids. Nothing infers a personality, a mood or a preference — that would be
+    interpretation dressed as data, and the first reader of a wrong interpretation would be a model
+    that then acted on it.
+  - A record superseded by a `Correction` is history, not a fact: excluded from the card and counted
+    under `counts.superseded`, so a corrected claim never appears twice as equally current.
+  - An ungranted scope yields an empty card, and building twice stores nothing (asserted by
+    comparing the record count before and after).
+  - `aletheia representation --scope <s> [--limit N]` prints the card as JSON.
 
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,
