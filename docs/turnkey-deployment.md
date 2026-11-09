@@ -183,11 +183,13 @@ Sources and Claims ingested over HTTP have **no vectors**: HTTP ingest never com
 embeddings, and deployed HTTP recall is lexical-only by design. Hybrid recall is a
 desktop/CLI feature. `aletheia ingest`, `aletheia recall` (hybrid) and `aletheia reembed` all need the
 local embedder, and `default_text_embedder` loads an MLX BGE-M3 snapshot from the local
-Hugging Face cache; its dependencies (`mlx`, `mlx-embeddings`, the `local-embedding` extra)
-are available on darwin/arm64 only. The `local-recall` extra (sentence-transformers) backs
-only the optional cross-encoder reranker and query expansion, not an embedder. In the Linux
-Docker image there is therefore no embedder: these commands fail there with "embedding
-model not present", and HTTP-ingested records stay without vectors. Do not rely on
+Hugging Face cache; its dependencies (`mlx`, `mlx-embeddings`) are declared core requirements
+marked darwin/arm64, so they are installed on Apple Silicon and nowhere else. The
+`local-recall` extra (sentence-transformers) backs only the cross-encoder reranker and query
+expansion, not an embedder; it is the route to the reranker on other platforms, and asking for
+it without it installed raises an error naming that extra. In the Linux Docker image there is
+therefore no embedder: these commands fail there with "embedding model not present", and
+HTTP-ingested records stay without vectors. Do not rely on
 `reembed` inside the container.
 
 To get hybrid recall over such records, copy or export the data to a darwin/arm64 machine

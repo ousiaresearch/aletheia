@@ -43,9 +43,9 @@ The import name is `aletheia`; the distribution is `ousia-aletheia` because `ale
 `aletheia-memory` both belong to other people on PyPI. `pip install aletheia` would install
 someone else's package, so don't.
 
-The provider needs the embedder and the cross-encoder reranker on disk; `aletheia models fetch`
-(`python -m aletheia.cli models fetch`) pulls them. A missing model is reported, never papered over
-with a keyword fallback.
+The provider needs the embedder and the cross-encoder reranker on disk, downloaded as described
+under [Models](#models) — there is no `aletheia models fetch` command. A missing model is reported,
+never papered over with a keyword fallback.
 
 ### From source
 
@@ -56,10 +56,6 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[server]"
 ```
-
-Python >= 3.11 required. The `server` extra installs the HTTP server only; it does not install
-sentence-transformers or any embedder. The default local embedder (an MLX BGE-M3 snapshot,
-`local-embedding` extra) runs on darwin/arm64 only.
 
 ### Upgrading from Weft
 
@@ -147,8 +143,15 @@ python scripts/verify_deployed.py
 
 ### From PyPI (alpha)
 
+The distribution is `ousia-aletheia` — `aletheia` and `aletheia-memory` belong to other projects on
+PyPI, so `pip install aletheia` gets you someone else's package.
+
+**PyPI currently carries 2.0.1, which declares the model requirements as extras.** Installing it
+gives a package whose provider comes up without an embedder. Until this tree is published, install
+from source below, or add the extras explicitly:
+
 ```bash
-pip install aletheia==0.1.0a0
+pip install 'ousia-aletheia[local-embedding,local-recall]'   # the published 2.0.1 only
 ```
 
 ### From source
@@ -161,9 +164,12 @@ source .venv/bin/activate
 pip install -e ".[server]"
 ```
 
-Python >= 3.11 required. The `server` extra installs the HTTP server only; it does not install
-sentence-transformers or any embedder. The default local embedder (an MLX BGE-M3 snapshot,
-`local-embedding` extra) runs on darwin/arm64 only.
+Python >= 3.11 required. The `server` extra installs the HTTP server only. The provider's model
+requirements — `mlx`, `mlx-embeddings` and `sentence-transformers` — are core dependencies marked
+`darwin`/`arm64`: that is the only platform where the provider runs, so that is the platform an
+environment built from the declaration is complete on. Elsewhere they are not installed, the
+provider reports itself unavailable rather than falling back to keyword search, and the reranker is
+reachable through `ousia-aletheia[local-recall]`. See [Models](#models).
 
 ## Optional external LLM features (explicit opt-in)
 
@@ -225,15 +231,56 @@ Deletion commits logical erasure immediately, but deleted text can remain in the
 
 Aletheia ships adapters, not weights. Aletheia requires Apple Silicon macOS, the MLX BGE-M3
 embedder and the cross-encoder reranker; it does not fall back to keyword-only retrieval.
-In the **same Python environment as Hermes**, install Aletheia's model dependencies and download
-the models while online (review the model cards and licences before downloading):
+
+Those three requirements live in `[project.dependencies]`, each marked
+`sys_platform == 'darwin' and platform_machine == 'arm64'`: `mlx`, `mlx-embeddings` and
+`sentence-transformers`. They are dependencies rather than extras because Hermes installs a plugin
+from its declaration — `pyproject.toml` when the plugin ships one, and `plugin.yaml`'s
+`python_dependencies` only when it does not — so a requirement that lives only in an extra is never
+installed when an environment is rebuilt. The gateway then starts, reports the provider unavailable,
+and external memory is off with nothing failing. `plugin.yaml` mirrors the same three pins for
+readers that only have the manifest; the `local-embedding` and `local-recall` extras are kept for
+compatibility and are **not** the declaration anything installs from.
+
+The `mlx>=0.32.4` pin publishes arm64 wheels for macOS 14 and later, so on macOS 13 the install
+itself fails (`mlx==0.32.4` has no `macosx_13_0_arm64` wheel; older `mlx` releases do, this pin does
+not). PEP 508 cannot express an operating-system version, so this is not expressible as a marker.
+
+In the **same Python environment as Hermes**, install Aletheia and download the models while online
+(review the model cards and licences before downloading):
 
 ```bash
-python -m pip install 'aletheia[local-embedding,local-recall]'
+python -m pip install ousia-aletheia
 python -c "from huggingface_hub import snapshot_download; snapshot_download('mlx-community/bge-m3-mlx-4bit'); snapshot_download('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 ```
 
-The `local-recall` extra requires `sentence-transformers>=3.0` for local-only cross-encoder loading.
+Then verify the environment the gateway will actually run in, before restarting it:
+
+```bash
+python scripts/check_runtime_deps.py          # can the resolved environment import the modules?
+python scripts/check_runtime_deps.py --deep   # do the embedder and the reranker actually load?
+python scripts/verify_deployed.py             # which copy is deployed, and can it run?
+```
+
+These scripts ship with the repository, not the wheel, so run them from a source checkout. By
+default they judge **the newest install facts** — the environment `installs/*/facts.json` names —
+which is where Hermes installs plugin dependencies; it is not necessarily the interpreter holding the
+gateway process. When the answer matters for a specific running gateway, pass its environment:
+`--env ~/.hermes/installs/<id>/environments/<id>/venv`.
+
+The presence check imports each module for real in the target interpreter — in isolated mode, from a
+scratch directory — so neither `PYTHONPATH` nor a folder in your working directory can answer for an
+install. (`--deep` is different: it deliberately puts the plugin source on `PYTHONPATH` and runs
+there, because that is the copy the environment would import.) `check_runtime_deps.py` names what is
+missing and prints the `uv pip install --python …` that repairs that environment: Hermes builds its
+environments with uv and they carry no pip.
+
+Exit codes for both: `0` healthy, `1` failed — a copy disagrees, a requirement is missing, the
+declaration does not install it, or (`--deep`) the models do not load — and `2` unknown: the
+environment could not be determined, the declaration could not be read, or the provider does not run
+on this platform, so nothing was judged. **`2` is not a pass**: the failure this checks for is a
+gateway that comes up cleanly with no embedder, so a check that cannot look must never print "no
+drift".
 
 Model cards: [BGE-M3 MLX](https://huggingface.co/mlx-community/bge-m3-mlx-4bit) and
 [MiniLM reranker](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-6-v2). The embedder

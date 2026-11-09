@@ -2,6 +2,94 @@
 
 All notable changes to Aletheia are documented here.
 
+## [Unreleased]
+
+### Fixed
+- **The provider's runtime requirements are declared where they are installed from.** `mlx`,
+  `mlx-embeddings` and `sentence-transformers` moved from `[project.optional-dependencies]` into
+  `[project.dependencies]`, each marked `sys_platform == 'darwin' and platform_machine == 'arm64'`.
+  Hermes installs a plugin from its declaration — `pyproject.toml` when one ships, `plugin.yaml`'s
+  `python_dependencies` only when it does not — so a requirement left in an extra is never installed
+  when the environment is rebuilt. The gateway then started normally, reported the memory provider
+  unavailable, and external memory was off for every session with nothing failing.
+  Verified by resolution, not by assertion, and the result is platform-dependent: with
+  `uv pip install --dry-run --python-platform linux`, `… --python-platform windows` and
+  `… --python-platform x86_64-apple-darwin`, the package resolves 7 packages with no torch, no mlx
+  and no CUDA wheels. The Apple-Silicon set is the opposite — 91 packages including torch,
+  sentence-transformers and mlx-vlm — because that is the platform the provider actually runs on.
+  uv cannot dry-run `aarch64-apple-darwin` for this project at all: it assumes a macOS 13.0
+  deployment target and `mlx==0.32.4` ships 14.0+ wheels. What is **not** verified is a fresh
+  environment built from this declaration: none has been rebuilt since the edit, and the checker
+  below exists so the next rebuild is judged rather than trusted.
+- The `local-embedding` and `local-recall` extras are no longer described as aliases. `local-recall`
+  now carries the same `>=3.0,<6` pin as core (it used to pin `sentence-transformers` unbounded plus
+  a separate unbounded `torch`), and it is the documented route to the reranker off Apple Silicon.
+  Asking for the reranker without it now raises an error naming the extra instead of a bare
+  `ModuleNotFoundError` from inside a recall transaction (`aletheia/reranking.py`).
+- `plugin.yaml` mirrors the three pins and says why it is a mirror rather than the install source.
+  It also gained the `mlx` requirement it was missing.
+
+### Added
+- `scripts/check_runtime_deps.py` — imports the required modules in the interpreter of the
+  environment the newest `installs/*/facts.json` names (isolated mode, scratch cwd, so neither
+  `PYTHONPATH` nor a directory in the caller's cwd can answer for an install), names what is missing
+  with its import error, and prints a `uv pip install --python …` repair that works in an
+  environment without pip. `--deep` is a different question and a different environment: it puts the
+  plugin source that environment would import on `PYTHONPATH` and loads the embedder and reranker
+  there, naming which copy it used. Exit codes: 0 healthy, 1 missing or not ready, 2 unknown —
+  including "the provider does not run on this platform", where nothing was checked.
+- `aletheia/runtime_deps.py` — the requirement set as data, judged as three separate questions:
+  the declaration (parsed with `packaging`, markers evaluated for the *target* platform, so a
+  `win32`-marked requirement counts as undeclared on arm64; a marker reading `os_name` or
+  `platform_release` is reported unknown rather than answered from the checker's own interpreter),
+  presence (`import`, not `find_spec`, which cannot see a wrong-arch wheel, a broken `__init__` or a
+  namespace directory — all three now report absent), and the resolved environment (`Environment`
+  carries a note when `facts.json` names one venv and resolves the lock in another — they have
+  disagreed on this machine, and only one of them had the models). A probe that answers about fewer
+  modules than it was asked about counts the rest missing, and an empty requirement set (any
+  non-Apple-Silicon platform) is reported as not judged rather than as satisfied.
+- `packaging>=23` as a core dependency, for reading the declaration correctly rather than by hand.
+
+### Changed
+- `scripts/verify_deployed.py` has three verdicts instead of two. `drift` (exit 1) covers disagreeing
+  copies, a missing requirement, and a declaration that does not install one; `unknown` (exit 2)
+  covers an environment or interpreter it could not inspect, a declaration it could not read, and a
+  platform the provider cannot run on; `no drift` (exit 0) requires all of it to be answerable and
+  answered. The earlier version printed "no drift" for a venv with no interpreter in it, which is the
+  same silence as the bug. It also loads `runtime_deps` by path, so a report about one checkout
+  cannot be answered by another.
+- **The installed distribution was invisible to that check.** `_dist_versions` globbed
+  `aletheia-*.dist-info`, but this project installs as `ousia_aletheia-*.dist-info`, so an
+  environment holding 2.0.1 against a 2.1.0 checkout reported "no drift" with the dist copy simply
+  absent from the report. It now matches either name and filters on the `Name:` in METADATA.
+- Two copy classes are printed but not counted as drift: a copy in an environment `facts.json` does
+  not resolve to (a retired environment left on disk), and the dist-info of an **editable** install,
+  whose version is the one it was installed at while the code comes from the source tree its finder
+  maps to — which the `plugin_sources` entry already judges. Both are marked `-` in the report. A
+  check that fails on stale metadata forever is a check nobody reads.
+- A namespace directory no longer counts as an install, but a namespace package that is really
+  installed still does. `mlx` legitimately imports as a namespace directory holding extension
+  modules (`mlx/core*.so`), so "no `__file__`" alone would have reported the live environment as
+  missing its embedder; the probe now imports a canary submodule (`mlx.core`,
+  `mlx_embeddings.utils`) before calling a namespace directory empty.
+
+### Tests
+- `tests/test_runtime_deps.py` — 42 tests, including the cases two rounds of adversarial review
+  found missing: a requirement marked for another platform counts as undeclared; a URL-pinned
+  requirement is parsed rather than misread as absent; the probe reads an import error instead of a
+  spec lookup, survives non-UTF8 output, ignores banner noise, and cannot be answered by a folder in
+  the caller's cwd; the repair command works in an environment without pip; the checker's exit codes
+  are asserted through `main()` with a stand-in interpreter (0 present, 1 missing, 2 unprobeable);
+  `verify_deployed` is exercised end to end rather than monkeypatched, uses the repository it was
+  given, and treats an unloadable checker or an unresolvable environment as unknown rather than
+  clean.
+
+### Documentation
+- README named the wrong distribution (`pip install aletheia` is someone else's package) and pointed
+  at extras that no longer carry the requirement. It now names `ousia-aletheia`, says why the
+  requirements are dependencies, records that `mlx` needs macOS 14+, states that the checker scripts
+  ship with the repository rather than the wheel, and documents three exit codes instead of two.
+
 ## [2.1.0] — 2026-11-08
 
 ### Added

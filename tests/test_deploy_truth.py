@@ -47,6 +47,12 @@ def test_detects_a_stale_plugin_source_snapshot(tmp_path):
     _write(home / "installs" / "i" / "environments" / "env123456"
            / "workspace" / "plugin-sources" / "aletheia-abc" / "plugin.yaml",
            "name: aletheia\nversion: 2.0.0\n")
+    # Only the environment facts.json resolves to is judged; a copy found in a retired environment
+    # is printed for information. This is the shape the gateway was in.
+    (home / "installs" / "i" / "environments" / "env123456" / "venv").mkdir(parents=True)
+    _write(home / "installs" / "i" / "facts.json",
+           '{"packages": {"venv": {"environment": "%s"}}}\n'
+           % (home / "installs" / "i" / "environments" / "env123456" / "venv"))
 
     report = module.collect(repo, home)
     assert report["drift"] is True
@@ -59,12 +65,17 @@ def test_detects_a_stale_distribution(tmp_path):
     repo = tmp_path / "repo"
     home = tmp_path / ".hermes"
     _write(repo / "aletheia" / "__init__.py", '__version__ = "2.1.0"\n')
-    dist = (home / "installs" / "i" / "environments" / "env123456"
-            / "venv" / "lib" / "python3.14" / "site-packages" / "aletheia-2.0.0.dist-info")
+    env = home / "installs" / "i" / "environments" / "env123456" / "venv"
+    dist = env / "lib" / "python3.14" / "site-packages" / "ousia_aletheia-2.0.0.dist-info"
     _write(dist / "METADATA", "Name: ousia-aletheia\nVersion: 2.0.0\n")
+    (env / "bin").mkdir(parents=True, exist_ok=True)
+    _write(home / "installs" / "i" / "facts.json",
+           '{"packages": {"venv": {"environment": "%s"}}}\n' % env)
 
     report = module.collect(repo, home)
     assert report["drift"] is True
+    dists = [c for label, c in report["copies"].items() if label.startswith("dist:")]
+    assert dists and all(c["judged"] for c in dists), "a wheel install in the resolved environment is judged"
 
 
 def test_exit_code_follows_drift(tmp_path, capsys):

@@ -11,10 +11,19 @@ description: >-
   the plugin: the manifest below registers the provider, and the package it depends on ships here.
 requires_hermes: ">=0.22.5"
 python_dependencies:
-  # `aletheia` and `aletheia-memory` both belong to other people on PyPI; `ousia-aletheia` is ours.
-  # The import name stays `aletheia`.
+  # The provider's runtime requirements, mirroring pyproject where they are actually declared.
+  #
+  # A mirror, because it is not what Hermes installs: PM reads a plugin's authored pyproject.toml
+  # first and uses this list only when none ships. Both therefore have to name these three pins,
+  # with these markers, and tests/test_runtime_deps.py fails when they disagree.
+  #
+  # `ousia-aletheia` is listed for manifest-only readers; when this repository is installed as a
+  # workspace member the local pyproject supplies the package, so that pin is not consulted.
+  # (`aletheia` and `aletheia-memory` belong to other people on PyPI; the import name is still
+  # `aletheia`.)
   - "ousia-aletheia>=2,<3"
-  - "sentence-transformers>=3.0,<6"
+  - "sentence-transformers>=3.0,<6; sys_platform == 'darwin' and platform_machine == 'arm64'"
+  - "mlx>=0.32.4,<0.33; sys_platform == 'darwin' and platform_machine == 'arm64'"
   - "mlx-embeddings==0.1.0; sys_platform == 'darwin' and platform_machine == 'arm64'"
 config_keys:
   - memory.aletheia
