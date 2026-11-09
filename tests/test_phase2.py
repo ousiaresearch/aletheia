@@ -9,7 +9,7 @@ import sqlite3
 import pytest
 
 from aletheia.scope import ScopeContext, ScopeEngine
-from aletheia.substrate import Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate, SubstrateError
+from aletheia.substrate import SCHEMA_VERSION, Record, RecordConflict, ScopeViolation, SchemaViolation, Substrate, SubstrateError
 
 KNOWN = {"acs-project", "memory-providers", "ariel-continuity"}
 MARKERS = {"acs-project": {"ACS", "Listening Commonwealth", "Constitutional Convention Letters"}}
@@ -303,7 +303,7 @@ def test_phase1_database_migrates_and_backfills(tmp_path, engine):
     s = Substrate(db, scope_engine=engine)
     _seed_source(s, sorted(KNOWN))
     try:
-        assert s._conn.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert s._conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         row = s._conn.execute("SELECT attribution FROM records WHERE record_id='old1'").fetchone()
         assert row[0] == "system"
     finally:
@@ -317,7 +317,7 @@ def test_migration_is_idempotent(tmp_path, engine):
     s = Substrate(db, scope_engine=engine)
     _seed_source(s, sorted(KNOWN))
     try:
-        assert s._conn.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert s._conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     finally:
         s.close()
 
@@ -342,7 +342,7 @@ def test_failed_migration_rolls_back(tmp_path, engine):
     s = Substrate(db, scope_engine=engine)  # recovers once the fault is removed
     _seed_source(s, sorted(KNOWN))
     try:
-        assert s._conn.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert s._conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     finally:
         s.close()
 
