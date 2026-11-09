@@ -75,6 +75,19 @@ All notable changes to Aletheia are documented here.
     it would have marked.
   - Recall uses the marking: a marked duplicate yields its match slot to its keeper and is returned
     as context, so both are visible and only one is treated as a match.
+- **`aletheia/retention.py` — windows as policy, purging through the erasure path (W2.6, slice 1).**
+  Schema version 10 adds `retention_policy` (one window per scope) and `retention_marks` (per
+  record). Deliberately side tables: an `expires_at` column on the record would make a policy change
+  a rewrite of history, and the record is the thing this substrate promises not to rewrite.
+  - Expiry is measured from a record's creation, not from when the policy was set, so a window
+    applied today does not silently extend the life of everything already stored.
+  - An existing mark is not moved by a later, shorter window unless `--overwrite` is passed.
+  - Expired records leave recall **before** they are deleted, and the receipt names the exclusion.
+    Hiding is reversible and free; deleting is neither.
+  - The sweep deletes through `Substrate.delete()`, the one path that cascades derived artifacts,
+    scrubs the index and WAL, and journals itself — asserted with a `Summary` citing the purged
+    record. `aletheia retention --sweep` reports unless `--confirm` is given.
+  - `aletheia retention --scope <s> [--set-days N] [--apply] [--sweep] [--confirm] [--overwrite]`.
 
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,

@@ -460,6 +460,17 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         # Graph expansion: records one edge away from the top matches, added as CONTEXT exactly
         # like neighbours. They never displace a matching record, they are capped, and every hop was
         # authorised inside graph.neighbours — an edge is not a permission.
+        # Expired records stop being returned before they are purged: hiding is reversible and
+        # free, deleting is neither. The sweep is an explicit act (see aletheia.retention).
+        try:
+            from aletheia.retention import expired_among
+            expired_ids = expired_among(sub, list(candidate_ids))
+            if expired_ids:
+                candidate_ids = [rid for rid in candidate_ids if rid not in expired_ids]
+                receipt.exclusions.append(f"{len(expired_ids)} past its retention window")
+        except Exception:
+            pass
+
         # A record consolidation has marked as a duplicate yields its slot to the record it
         # duplicates: both are still returned, but only the keeper can occupy a match slot. This is
         # the one place the marking pays off, and it is deliberately a demotion rather than a drop —

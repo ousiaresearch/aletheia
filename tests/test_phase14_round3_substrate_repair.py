@@ -358,9 +358,10 @@ def _head_store(tmp_path, active_ok=True):
 def test_schema_version_bumped():
     # A deliberate tripwire: bumping the version means a migration was added, and this test is here
     # to make that a decision someone looks at rather than a number that moves silently.
-    # 8 adds `relations`, 9 adds `communities` (phase 12 / W2.1). The migration path itself is
-    # exercised below, from a v6 store, and must land on SCHEMA_VERSION.
-    assert SCHEMA_VERSION == 9
+    # 8 adds `relations`, 9 adds `communities` (phase 12 / W2.1), 10 adds retention windows
+    # (W2.6). The migration path itself is exercised below, from a v6 store, and must land on
+    # SCHEMA_VERSION.
+    assert SCHEMA_VERSION == 10
 
 
 def test_head_store_migrates_failing_closed_with_reapproval(tmp_path):

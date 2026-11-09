@@ -80,6 +80,17 @@ def _parser() -> argparse.ArgumentParser:
     relate.add_argument("--scope", required=True)
     relate.add_argument("--limit", type=int, default=100, help="max records to scan")
 
+    retention = commands.add_parser("retention", help="set, apply or sweep a scope's retention window")
+    retention.add_argument("--scope", required=True)
+    retention.add_argument("--set-days", type=float, default=None,
+                           help="store a window for this scope (days after creation)")
+    retention.add_argument("--apply", action="store_true", help="mark records under the stored window")
+    retention.add_argument("--sweep", action="store_true", help="delete records whose window closed")
+    retention.add_argument("--confirm", action="store_true",
+                           help="REQUIRED with --sweep: actually delete (without it, a sweep reports)")
+    retention.add_argument("--overwrite", action="store_true",
+                           help="with --apply: move existing marks to the current window")
+
     representation = commands.add_parser(
         "representation", help="assemble a cited card of what one scope holds (nothing is stored)")
     representation.add_argument("--scope", required=True)
@@ -340,6 +351,39 @@ def _run_relate(args) -> int:
         sub.close()
 
 
+def _run_retention(args) -> int:
+    from aletheia.retention import apply_policy, expired_record_ids, get_policy, set_policy, sweep
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        report: dict = {"status": "retention", "scope": args.scope}
+        if args.set_days is not None:
+            if not set_policy(sub, ctx, args.scope, args.set_days):
+                print(json.dumps({"status": "refused", "scope": args.scope,
+                                  "reason": "scope not granted"}))
+                return 1
+            report["policy_days"] = args.set_days
+        policy = get_policy(sub, ctx, args.scope)
+        report["policy"] = None if policy is None else policy.days
+        if args.apply:
+            if policy is None:
+                print(json.dumps({"status": "refused", "scope": args.scope,
+                                  "reason": "no retention window set"}))
+                return 1
+            report.update(apply_policy(sub, ctx, args.scope, overwrite=args.overwrite))
+        if args.sweep:
+            report.update(sweep(sub, ctx, args.scope, dry_run=not args.confirm))
+        else:
+            report["expired"] = len(expired_record_ids(sub, args.scope))
+        print(json.dumps(report, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
 def _run_representation(args) -> int:
     from aletheia.representation import build_card
     db_path = Path(args.db).expanduser()
@@ -561,6 +605,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run_graph(args)
         if args.command == "representation":
             return _run_representation(args)
+        if args.command == "retention":
+            return _run_retention(args)
         if args.command == "temporal":
             return _run_temporal(args)
         if args.command == "propose-rule":

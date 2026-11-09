@@ -116,12 +116,12 @@ class Record:
         )
 
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 # Export bundles from these schema versions can be restored. Version 6 bundles carry the same
 # record shape; they never carry approval bindings (approvals are never restored, see import_scope).
-# Versions 8 and 9 add the relations and communities tables, both derived: an older bundle restores
-# and the graph is rebuilt from records rather than trusted from the bundle.
-_IMPORTABLE_SCHEMA_VERSIONS = (6, 7, 8, 9)
+# 8 and 9 add relations and communities (both derived); 10 adds retention windows, which are policy
+# rather than history — a bundle without them restores, and the policy table decides what survives.
+_IMPORTABLE_SCHEMA_VERSIONS = (6, 7, 8, 9, 10)
 # Payload keys a lifecycle transition (propose -> active/rejected/deprecated) may change.
 # Everything else in the rule, including all record-level fields, must stay identical.
 _RULE_LIFECYCLE_KEYS = ('status', 'promoted_by', 'promoted_at', 'rejection_reason', 'deprecated_at')
@@ -791,6 +791,32 @@ class Substrate:
                 self._conn.execute("DELETE FROM fts_rowmap")
                 for row in self._conn.execute("SELECT * FROM records").fetchall():
                     self._fts_index(Record.from_row(row))
+            if version < 10:
+                # Version 10 (Phase 12): retention windows as policy, not as record columns.
+                #
+                # Deliberately side tables. Putting `expires_at` on the record would make a policy
+                # change a rewrite of history — every record edited because an operator changed a
+                # window — and the record is the thing this substrate promises not to rewrite.
+                # Purging still goes through Substrate.delete(), so erasure cascades and the journal
+                # behave exactly as they do for any other deletion.
+                self._conn.execute("""
+                    CREATE TABLE IF NOT EXISTS retention_policy (
+                        scope       TEXT PRIMARY KEY,
+                        days        REAL NOT NULL,
+                        updated_at  REAL NOT NULL
+                    )
+                """)
+                self._conn.execute("""
+                    CREATE TABLE IF NOT EXISTS retention_marks (
+                        scope       TEXT NOT NULL,
+                        record_id   TEXT NOT NULL,
+                        expires_at  REAL NOT NULL,
+                        reason      TEXT NOT NULL DEFAULT '',
+                        PRIMARY KEY (scope, record_id)
+                    )
+                """)
+                self._conn.execute("CREATE INDEX IF NOT EXISTS idx_retention_expires "
+                                   "ON retention_marks(scope, expires_at)")
             if version < 9:
                 # Version 9 (Phase 12): community membership, a projection over relations.
                 # Membership is derived, so it is safe to lose: rebuild_communities() reproduces it
