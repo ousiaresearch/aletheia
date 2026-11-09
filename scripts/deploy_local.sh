@@ -47,12 +47,69 @@ for path in aletheia plugin.yaml pyproject.toml README.md CHANGELOG.md; do
 done
 say ""
 
-say "clearing plugin-source snapshots (they are keyed by path, not content, so a stale copy survives an update)"
-for snapshot in "$HERMES_HOME"/installs/*/environments/*/workspace/plugin-sources/aletheia-*; do
-    [ -e "$snapshot" ] || continue
-    say "  ${snapshot}"
-    [ "$APPLY" = "1" ] && rm -rf "$snapshot"
+# The environment imports the plugin from its own copied workspace member, and its editable install
+# points there — not at this checkout and not at the plugins directory. So the member has to be
+# replaced, and its dist metadata refreshed, or the gateway keeps importing the old copy while
+# `plugins_dir` and the repository both read as current. That is how a 2.0.0 snapshot served a 2.0.1
+# repository, and how an environment came to report "no drift" while holding 2.0.1 metadata.
+ACTIVE_ENV=$(python3 - "$HERMES_HOME" <<'PY'
+import glob, json, os, sys
+home = sys.argv[1]
+facts = sorted(glob.glob(os.path.join(home, "installs", "*", "facts.json")),
+               key=os.path.getmtime, reverse=True)
+for path in facts:
+    try:
+        document = json.load(open(path, encoding="utf-8"))
+        environment = document["packages"]["venv"]["environment"]
+    except Exception:
+        continue
+    if os.path.isdir(environment):
+        print(environment)
+        break
+PY
+)
+
+# facts.json names the venv; the workspace it manages sits beside it, in the environment directory.
+ACTIVE_ROOT=""
+if [ -n "$ACTIVE_ENV" ]; then
+    case "$ACTIVE_ENV" in
+        */venv) ACTIVE_ROOT=$(dirname "$ACTIVE_ENV") ;;
+        *) ACTIVE_ROOT="$ACTIVE_ENV" ;;
+    esac
+fi
+
+say "refreshing the plugin-source member for the resolved environment"
+for existing in "$HERMES_HOME"/installs/*/environments/*/workspace/plugin-sources/aletheia-*; do
+    [ -e "$existing" ] || continue
+    case "$existing" in
+        "$ACTIVE_ROOT"/workspace/plugin-sources/*) say "  keeping ${existing} (this environment is the one that runs)" ;;
+        *) say "  removing ${existing} (a retired environment's copy)"; [ "$APPLY" = "1" ] && rm -rf "$existing" ;;
+    esac
 done
+if [ -n "$ACTIVE_ROOT" ]; then
+    MEMBER=$(ls -d "$ACTIVE_ROOT"/workspace/plugin-sources/aletheia-* 2>/dev/null | head -1)
+    if [ -z "$MEMBER" ]; then
+        # Same key shape Hermes uses: <plugin dir name>-<sha256(plugin dir path)[:16]>.
+        KEY="aletheia-$(printf '%s' "$PLUGIN_DIR" | shasum -a 256 | cut -c1-16)"
+        MEMBER="$ACTIVE_ROOT/workspace/plugin-sources/$KEY"
+    fi
+    say "  member: $MEMBER"
+    if [ "$APPLY" = "1" ]; then
+        mkdir -p "$MEMBER"
+        # --delete here: the member is a generated copy, unlike the plugin checkout.
+        rsync -a --delete --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+            "$PLUGIN_DIR"/ "$MEMBER"/
+    fi
+    UV=${UV:-$(command -v uv || printf '%s' "$HERMES_HOME/bin/uv")}
+    if [ -x "$UV" ] && [ -x "$ACTIVE_ENV/bin/python" ]; then
+        say "  installed distribution metadata is refreshed against that member:"
+        run "$UV" pip install --python "$ACTIVE_ENV/bin/python" --no-deps --reinstall -e "$MEMBER"
+    else
+        say "  no uv or no interpreter at $ACTIVE_ENV/bin/python — metadata not refreshed"
+    fi
+else
+    say "  no resolved environment in facts.json — nothing to refresh"
+fi
 say ""
 
 if [ -f "$STORE" ]; then

@@ -51,6 +51,12 @@ All notable changes to Aletheia are documented here.
 - `packaging>=23` as a core dependency, for reading the declaration correctly rather than by hand.
 
 ### Changed
+- `scripts/deploy_local.sh` replaces the *resolved* environment's plugin-source member from the
+  staged plugin directory and re-installs its editable distribution (`uv pip install --reinstall -e`),
+  instead of only clearing snapshots. Clearing them left the gateway importing a copy that had been
+  deleted, and left the environment's dist metadata at whatever version it was last installed at —
+  which is why an environment running 2.1.0 source reported `ousia-aletheia 2.0.1`. Retired
+  environments' members are still removed. Dry run unchanged: the default prints every action.
 - `scripts/verify_deployed.py` has three verdicts instead of two. `drift` (exit 1) covers disagreeing
   copies, a missing requirement, and a declaration that does not install one; `unknown` (exit 2)
   covers an environment or interpreter it could not inspect, a declaration it could not read, and a
