@@ -116,12 +116,12 @@ class Record:
         )
 
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 # Export bundles from these schema versions can be restored. Version 6 bundles carry the same
 # record shape; they never carry approval bindings (approvals are never restored, see import_scope).
-# Version 8 adds the relations table, which is derived: a 6 or 7 bundle restores and the graph is
-# rebuilt from records rather than trusted from the bundle.
-_IMPORTABLE_SCHEMA_VERSIONS = (6, 7, 8)
+# Versions 8 and 9 add the relations and communities tables, both derived: an older bundle restores
+# and the graph is rebuilt from records rather than trusted from the bundle.
+_IMPORTABLE_SCHEMA_VERSIONS = (6, 7, 8, 9)
 # Payload keys a lifecycle transition (propose -> active/rejected/deprecated) may change.
 # Everything else in the rule, including all record-level fields, must stay identical.
 _RULE_LIFECYCLE_KEYS = ('status', 'promoted_by', 'promoted_at', 'rejection_reason', 'deprecated_at')
@@ -791,6 +791,20 @@ class Substrate:
                 self._conn.execute("DELETE FROM fts_rowmap")
                 for row in self._conn.execute("SELECT * FROM records").fetchall():
                     self._fts_index(Record.from_row(row))
+            if version < 9:
+                # Version 9 (Phase 12): community membership, a projection over relations.
+                # Membership is derived, so it is safe to lose: rebuild_communities() reproduces it
+                # from the edges and nothing else reads it as authority.
+                self._conn.execute("""
+                    CREATE TABLE IF NOT EXISTS communities (
+                        scope       TEXT NOT NULL,
+                        record_id   TEXT NOT NULL,
+                        label       TEXT NOT NULL,
+                        updated_at  REAL NOT NULL,
+                        PRIMARY KEY (scope, record_id)
+                    )
+                """)
+                self._conn.execute("CREATE INDEX IF NOT EXISTS idx_communities_label ON communities(scope, label)")
             if version < 8:
                 # Version 8 (Phase 12): typed relations between records, scoped and time-bounded.
                 # `entity_links` answers "which record mentions this string"; this answers "which

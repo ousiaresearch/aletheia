@@ -245,6 +245,100 @@ def expand_candidates(sub: Substrate, ctx: ScopeContext, seed_ids: list[str], *,
     return ordered
 
 
+# --------------------------------------------------------------------------- communities
+
+
+def rebuild_communities(sub: Substrate, ctx: ScopeContext, scope: str, *, max_iterations: int = 10,
+                        at: float | None = None) -> dict[str, int]:
+    """Label propagation inside one scope, written as a projection to the `communities` table.
+
+    Deterministic by construction: nodes are visited in sorted order and a tie between equally
+    frequent labels is broken by the smaller label, so two runs over the same edges produce the same
+    partition. A non-deterministic partition would make "which cluster is this" unreproducible, and
+    therefore unauditable.
+
+    Only edges in ``scope`` are read and only records in ``scope`` are labelled: a community is not a
+    way to see across a boundary. Membership is derived state — it is rebuilt, never trusted, and
+    deleting it loses nothing.
+    """
+    if not _authorised(sub, ctx, scope, write=True):
+        return {"nodes": 0, "communities": 0, "iterations": 0}
+
+    live_at = time.time() if at is None else float(at)
+    nodes = {row[0] for row in sub._conn.execute(
+        "SELECT record_id FROM records WHERE scope = ?", (scope,)).fetchall()}
+    adjacency: dict[str, set[str]] = {node: set() for node in nodes}
+    for subject, obj in sub._conn.execute(
+            "SELECT subject, object FROM relations WHERE scope = ? "
+            "AND (valid_from IS NULL OR valid_from <= ?) AND (valid_to IS NULL OR valid_to >= ?)",
+            (scope, live_at, live_at)).fetchall():
+        if subject in adjacency and obj in adjacency and subject != obj:
+            adjacency[subject].add(obj)
+            adjacency[obj].add(subject)
+
+    labels = {node: node for node in nodes}
+    iterations = 0
+    with sub._lock:
+        for iterations in range(1, max_iterations + 1):
+            changed = False
+            for node in sorted(nodes):
+                neighbours_here = adjacency[node]
+                if not neighbours_here:
+                    continue
+                counts: dict[str, int] = {}
+                for other in neighbours_here:
+                    counts[labels[other]] = counts.get(labels[other], 0) + 1
+                best = max(counts.values())
+                winner = min(label for label, count in counts.items() if count == best)
+                if labels[node] != winner:
+                    labels[node] = winner
+                    changed = True
+            if not changed:
+                break
+
+        own = None
+        try:
+            own = sub._begin_write("aletheia_graph_communities")
+            now = time.time()
+            sub._conn.execute("DELETE FROM communities WHERE scope = ?", (scope,))
+            sub._conn.executemany(
+                "INSERT INTO communities (scope, record_id, label, updated_at) VALUES (?, ?, ?, ?)",
+                [(scope, record_id, label, now) for record_id, label in sorted(labels.items())],
+            )
+            sub._finish_write("aletheia_graph_communities", own)
+        except Exception:
+            if own is not None:
+                sub._abort_write("aletheia_graph_communities", own)
+            return {"nodes": 0, "communities": 0, "iterations": 0}
+
+    return {"nodes": len(nodes), "communities": len(set(labels.values())), "iterations": iterations}
+
+
+def community_of(sub: Substrate, ctx: ScopeContext, record_id: str) -> str | None:
+    """The label this record was last projected into, or None when it has not been computed.
+
+    Read through the scope gate: a projection is not a permission, and an unreadable record has no
+    community to report.
+    """
+    record = sub.get(record_id, ctx)
+    if record is None:
+        return None
+    row = sub._conn.execute(
+        "SELECT label FROM communities WHERE scope = ? AND record_id = ?", (record.scope, record_id)
+    ).fetchone()
+    return None if row is None else str(row[0])
+
+
+def community_members(sub: Substrate, ctx: ScopeContext, scope: str, label: str, *,
+                      limit: int = 100) -> list[str]:
+    """Records projected into ``label`` in ``scope`` — sorted, and only if the scope is readable."""
+    if not _authorised(sub, ctx, scope, write=False):
+        return []
+    return [row[0] for row in sub._conn.execute(
+        "SELECT record_id FROM communities WHERE scope = ? AND label = ? ORDER BY record_id LIMIT ?",
+        (scope, label, limit)).fetchall()]
+
+
 def extraction_candidates(text: str) -> list[str]:
     """Predicates the rule set finds in ``text``, in the order they appear.
 

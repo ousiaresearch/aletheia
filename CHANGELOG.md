@@ -27,9 +27,18 @@ All notable changes to Aletheia are documented here.
     fixed pattern list and an edge is drawn only for a **citation the substrate can verify** — a
     record id present in the citing record's text. Nothing is inferred from a word alone, and every
     edge names its `source_ids`.
-  - Migration lands a v6 or v7 store on version 8 and the graph is rebuilt from records rather than
-    trusted from an export bundle (`_IMPORTABLE_SCHEMA_VERSIONS` now lists 8, so a bundle carrying
-    relations restores and a future version is still refused).
+  - **Communities** are a projection, not authority: `rebuild_communities()` runs label propagation
+    inside one scope, visiting nodes in sorted order and breaking ties toward the smaller label, so
+    two runs over the same edges produce the same partition — a partition nobody can reproduce is
+    not auditable. Only that scope's edges are read and only its records are labelled; the rebuild
+    replaces the previous projection; membership is derived state that can be thrown away.
+  - Schema version 9 adds `communities` (8 added `relations`). Migration from v6 or v7 lands on 9 and
+    both tables are rebuilt from records rather than trusted from an export bundle
+    (`_IMPORTABLE_SCHEMA_VERSIONS` lists 6–9, and a future version is still refused).
+  - Operator surface: `aletheia relate --scope <s>` draws relations from verified citations,
+    `aletheia graph --scope <s> --rebuild-communities` recomputes the projection, and
+    `aletheia graph --scope <s> --record-id <id>` shows that record's community, neighbours and
+    relations. Without these the graph would be a table nothing fills.
 
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,

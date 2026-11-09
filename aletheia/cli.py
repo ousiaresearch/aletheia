@@ -70,6 +70,16 @@ def _parser() -> argparse.ArgumentParser:
     link_entities.add_argument("--scope", required=True)
     link_entities.add_argument("--limit", type=int, default=100, help="max records to scan")
 
+    relate = commands.add_parser("relate", help="draw relations between records that cite each other")
+    relate.add_argument("--scope", required=True)
+    relate.add_argument("--limit", type=int, default=100, help="max records to scan")
+
+    graph = commands.add_parser("graph", help="rebuild or inspect one scope's relation graph")
+    graph.add_argument("--scope", required=True)
+    graph.add_argument("--rebuild-communities", action="store_true",
+                       help="recompute the community projection for this scope")
+    graph.add_argument("--record-id", default=None, help="list this record's neighbours")
+
     temporal = commands.add_parser("temporal", help="query records valid at a given timestamp")
     temporal.add_argument("--scope", required=True)
     temporal.add_argument("--at", type=float, required=True, help="Unix timestamp")
@@ -303,6 +313,56 @@ def _run_link_entities(args) -> int:
         sub.close()
 
 
+def _run_relate(args) -> int:
+    from aletheia.graph import extract_relations
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        result = extract_relations(sub, ctx, args.scope, limit=args.limit)
+        print(json.dumps({"status": "related", "scope": args.scope, **result}))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_graph(args) -> int:
+    from aletheia.graph import community_of, neighbours, relations_from, rebuild_communities
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        if args.rebuild_communities:
+            result = rebuild_communities(sub, ctx, args.scope)
+            print(json.dumps({"status": "communities", "scope": args.scope, **result}))
+            return 0
+        if args.record_id:
+            edges = relations_from(sub, ctx, args.record_id)
+            print(json.dumps({
+                "status": "graph",
+                "scope": args.scope,
+                "record_id": args.record_id,
+                "community": community_of(sub, ctx, args.record_id),
+                "neighbours": neighbours(sub, ctx, args.record_id, hops=2),
+                "relations": [{"predicate": e.predicate, "object": e.object,
+                               "confidence": e.confidence} for e in edges],
+            }))
+            return 0
+        print(json.dumps({"status": "graph", "scope": args.scope,
+                          "relations": sub._conn.execute(
+                              "SELECT COUNT(*) FROM relations WHERE scope = ?", (args.scope,)).fetchone()[0],
+                          "communities": sub._conn.execute(
+                              "SELECT COUNT(DISTINCT label) FROM communities WHERE scope = ?",
+                              (args.scope,)).fetchone()[0]}))
+        return 0
+    finally:
+        sub.close()
+
+
 def _run_temporal(args) -> int:
     from aletheia.temporal import effective_at
     db_path = Path(args.db).expanduser()
@@ -468,6 +528,10 @@ def main(argv: list[str] | None = None) -> int:
             return _run_consolidate(args)
         if args.command == "link-entities":
             return _run_link_entities(args)
+        if args.command == "relate":
+            return _run_relate(args)
+        if args.command == "graph":
+            return _run_graph(args)
         if args.command == "temporal":
             return _run_temporal(args)
         if args.command == "propose-rule":

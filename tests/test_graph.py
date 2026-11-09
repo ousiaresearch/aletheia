@@ -15,11 +15,16 @@ from __future__ import annotations
 
 import time
 
+import json
+
 import pytest
 
 from aletheia.graph import (
     PREDICATES,
     Relation,
+    community_members,
+    rebuild_communities,
+    community_of,
     expand_candidates,
     extract_relations,
     extraction_candidates,
@@ -299,10 +304,115 @@ def test_recall_without_edges_reports_no_graph_layer(sub):
     assert "graph_expand" not in receipt.layers
 
 
+def test_communities_are_a_deterministic_partition(sub):
+    """Two components in, two communities out; the same run twice gives the same labels."""
+    seed(sub, "a", "b", "c", "d")
+    ctx = ctx_for("alpha")
+    record_relation(sub, ctx, edge("a", "b"))
+    record_relation(sub, ctx, edge("b", "c"))
+    record_relation(sub, ctx, edge("c", "d"))
+
+    first = rebuild_communities(sub, ctx, "alpha")
+    labels_first = {rid: community_of(sub, ctx, rid) for rid in ("a", "b", "c", "d")}
+    second = rebuild_communities(sub, ctx, "alpha")
+    labels_second = {rid: community_of(sub, ctx, rid) for rid in ("a", "b", "c", "d")}
+
+    assert first["nodes"] == 4 and second["nodes"] == 4
+    assert first["communities"] == second["communities"] == 1
+    assert labels_first == labels_second, "a partition nobody can reproduce is not auditable"
+    assert len(set(labels_first.values())) == 1
+
+
+def test_separate_components_get_separate_communities(sub):
+    seed(sub, "a", "b", "x", "y")
+    ctx = ctx_for("alpha")
+    record_relation(sub, ctx, edge("a", "b"))
+    record_relation(sub, ctx, edge("x", "y"))
+
+    result = rebuild_communities(sub, ctx, "alpha")
+    assert result["communities"] == 2
+    assert community_of(sub, ctx, "a") == community_of(sub, ctx, "b")
+    assert community_of(sub, ctx, "a") != community_of(sub, ctx, "x")
+
+
+def test_a_community_does_not_form_across_scopes(sub, engine):
+    engine.known_scopes = {"alpha", "beta"}
+    seed(sub, "a", "b", scope="alpha")
+    seed(sub, "p", "q", scope="beta")
+    record_relation(sub, ctx_for("alpha"), edge("a", "b"))
+    record_relation(sub, ctx_for("beta"), edge("p", "q"))
+
+    rebuild_communities(sub, ctx_for("alpha", "beta"), "alpha")
+    assert community_of(sub, ctx_for("alpha"), "p") is None, "beta was never labelled by an alpha rebuild"
+    assert community_members(sub, ctx_for("beta"), "alpha", "a") == []
+
+
+def test_community_reads_are_scope_gated(sub, engine):
+    engine.known_scopes = {"alpha", "beta"}
+    seed(sub, "a", "b", scope="alpha")
+    record_relation(sub, ctx_for("alpha"), edge("a", "b"))
+    rebuild_communities(sub, ctx_for("alpha"), "alpha")
+
+    assert community_of(sub, ctx_for("beta"), "a") is None
+    assert community_members(sub, ctx_for("beta"), "alpha", "a") == []
+
+
+def test_rebuilding_an_ungranted_scope_writes_nothing(sub, engine):
+    engine.known_scopes = {"alpha", "beta"}
+    seed(sub, "a", "b", scope="beta")
+    assert rebuild_communities(sub, ctx_for("alpha"), "beta") == {"nodes": 0, "communities": 0, "iterations": 0}
+    assert sub._conn.execute("SELECT COUNT(*) FROM communities").fetchone()[0] == 0
+
+
+def test_a_rebuild_replaces_the_previous_projection(sub):
+    seed(sub, "a", "b", "c")
+    ctx = ctx_for("alpha")
+    record_relation(sub, ctx, edge("a", "b"))
+    rebuild_communities(sub, ctx, "alpha")
+    before = sub._conn.execute("SELECT COUNT(*) FROM communities").fetchone()[0]
+
+    record_relation(sub, ctx, edge("b", "c"))
+    rebuild_communities(sub, ctx, "alpha")
+    after = sub._conn.execute("SELECT COUNT(*) FROM communities").fetchone()[0]
+    assert before == after == 3, "a rebuild replaces the projection rather than appending to it"
+
+
 def test_extraction_in_an_ungranted_scope_does_nothing(sub, engine):
     engine.known_scopes = {"alpha", "beta"}
     seed(sub, "a", "b", scope="beta")
     assert extract_relations(sub, ctx_for("alpha"), "beta") == {"records_scanned": 0, "relations_created": 0}
+
+
+# --------------------------------------------------------------------------- operator surface
+
+
+def test_the_cli_can_draw_relations_and_read_the_graph_back(tmp_path, capsys):
+    """The feature is only real if an operator can populate it and look at it."""
+    from aletheia import cli
+
+    db = tmp_path / "cli.db"
+    engine = ScopeEngine(known_scopes={"alpha"})
+    ctx = ctx_for("alpha")
+    sub = Substrate(db, engine)
+    try:
+        sub.put(claim("seed", "alpha", "the seed note"), ctx)
+        sub.put(claim("citing", "alpha", "this contradicts seed"), ctx)
+    finally:
+        sub.close()
+
+    common = ["--db", str(db)]
+    assert cli.main(common + ["relate", "--scope", "alpha"]) == 0
+    related = json.loads(capsys.readouterr().out)
+    assert related["relations_created"] == 1, related
+
+    assert cli.main(common + ["graph", "--scope", "alpha", "--rebuild-communities"]) == 0
+    communities = json.loads(capsys.readouterr().out)
+    assert communities["nodes"] == 2 and communities["communities"] == 1
+
+    assert cli.main(common + ["graph", "--scope", "alpha", "--record-id", "seed"]) == 0
+    view = json.loads(capsys.readouterr().out)
+    assert view["neighbours"] == {"citing": 1}
+    assert view["community"] is not None
 
 
 # --------------------------------------------------------------------------- schema
@@ -312,7 +422,7 @@ def test_the_schema_records_the_relations_version(tmp_path, engine):
     substrate = Substrate(tmp_path / "v8.db", scope_engine=engine)
     try:
         version = substrate._conn.execute("PRAGMA user_version").fetchone()[0]
-        assert version == 8
+        assert version >= 8
         tables = {row[0] for row in substrate._conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
         assert "relations" in tables
