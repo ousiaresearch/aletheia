@@ -60,9 +60,35 @@
 The Colab run above predates 2.1.0. This one is current code, run locally with
 `python benchmarks/sample.py --n 500`, over the same LongMemEval-S questions in the local cache.
 
+**Correction, same day.** The table below scored "does the gold answer string appear in the top-10
+context". Once the converter was wired to the dataset's `answer_session_ids`, the real retrieval
+numbers became visible: **hit@10 97.0% (485/500), MRR 0.907**. The 44.2% was never retrieval quality —
+on this set gold answers are bare values like `"2"` or `"$300"`. Both readings are kept below because
+the pair of them is the finding. See `docs/design/recall-bolstering-plan.md`.
+
+| Slice | N | hit@10 (evidence) | MRR | answer-in-context | p50 |
+|---|---|---|---|---|---|
+| LongMemEval-S, all questions | 500 | **97.0%** (485/500, CI 95.1–98.2) | **0.907** | 44.2% | 19.5 ms |
+| LoCoMo, first 200 QA pairs | 198 | **62.6%** (124/198, CI 55.7–69.1) | **0.448** | 33.5% | 10.5 ms |
+
+LongMemEval-S by question type (N=500, lexical):
+
+| Category | N | hit@10 | MRR | answer-in-context |
+|---|---|---|---|---|
+| single-session-user | 70 | 100.0% | 0.971 | 81.4% |
+| knowledge-update | 78 | 100.0% | 0.987 | 71.8% |
+| single-session-assistant | 56 | 100.0% | 1.000 | 53.6% |
+| multi-session | 133 | 98.5% | 0.923 | 36.8% |
+| temporal-reasoning | 133 | 95.5% | 0.857 | 21.8% |
+| single-session-preference | 30 | 76.7% | 0.533 | 0.0% |
+
+**LoCoMo is where the gap actually is.** 62.6% against the 93.0 floor in the parity plan, with MRR
+0.448 — a 30-point retrieval gap, as against 3 points of headroom on LongMemEval-S. Any recall work
+should be judged on LoCoMo.
+
 | Slice | N | Exact match | 95% CI | p50 |
 |---|---|---|---|---|
-| LongMemEval-S, all questions | 500 | **44.2%** (221/500) | 39.9–48.6 | 15.7 ms |
+| LongMemEval-S, all questions (answer-string scoring, superseded) | 500 | 44.2% (221/500) | 39.9–48.6 | 15.7 ms |
 | offsets 0–49 | 50 | 88.0% | 76.2–94.4 | 15.8 ms |
 | offsets 200–249 | 50 | 34.0% | 22.4–47.8 | 15.9 ms |
 | offsets 400–449 | 50 | 62.0% | 48.2–74.1 | 15.7 ms |

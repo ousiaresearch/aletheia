@@ -225,10 +225,24 @@ def _cosine(a, b):
     return dot / (na * nb)
 
 
-def _rerank(query: str, items, embedder, top_k: int):
-    """Re-score fused candidates by query–candidate cosine similarity with min-max normalisation."""
+#: Band width for a bi-encoder rerank, as a fraction of the slots being filled. A rerank that uses
+#: the same model that produced the vector scores cannot add information, so it may reorder near-ties
+#: inside a band and never lift a candidate out of its band. Measured on LongMemEval-S q201, an
+#: unconstrained bi-encoder rerank turned a lexical hit into a miss.
+RERANK_BAND_DIVISOR = 2
+RERANK_MIN_BAND = 2
+
+
+def _rerank(query: str, items, embedder, top_k: int, fused=None, band: int | None = None):
+    """Re-score candidates by cosine similarity, inside bands, keeping the fusion's block order.
+
+    ``fused`` present means the incoming order is a fused ranking worth protecting: only swaps within
+    a band of ``band`` slots are allowed. ``fused`` absent means vector-only recall, where the cosine
+    *is* the ranking and a full sort is correct.
+    """
     if embedder is None or not items:
         return items[:top_k]
+    width = max(1, band if band is not None else max(RERANK_MIN_BAND, top_k // RERANK_BAND_DIVISOR))
     try:
         q_emb = embedder.embed_query(query)
         texts = [it.text for it in items]
@@ -238,17 +252,14 @@ def _rerank(query: str, items, embedder, top_k: int):
             cand_embs = [embedder.embed_document(t) for t in texts]
         if len(cand_embs) != len(items):
             return items[:top_k]
-        scored = [(_cosine(q_emb, emb), it) for it, emb in zip(items, cand_embs)]
-        # Min-max normalise so a weak absolute cosine still yields a meaningful spread
-        if scored:
-            vals = [s for s, _ in scored]
-            lo, hi = min(vals), max(vals)
-            if hi > lo:
-                scored = [((s - lo) / (hi - lo), it) for s, it in scored]
-            else:
-                scored = [(1.0, it) for _, it in scored]
-        scored.sort(key=lambda x: (-x[0], x[1].record_id))
-        return [it for _, it in scored[:top_k]]
+        cosines = {it.record_id: _cosine(q_emb, emb) for it, emb in zip(items, cand_embs)}
+        if not fused:
+            return sorted(items, key=lambda it: (-cosines[it.record_id], it.record_id))[:top_k]
+        result = []
+        for start in range(0, len(items), width):
+            block = items[start:start + width]
+            result.extend(sorted(block, key=lambda it: (-cosines[it.record_id], it.record_id)))
+        return result[:top_k]
     except Exception:
         return items[:top_k]
 
@@ -264,9 +275,13 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         raise ValueError(f"unknown recall mode: {mode!r}")
     if mode != "lexical" and embedder is None:
         raise ValueError(f"mode {mode!r} needs an embedder")
-    # None means "auto": rerank is on for hybrid/vector where we have an embedder.
+    # None means "auto". Auto is OFF: a bi-encoder rerank re-scores with the model that already
+    # produced the vector scores, so it cannot add information, and on LongMemEval-S it demonstrably
+    # removed a hit that plain lexical recall had found (q201, see docs/design/recall-bolstering-plan.md).
+    # The reranker worth running is the cross-encoder, which is opt-in through `use_cross_encoder`.
+    # `rerank=True` remains available for measurement, blended so the fusion keeps the upper hand.
     if rerank is None:
-        rerank = mode in ("vector", "hybrid") and embedder is not None
+        rerank = False
     cross_encoder = CrossEncoderReranker() if use_cross_encoder else None
     
     # Optional query expansion: generate alternative phrasings and fuse results.
@@ -539,7 +554,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
                 return cross_encoder.rerank(query, group, top_k=len(group))[:slots], applied
             # Skip bi-encoder when the cross-encoder already reranked: it is more accurate.
             if rerank and len(group) > slots:
-                return _rerank(query, group, embedder, slots), applied
+                return _rerank(query, group, embedder, slots, fused=fused), applied
             return group[:slots], applied
 
         matches, cross_encoder_applied = _order(matches, limit)

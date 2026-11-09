@@ -40,6 +40,24 @@ def _load_questions() -> list[dict]:
         return json.load(f)
 
 
+STAMP_FORMATS = ("%Y/%m/%d (%a) %H:%M", "%Y/%m/%d %H:%M", "%Y-%m-%d %H:%M")
+
+
+def _parse_stamp(text) -> float | None:
+    """LongMemEval stamps read '2023/05/20 (Sat) 01:33'. Naive on purpose: the set carries no zone,
+    and only ordering and coarse windows matter for retrieval."""
+    if not isinstance(text, str) or not text.strip():
+        return None
+    from datetime import datetime
+
+    for fmt in STAMP_FORMATS:
+        try:
+            return datetime.strptime(text.strip(), fmt).timestamp()
+        except ValueError:
+            continue
+    return None
+
+
 def _convert_question(entry: dict) -> tuple[str, list[Record], QAPair]:
     qid = entry["question_id"]
     question = entry["question"]
@@ -47,11 +65,21 @@ def _convert_question(entry: dict) -> tuple[str, list[Record], QAPair]:
     qtype = entry.get("question_type", "")
     abstain = qtype == "abstention" or not answer
 
-    records: list[Record] = []
+    # The dataset carries the time axis and the gold evidence; this converter used to drop both, so
+    # temporal questions had no dates to reason over and scoring fell back to "does the answer string
+    # appear in the context" because there were no gold ids to hit. Both are wired through now.
     sessions = entry.get("haystack_sessions", [])
+    dates = entry.get("haystack_dates") or []
+    session_ids = entry.get("haystack_session_ids") or []
+    session_index = {sid: index for index, sid in enumerate(session_ids)}
+    gold_sessions = {session_index[sid] for sid in (entry.get("answer_session_ids") or [])
+                     if sid in session_index}
+
+    records: list[Record] = []
     for sidx, session in enumerate(sessions):
         if not isinstance(session, list):
             continue
+        effective_at = _parse_stamp(dates[sidx]) if sidx < len(dates) else None
         for midx, msg in enumerate(session):
             if not isinstance(msg, dict):
                 continue
@@ -67,16 +95,31 @@ def _convert_question(entry: dict) -> tuple[str, list[Record], QAPair]:
                     payload={"text": f"{role}: {content}"},
                     epistemic_status="stated",
                     attribution="document",
-                    provenance={"session": f"session-{sidx}"},
+                    effective_at=effective_at,
+                    provenance={
+                        "session": session_ids[sidx] if sidx < len(session_ids) else f"session-{sidx}",
+                        "session_index": sidx,
+                        "session_date": dates[sidx] if sidx < len(dates) else None,
+                        "gold_session": sidx in gold_sessions,
+                    },
                 )
             )
 
+    evidence_ids = [rec.record_id for rec in records if rec.provenance.get("gold_session")]
     qa = QAPair(
         question_id=qid,
         question=question,
         gold_answer=answer,
         abstain=abstain,
         category=qtype,
+        evidence_ids=evidence_ids,
+        metadata={
+            "question_date": entry.get("question_date"),
+            "question_date_ts": _parse_stamp(entry.get("question_date")),
+            "session_ids": session_ids,
+            "session_dates": list(dates),
+            "gold_session_ids": list(entry.get("answer_session_ids") or []),
+        },
     )
     return qid, records, qa
 

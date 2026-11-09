@@ -1,0 +1,311 @@
+{
+  "offset": 200,
+  "rows": [
+    {
+      "question": "How much more miles per gallon was my car getting a few months ago compared to now?",
+      "answer": "2",
+      "answer_type": null,
+      "configs": {
+        "lexical": {
+          "hit": true,
+          "latency_ms": 440.9,
+          "layers": [
+            "lexical"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "user: I'm glad you're considering a dash cam. I think it's a good idea to get one, especially with all the crazy drivers"
+          ],
+          "n_items": 10
+        },
+        "lexical+rerank": {
+          "hit": true,
+          "latency_ms": 46816.6,
+          "layers": [
+            "lexical"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "user: I'll definitely check the air filter, spark plugs, and tire pressure. I've been meaning to get my oil changed too,"
+          ],
+          "n_items": 10
+        },
+        "vector": {
+          "hit": true,
+          "latency_ms": 4268.7,
+          "layers": [
+            "vector"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "user: I'll definitely check the air filter, spark plugs, and tire pressure. I've been meaning to get my oil changed too,"
+          ],
+          "n_items": 10
+        },
+        "vector+rerank": {
+          "hit": true,
+          "latency_ms": 28408.3,
+          "layers": [
+            "vector"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "user: I'll definitely check the air filter, spark plugs, and tire pressure. I've been meaning to get my oil changed too,"
+          ],
+          "n_items": 10
+        },
+        "hybrid-noRerank": {
+          "hit": true,
+          "latency_ms": 635.9,
+          "layers": [
+            "lexical",
+            "vector"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "user: I'm glad you're considering a dash cam. I think it's a good idea to get one, especially with all the crazy drivers"
+          ],
+          "n_items": 10
+        },
+        "hybrid+rerank": {
+          "hit": true,
+          "latency_ms": 61857.2,
+          "layers": [
+            "lexical",
+            "vector"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "user: I'll definitely check the air filter, spark plugs, and tire pressure. I've been meaning to get my oil changed too,"
+          ],
+          "n_items": 10
+        },
+        "hybrid+crossencoder": {
+          "hit": true,
+          "latency_ms": 13056.3,
+          "layers": [
+            "lexical",
+            "vector",
+            "cross_encoder"
+          ],
+          "top3": [
+            "user: I'm thinking of getting a tune-up for my car soon. Can you give me some tips on what I should check or replace to ",
+            "user: I'm thinking of getting a new air filter for my car. Can you recommend any good ones? I've been getting around 28 ",
+            "assistant: A tune-up is a great way to get your car running efficiently again. Improving fuel efficiency not only saves "
+          ],
+          "n_items": 10
+        }
+      }
+    },
+    {
+      "question": "What is the total number of online courses I've completed?",
+      "answer": "20",
+      "answer_type": null,
+      "configs": {
+        "lexical": {
+          "hit": true,
+          "latency_ms": 198.6,
+          "layers": [
+            "lexical"
+          ],
+          "top3": [
+            "assistant: \"Data Visualization with Python: Matplotlib and Seaborn\" is an excellent course to start with.\n\nHere are some",
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "assistant: Excellent to hear that you've already completed some courses on Coursera! You've got a solid foundation to bu"
+          ],
+          "n_items": 10
+        },
+        "lexical+rerank": {
+          "hit": false,
+          "latency_ms": 82561.7,
+          "layers": [
+            "lexical"
+          ],
+          "top3": [
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "user: I'm looking to improve my data analysis skills and was wondering if you could recommend some online resources or c",
+            "user: I think I've got a good handle on balancing coursework and personal projects. Thanks for the advice! I'm excited t"
+          ],
+          "n_items": 10
+        },
+        "vector": {
+          "hit": false,
+          "latency_ms": 2212.2,
+          "layers": [
+            "vector"
+          ],
+          "top3": [
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "user: I'm looking to improve my data analysis skills and was wondering if you could recommend some online resources or c",
+            "user: I think I've got a good handle on balancing coursework and personal projects. Thanks for the advice! I'm excited t"
+          ],
+          "n_items": 10
+        },
+        "vector+rerank": {
+          "hit": false,
+          "latency_ms": 44046.0,
+          "layers": [
+            "vector"
+          ],
+          "top3": [
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "user: I'm looking to improve my data analysis skills and was wondering if you could recommend some online resources or c",
+            "user: I think I've got a good handle on balancing coursework and personal projects. Thanks for the advice! I'm excited t"
+          ],
+          "n_items": 10
+        },
+        "hybrid-noRerank": {
+          "hit": false,
+          "latency_ms": 925.2,
+          "layers": [
+            "lexical",
+            "vector"
+          ],
+          "top3": [
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "user: I'm looking to improve my data analysis skills and was wondering if you could recommend some online resources or c",
+            "assistant: Excellent to hear that you've already completed some courses on Coursera! You've got a solid foundation to bu"
+          ],
+          "n_items": 10
+        },
+        "hybrid+rerank": {
+          "hit": false,
+          "latency_ms": 85834.2,
+          "layers": [
+            "lexical",
+            "vector"
+          ],
+          "top3": [
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "user: I'm looking to improve my data analysis skills and was wondering if you could recommend some online resources or c",
+            "user: I think I've got a good handle on balancing coursework and personal projects. Thanks for the advice! I'm excited t"
+          ],
+          "n_items": 10
+        },
+        "hybrid+crossencoder": {
+          "hit": false,
+          "latency_ms": 17074.4,
+          "layers": [
+            "lexical",
+            "vector",
+            "cross_encoder"
+          ],
+          "top3": [
+            "user: That sounds great! I'm excited to start working on the projects and exercises in the course. Since I've already co",
+            "assistant: Excellent to hear that you've already completed some courses on Coursera! You've got a solid foundation to bu",
+            "user: I'm considering pursuing a Master's degree in data science, and I was wondering if you could help me explore some "
+          ],
+          "n_items": 10
+        }
+      }
+    },
+    {
+      "question": "How much did I save on the Jimmy Choo heels?",
+      "answer": "$300",
+      "answer_type": null,
+      "configs": {
+        "lexical": {
+          "hit": false,
+          "latency_ms": 223.5,
+          "layers": [
+            "lexical"
+          ],
+          "top3": [
+            "user: I think I'll wear my hair down for this outfit. I like the idea of adding a touch of relaxed, effortless glamour t",
+            "user: I'm thinking of a bold, colorful necklace with a fun, playful vibe. I have a coral-colored necklace with a geometr",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut"
+          ],
+          "n_items": 10
+        },
+        "lexical+rerank": {
+          "hit": false,
+          "latency_ms": 66447.0,
+          "layers": [
+            "lexical"
+          ],
+          "top3": [
+            "user: I'm planning a night out with friends this weekend and I need some fashion advice. I was thinking of wearing my ne",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut",
+            "assistant: Jimmy Choo heels for $200 is a steal! Congratulations on the great find!\n\nI'd be happy to help you come up wi"
+          ],
+          "n_items": 10
+        },
+        "vector": {
+          "hit": false,
+          "latency_ms": 843.7,
+          "layers": [
+            "vector"
+          ],
+          "top3": [
+            "user: I'm planning a night out with friends this weekend and I need some fashion advice. I was thinking of wearing my ne",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut",
+            "assistant: Jimmy Choo heels for $200 is a steal! Congratulations on the great find!\n\nI'd be happy to help you come up wi"
+          ],
+          "n_items": 10
+        },
+        "vector+rerank": {
+          "hit": false,
+          "latency_ms": 42198.4,
+          "layers": [
+            "vector"
+          ],
+          "top3": [
+            "user: I'm planning a night out with friends this weekend and I need some fashion advice. I was thinking of wearing my ne",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut",
+            "assistant: Jimmy Choo heels for $200 is a steal! Congratulations on the great find!\n\nI'd be happy to help you come up wi"
+          ],
+          "n_items": 10
+        },
+        "hybrid-noRerank": {
+          "hit": false,
+          "latency_ms": 703.9,
+          "layers": [
+            "lexical",
+            "vector"
+          ],
+          "top3": [
+            "user: I'm planning a night out with friends this weekend and I need some fashion advice. I was thinking of wearing my ne",
+            "user: I think I'll wear my hair down for this outfit. I like the idea of adding a touch of relaxed, effortless glamour t",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut"
+          ],
+          "n_items": 10
+        },
+        "hybrid+rerank": {
+          "hit": false,
+          "latency_ms": 75064.9,
+          "layers": [
+            "lexical",
+            "vector"
+          ],
+          "top3": [
+            "user: I'm planning a night out with friends this weekend and I need some fashion advice. I was thinking of wearing my ne",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut",
+            "assistant: Jimmy Choo heels for $200 is a steal! Congratulations on the great find!\n\nI'd be happy to help you come up wi"
+          ],
+          "n_items": 10
+        },
+        "hybrid+crossencoder": {
+          "hit": false,
+          "latency_ms": 13336.8,
+          "layers": [
+            "lexical",
+            "vector",
+            "cross_encoder"
+          ],
+          "top3": [
+            "assistant: Jimmy Choo heels for $200 is a steal! Congratulations on the great find!\n\nI'd be happy to help you come up wi",
+            "user: I'm looking for some advice on affordable fashion brands that offer high-quality clothing. I've been trying to cut",
+            "user: I'm planning a night out with friends this weekend and I need some fashion advice. I was thinking of wearing my ne"
+          ],
+          "n_items": 10
+        }
+      }
+    }
+  ]
+}
