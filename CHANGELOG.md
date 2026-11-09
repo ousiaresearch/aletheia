@@ -88,6 +88,23 @@ All notable changes to Aletheia are documented here.
     scrubs the index and WAL, and journals itself — asserted with a `Summary` citing the purged
     record. `aletheia retention --sweep` reports unless `--confirm` is given.
   - `aletheia retention --scope <s> [--set-days N] [--apply] [--sweep] [--confirm] [--overwrite]`.
+- **`aletheia/redaction.py` — shaped secrets are removed before the record exists (W2.6, slice 2).**
+  Ingestion redacts first, so the stored text, the FTS row and the vector are all built from what is
+  safe to keep. Redacting afterwards would mean either rewriting history or leaving the raw value in
+  the index while claiming otherwise — the second of which is the failure this slice exists to
+  prevent, and it is asserted by searching the index for the raw address and finding no token.
+  - Shapes covered: email, SSN, credit-card-shaped numbers with a **valid Luhn checksum**, common
+    credential shapes (OpenAI/GitHub/AWS/Slack), and phone numbers that are shaped like phone
+    numbers — a country code, a parenthesised area code, or two separator groups. A bare run of
+    digits is left alone, so years, order numbers and versions survive.
+  - The record records *that* something was removed (`provenance.redacted = {"email": 1}`) and never
+    *what*: a redaction log that quotes the value is a second copy of the value.
+  - Known limitation, asserted rather than hidden: a 4-3-4 grouped serial reads as a phone number.
+    Over-redaction is the accepted failure; a corpus nobody can read is a different failure, and
+    both are visible in the tests.
+  - `aletheia redact --scope <s>` reports shaped secrets already stored, and does not rewrite them:
+    a record is immutable, and a find-and-replace would leave the raw value in the journal, the WAL
+    and every backup. The erasure path is how such a record goes away.
 
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,

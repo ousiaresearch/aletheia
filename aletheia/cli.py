@@ -80,6 +80,11 @@ def _parser() -> argparse.ArgumentParser:
     relate.add_argument("--scope", required=True)
     relate.add_argument("--limit", type=int, default=100, help="max records to scan")
 
+    redact = commands.add_parser(
+        "redact", help="report shaped secrets already stored in a scope (records are not rewritten)")
+    redact.add_argument("--scope", required=True)
+    redact.add_argument("--limit", type=int, default=500, help="max records to scan")
+
     retention = commands.add_parser("retention", help="set, apply or sweep a scope's retention window")
     retention.add_argument("--scope", required=True)
     retention.add_argument("--set-days", type=float, default=None,
@@ -351,6 +356,47 @@ def _run_relate(args) -> int:
         sub.close()
 
 
+def _run_redact(args) -> int:
+    """Report what a redaction pass would have removed from records already stored.
+
+    It reports rather than rewrites: a record is immutable, and rewriting history to remove a secret
+    would leave the raw value in the journal, the WAL and every backup anyway. The honest answer to
+    "this record contains a phone number" is that it was stored before the hook existed, and the
+    erasure path — not a find-and-replace — is how it goes away.
+    """
+    from aletheia.redaction import scan
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        readable, _ = sub.query(ctx, scope=args.scope)
+        totals: dict[str, int] = {}
+        affected: list[str] = []
+        for record in readable[: args.limit]:
+            payload = record.payload if isinstance(record.payload, dict) else {}
+            findings = scan(str(payload.get("text") or ""))
+            if not findings:
+                continue
+            affected.append(record.record_id)
+            for kind, count in findings.items():
+                totals[kind] = totals.get(kind, 0) + count
+        print(json.dumps({
+            "status": "redact",
+            "scope": args.scope,
+            "records_scanned": len(readable[: args.limit]),
+            "records_affected": len(affected),
+            "findings": totals,
+            "record_ids": affected[:20],
+            "note": ("records are not rewritten; these predate the ingestion hook. "
+                     "Use the erasure path to remove them."),
+        }, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
 def _run_retention(args) -> int:
     from aletheia.retention import apply_policy, expired_record_ids, get_policy, set_policy, sweep
     db_path = Path(args.db).expanduser()
@@ -607,6 +653,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run_representation(args)
         if args.command == "retention":
             return _run_retention(args)
+        if args.command == "redact":
+            return _run_redact(args)
         if args.command == "temporal":
             return _run_temporal(args)
         if args.command == "propose-rule":
