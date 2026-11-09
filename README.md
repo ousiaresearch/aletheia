@@ -68,6 +68,74 @@ WAL), `<profile>/weft/provider-config.json` and `~/.weft/weft.sqlite3` to the Al
 existing store at the new path always wins; a legacy file that loses the race is left where it is,
 never deleted.
 
+## Multiple profiles
+
+One store serves every profile. Profiles are scopes inside it, not separate databases:
+
+```
+<hermes_root>/aletheia/aletheia.sqlite3
+  profile:default     ← the root home
+  profile:isildur
+  profile:palantir
+```
+
+Each profile writes only to its own scope. Reading another profile's scope is decided by a
+**host** policy file beside the store, not by the profile's own config — a file a profile can edit
+cannot be the authority for reading someone else's memory:
+
+`<hermes_root>/aletheia/policy.json` (mode `0600`, owner-only):
+
+```
+{
+  "profiles": {
+    "palantir": { "read_scopes": ["profile:isildur"], "shared": true, "shared_write": false }
+  }
+}
+```
+
+The profile asks for a grant in its own `provider-config.json`; the policy decides. A request the
+policy does not name is ignored, `shared` is granted by the policy flag alone, and a missing or
+loosely-permissioned policy grants nothing beyond the profile's own scope.
+
+```
+{
+  "store_path": "/Users/you/.hermes/aletheia/aletheia.sqlite3",
+  "read_scopes": ["profile:isildur"],
+  "shared": true,
+  "shared_write": false
+}
+```
+
+`read_scopes` grants reads, never writes. Every recall's receipt names the scopes consulted, so a
+grant is visible in the audit trail rather than implied by configuration.
+
+A store written before 2.1 keeps its records under the old basename scope (`profile-.hermes`); the
+provider does **not** move them on startup — a rename decided from a path is how one profile absorbs
+another's memory. It reports the count and the exact command, and the rename moves records, journal,
+entity links, jobs, the FTS index and the scope-keyed vector tables in one transaction:
+
+```bash
+aletheia --db ~/.hermes/aletheia/aletheia.sqlite3 rename-scope --from profile-.hermes --to profile:default
+```
+
+Stores from other profiles are copied in explicitly, without touching the source:
+
+```bash
+aletheia --db ~/.hermes/aletheia/aletheia.sqlite3 merge-store \
+  --from-db ~/.hermes/profiles/isildur/aletheia/aletheia.sqlite3 \
+  --from-scope profile-isildur --to-scope profile:isildur
+```
+
+Both commands exit non-zero when they moved nothing: a typo'd scope, a refused bundle and an empty
+source are failures, not successes.
+
+To check which copy is actually running — repository, plugin directory, plugin-source snapshots and
+installed distributions drift independently:
+
+```bash
+python scripts/verify_deployed.py
+```
+
 ## Boundaries
 
 - Aletheia is not a brain, a consciousness, or a proof of either.

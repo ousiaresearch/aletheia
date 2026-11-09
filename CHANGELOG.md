@@ -2,6 +2,55 @@
 
 All notable changes to Aletheia are documented here.
 
+## [2.1.0] — 2026-11-08
+
+### Added
+- **One host store, many scopes.** The provider now opens
+  `<hermes_root>/aletheia/aletheia.sqlite3` for every profile and writes under `profile:<name>`.
+  Profiles are scopes inside one substrate, so a multiplexed gateway no longer runs N databases
+  that can never see each other (`aletheia/profile_identity.py`).
+- **Host-policy read grants.** `<hermes_root>/aletheia/policy.json` (0600, owner-checked) names which
+  profiles may read which scopes and who may use `shared` / write to it. A profile's own
+  `provider-config.json` can only *request* a grant; the policy decides. Reads run under a read
+  context, writes keep their own, so a read grant never confers write authority, and a configured
+  `scope` is ignored — identity is derived from the profile, never configured.
+- **`aletheia merge-store`** — copy one scope from another store into this one under a new scope.
+  The source is opened read-only and never migrated; the copy is additive (an existing id with
+  different content is refused by name, never overwritten); records the target's rules reject are
+  reported by id instead of zeroing the bundle; the result asserts
+  `exported = imported + present + skipped`.
+- **`aletheia rename-scope`** — rename a scope in place, moving records, journal, entity links, jobs,
+  the FTS index and the scope-keyed vector tables in one transaction. Receipts are not rewritten:
+  they record what was consulted at the time. Refuses to union two live scopes.
+- **`scripts/verify_deployed.py`** — reports the version in the repository, the profile's plugin
+  directory, every plugin-source snapshot and every installed distribution, and exits non-zero on
+  drift. This exists because the gateway was importing a 2.0.0 snapshot while the repo said 2.0.1.
+
+### Changed
+- **Identity comes from `agent_identity`.** Hermes passes the profile's own name
+  (`get_active_profile_name()`); the provider now uses it instead of the home directory's basename.
+  The default profile's scope was `profile-.hermes` and is now `profile:default`.
+- **`ScopeEngine.known_scopes` is the store's scope set**, not just the instance's own scope. A
+  shared store must register every scope or a grant is defeated by the unknown-scope rule.
+- **`hermes memory status` explains itself.** When the CLI interpreter cannot load the provider's
+  models, the status line names the missing module and says it may exist only in the gateway
+  environment, instead of reading as an outage.
+- Invalid `provider-config.json` values are normalised on save; `db_path` is still accepted as the
+  pre-2.1 name for `store_path`.
+
+### Migration
+- Nothing moves on startup. Records still carrying the old basename scope (`profile-.hermes`) are
+  reported with their count and the exact command; the operator runs
+  `aletheia rename-scope --from profile-.hermes --to profile:default`. A rename decided from a path,
+  applied to a shared store, is how one profile silently absorbs another's memory.
+- Per-profile stores written before this release are copied in explicitly with `aletheia merge-store
+  --from-db <profile store> --from-scope <old scope> --to-scope profile:<name>`.
+- Both commands exit non-zero when they moved nothing, so a typo'd scope cannot read as success.
+
+### Tests
+- `tests/test_profile_identity.py`, `tests/test_shared_store.py`, `tests/test_merge_store.py`,
+  `tests/test_hermes_multiprofile.py`, `tests/test_deploy_truth.py`.
+
 ## [2.0.1] — 2026-11-08
 
 ### Added

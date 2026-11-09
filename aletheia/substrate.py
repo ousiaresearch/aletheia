@@ -2225,6 +2225,28 @@ class Substrate:
         readable, _ = self.query(ctx)
         return readable
 
+    def distinct_scopes(self) -> list[str]:
+        """Every scope present in the store, regardless of the caller's grants.
+
+        Used to build ``ScopeEngine.known_scopes`` for a shared store: a scope the engine has never
+        heard of is denied before grants are consulted, so a host-level store must register all of
+        them. Knowing a scope exists confers nothing — reads and writes still need a grant.
+
+        Unions every table that carries a scope: a scope whose last record was deleted still owns
+        journal rows, jobs or quarantined records, and denying those operations would make the store
+        look corrupt.
+        """
+        with self._lock:
+            scopes: set[str] = set()
+            for table in ("records", "journal", "entity_links", "jobs", "quarantined_records"):
+                has_scope = self._conn.execute(
+                    "SELECT 1 FROM pragma_table_info(?) WHERE name='scope'", (table,)).fetchone()
+                if not has_scope:
+                    continue
+                scopes.update(row[0] for row in self._conn.execute(
+                    f"SELECT DISTINCT scope FROM {table} WHERE scope IS NOT NULL"))
+        return sorted(scopes)
+
     def get_at(self, record_id: str, timestamp: float, ctx: ScopeContext | None = None) -> Record | None:
         """Fetch the effective version of a record at ``timestamp``.
 

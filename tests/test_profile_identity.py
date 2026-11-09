@@ -8,12 +8,12 @@ import pytest
 
 from aletheia.profile_identity import (
     default_store_path,
+    effective_read_grants,
+    effective_write_grants,
     hermes_root,
     parse_scopes,
     profile_name,
     profile_scope,
-    read_grants,
-    write_grants,
 )
 
 
@@ -63,7 +63,19 @@ def test_names_are_normalised_to_a_safe_charset(tmp_path):
     root = tmp_path / ".hermes"
     home = root / "profiles" / "Mixed Case"
     home.mkdir(parents=True)
-    assert profile_name(home, default_root=root) == "mixed-case"
+    name = profile_name(home, default_root=root)
+    # Cleaning is many-to-one, so a changed name carries a digest of the original.
+    assert name.startswith("mixed-case-")
+
+
+def test_distinct_names_cannot_collide(tmp_path):
+    root = tmp_path / ".hermes"
+    names = set()
+    for raw in ("foo bar", "foo.bar", "foo-bar", "foo_bar", "x" * 90, "x" * 91):
+        home = root / "profiles" / raw
+        home.mkdir(parents=True, exist_ok=True)
+        names.add(profile_name(home, default_root=root))
+    assert len(names) == 6, names
 
 
 def test_store_is_host_level_and_shared(tmp_path):
@@ -87,12 +99,37 @@ def test_parse_scopes_accepts_list_and_string_and_drops_unknown():
     assert parse_scopes("shared") == ("shared",)
 
 
-def test_grants_follow_the_opt_in_flags():
+def test_policy_alone_grants_nothing():
     own = "profile:default"
-    assert read_grants(own, {}) == (own,)
-    assert read_grants(own, {"read_scopes": ["profile:isildur"]}) == (own, "profile:isildur")
-    assert read_grants(own, {"shared": True}) == (own, "shared")
-    assert read_grants(own, {"shared": "false"}) == (own,)
-    assert write_grants(own, {"shared": True}) == (own,)
-    assert write_grants(own, {"shared": True, "shared_write": True}) == (own, "shared")
-    assert write_grants(own, {"read_scopes": ["profile:isildur"]}) == (own,)  # reads never grant writes
+    absent = {"present": False, "profiles": {}, "error": ""}
+    # A profile's own config is a request, never an authority.
+    assert effective_read_grants(own, {"read_scopes": ["profile:isildur"]}, {}, absent) == (own,)
+    assert effective_read_grants(own, {"shared": True}, {}, absent) == (own,)
+    assert effective_write_grants(own, {"shared_write": True}, absent) == (own,)
+
+
+def test_policy_grants_the_requested_scope_and_nothing_else():
+    own = "profile:default"
+    policy = {"present": True, "error": "", "profiles": {"default": {"read_scopes": ["profile:isildur"]}}}
+    entry = policy["profiles"]["default"]
+    assert effective_read_grants(own, {"read_scopes": ["profile:isildur"]}, entry, policy) == \
+        (own, "profile:isildur")
+    # Asking for a scope the policy does not name is ignored.
+    assert effective_read_grants(own, {"read_scopes": ["profile:palantir"]}, entry, policy) == (own,)
+    # Reads never confer writes.
+    assert effective_write_grants(own, entry, policy) == (own,)
+
+
+def test_policy_controls_shared_writes():
+    own = "profile:default"
+    policy = {"present": True, "error": "", "profiles": {"default": {"shared": True, "shared_write": True}}}
+    entry = policy["profiles"]["default"]
+    assert effective_read_grants(own, {}, entry, policy) == (own, "shared")
+    assert effective_write_grants(own, entry, policy) == (own, "shared")
+
+
+def test_a_broken_policy_grants_nothing():
+    own = "profile:default"
+    policy = {"present": True, "error": "policy unreadable", "profiles": {"default": {"read_scopes": ["profile:isildur"]}}}
+    entry = policy["profiles"]["default"]
+    assert effective_read_grants(own, {"read_scopes": ["profile:isildur"]}, entry, policy) == (own,)

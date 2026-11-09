@@ -8,7 +8,7 @@ def test_local_build_metadata_declares_version_and_entrypoint():
     metadata = tomllib.loads((repo / 'pyproject.toml').read_text())
     project = metadata['project']
     assert project['name'] == 'ousia-aletheia'
-    assert project['version'] == '2.0.1'
+    assert project['version'] == '2.1.0'
     # The version is validated as a PEP 440 string and kept in sync with the plugin.
     import re
     assert re.fullmatch(r'\d+(\.\d+)+(a\d+|b\d+|rc\d+)?', project['version']), project['version']

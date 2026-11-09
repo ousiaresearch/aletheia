@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sqlite3
 import sys
 from contextlib import closing
@@ -18,8 +19,15 @@ from aletheia.adapters import default_text_embedder
 from aletheia.ingest import Ingestor, Rejection
 from aletheia.retrieval import recall
 from aletheia.paths import migrate_legacy_cli_store
+from aletheia.merge import merge_store, scope_counts, upgrade_scope
 from aletheia.scope import ScopeContext, ScopeEngine
 from aletheia.substrate import SCHEMA_VERSION, Substrate, SubstrateError
+
+_SCOPE_RE = re.compile(r"^(?:profile:[a-z0-9_-]+|project:[a-z0-9_-]+|shared)$")
+
+
+def _valid_scope(scope: object) -> bool:
+    return bool(_SCOPE_RE.match(str(scope or "").strip()))
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -79,6 +87,19 @@ def _parser() -> argparse.ArgumentParser:
     reembed = commands.add_parser("reembed", help="embed records in a scope that lack vectors (repairs hybrid recall)")
     reembed.add_argument("--scope", required=True)
     reembed.add_argument("--limit", type=int, default=None, help="max records to embed this run")
+
+    rename = commands.add_parser("rename-scope",
+                                 help="rename a scope in place across records, journal and receipts")
+    rename.add_argument("--from", dest="old_scope", required=True, help="the scope currently stored")
+    rename.add_argument("--to", dest="new_scope", required=True, help="the scope name to use")
+
+    merge = commands.add_parser("merge-store",
+                                help="copy one scope from another store into this store under a new scope")
+    merge.add_argument("--from-db", required=True, help="the store to copy from (never modified)")
+    merge.add_argument("--from-scope", required=True, help="the scope to copy")
+    merge.add_argument("--to-scope", required=True, help="the scope to create in this store")
+    merge.add_argument("--no-embed", action="store_true",
+                       help="skip vector repair; run `aletheia reembed --scope ...` afterwards")
     return parser
 
 
@@ -387,6 +408,47 @@ def _run_reembed(args) -> int:
         sub.close()
 
 
+def _run_rename_scope(args) -> int:
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    for scope in (args.old_scope, args.new_scope):
+        if not _valid_scope(scope):
+            raise ValueError(f"not a scope name: {scope!r}")
+    before = scope_counts(db_path)
+    result = upgrade_scope(db_path, args.old_scope, args.new_scope)
+    refused = result.get("refused") or ""
+    status = "refused" if refused else ("renamed" if result.get("changed") else "noop")
+    print(json.dumps({"status": status, "from": args.old_scope, "to": args.new_scope,
+                      "changed": result.get("changed", {}), "vectors": result.get("vectors", {}),
+                      "refused": refused, "before": before, "after": scope_counts(db_path)}))
+    return 1 if refused else (0 if result.get("changed") else 3)
+
+
+def _run_merge_store(args) -> int:
+    db_path = Path(args.db).expanduser()
+    source = Path(args.from_db).expanduser()
+    if not source.is_file():
+        raise FileNotFoundError(f"Aletheia source database not found: {source}")
+    embedder = None if args.no_embed else default_text_embedder()
+    result = merge_store(source, db_path, args.from_scope, args.to_scope, embedder=embedder)
+    if result.get("error"):
+        status = "error"
+    elif result.get("refusal") and not result.get("imported"):
+        status = "refused"
+    elif result.get("imported"):
+        status = "merged"
+    elif result.get("already_present"):
+        status = "already-present"
+    else:
+        status = "nothing-imported"
+    print(json.dumps({"status": status, **result}, ensure_ascii=False))
+    # A migration that moved nothing is a failure even when nothing raised: a typo'd scope, a
+    # refused bundle and an empty source must not share an exit code with success.
+    failed = bool(result.get("error")) or status in ("refused", "nothing-imported")
+    return 1 if failed else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
@@ -414,6 +476,10 @@ def main(argv: list[str] | None = None) -> int:
             return _run_active_rules(args)
         if args.command == "reembed":
             return _run_reembed(args)
+        if args.command == "rename-scope":
+            return _run_rename_scope(args)
+        if args.command == "merge-store":
+            return _run_merge_store(args)
         return _run_recall(args)
     except (OSError, RuntimeError, ValueError, ImportError, sqlite3.Error, SubstrateError) as exc:
         print(f"aletheia: {exc}", file=sys.stderr)
