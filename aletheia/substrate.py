@@ -116,10 +116,12 @@ class Record:
         )
 
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 # Export bundles from these schema versions can be restored. Version 6 bundles carry the same
 # record shape; they never carry approval bindings (approvals are never restored, see import_scope).
-_IMPORTABLE_SCHEMA_VERSIONS = (6, 7)
+# Version 8 adds the relations table, which is derived: a 6 or 7 bundle restores and the graph is
+# rebuilt from records rather than trusted from the bundle.
+_IMPORTABLE_SCHEMA_VERSIONS = (6, 7, 8)
 # Payload keys a lifecycle transition (propose -> active/rejected/deprecated) may change.
 # Everything else in the rule, including all record-level fields, must stay identical.
 _RULE_LIFECYCLE_KEYS = ('status', 'promoted_by', 'promoted_at', 'rejection_reason', 'deprecated_at')
@@ -789,6 +791,30 @@ class Substrate:
                 self._conn.execute("DELETE FROM fts_rowmap")
                 for row in self._conn.execute("SELECT * FROM records").fetchall():
                     self._fts_index(Record.from_row(row))
+            if version < 8:
+                # Version 8 (Phase 12): typed relations between records, scoped and time-bounded.
+                # `entity_links` answers "which record mentions this string"; this answers "which
+                # records are related, and how" — subject and object are record ids, so an edge can
+                # never point outside the substrate or outside a scope.
+                self._conn.execute("""
+                    CREATE TABLE IF NOT EXISTS relations (
+                        subject     TEXT NOT NULL,
+                        predicate   TEXT NOT NULL,
+                        object      TEXT NOT NULL,
+                        scope       TEXT NOT NULL,
+                        confidence  REAL NOT NULL DEFAULT 1.0,
+                        valid_from  REAL,
+                        valid_to    REAL,
+                        source_ids  TEXT NOT NULL DEFAULT '[]',
+                        created_at  REAL NOT NULL,
+                        PRIMARY KEY (subject, predicate, object, scope),
+                        FOREIGN KEY (subject) REFERENCES records(record_id) ON DELETE CASCADE,
+                        FOREIGN KEY (object) REFERENCES records(record_id) ON DELETE CASCADE
+                    )
+                """)
+                self._conn.execute("CREATE INDEX IF NOT EXISTS idx_relations_object ON relations(object)")
+                self._conn.execute("CREATE INDEX IF NOT EXISTS idx_relations_scope ON relations(scope)")
+                self._conn.execute("CREATE INDEX IF NOT EXISTS idx_relations_predicate ON relations(predicate)")
             if version < 6:
                 # Version 6: switch FTS5 to porter stemming tokenizer.
                 self._conn.execute("DROP TABLE IF EXISTS fts")

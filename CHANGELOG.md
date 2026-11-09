@@ -4,6 +4,29 @@ All notable changes to Aletheia are documented here.
 
 ## [Unreleased]
 
+### Added
+- **`aletheia/graph.py` — typed relations, scoped and time-bounded (phase 12 / W2.1).** A
+  `relations` table (schema version 8) stores subject → predicate → object where both endpoints are
+  `record_id` values, so an edge is authorised the same way a record is. `entity_links` answers
+  "which record mentions this string"; this answers "which records are related, and how".
+  - Writing requires the scope to be granted and readable *and* both endpoints to exist in it, so a
+    cross-scope edge is not expressible: declaring the edge in `shared` does not join an `alpha`
+    record to a `beta` one.
+  - A predicate must come from the closed `PREDICATES` set; confidence is bounded 0–1; a window
+    whose `valid_to` precedes `valid_from` is refused at construction.
+  - Reading is filtered by the edge's scope at every hop, and each far endpoint must be readable in
+    its own scope — an edge is not a permission. Measured: a caller granted only `alpha` cannot walk
+    `alpha → shared → beta`.
+  - `neighbours()` is bounded breadth-first: shortest distance, hop and node limits, closed windows
+    invisible without being deleted.
+  - `extract_relations()` is rule-based and deliberately small: a candidate predicate comes from a
+    fixed pattern list and an edge is drawn only for a **citation the substrate can verify** — a
+    record id present in the citing record's text. Nothing is inferred from a word alone, and every
+    edge names its `source_ids`.
+  - Migration lands a v6 or v7 store on version 8 and the graph is rebuilt from records rather than
+    trusted from an export bundle (`_IMPORTABLE_SCHEMA_VERSIONS` now lists 8, so a bundle carrying
+    relations restores and a future version is still refused).
+
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,
   `mlx-embeddings` and `sentence-transformers` moved from `[project.optional-dependencies]` into
