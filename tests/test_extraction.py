@@ -65,11 +65,18 @@ def test_extract_and_write_claims():
 
 
 def test_consolidate_empty_scope():
-    """consolidate_scope on empty scope returns empty dict."""
+    """consolidate_scope on an empty scope reports zero of everything and writes nothing.
+
+    Asserted on the counts rather than the whole dict: the report gained keys when consolidation
+    learned to mark duplicates, and a test that pins the shape fails for a reason that is not a bug.
+    """
     sub, ctx, tmp = _make_sub()
     try:
         result = consolidate_scope(sub, ctx, "test")
-        assert result == {"claims_reviewed": 0, "duplicate_count": 0, "kept": 0}
+        assert result["claims_reviewed"] == 0
+        assert result["duplicate_count"] == 0
+        assert result["kept"] == 0
+        assert result.get("edges_written", 0) == 0
     finally:
         sub.close()
 
