@@ -457,6 +457,18 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         except Exception:
             neighbor_ids = set()
 
+        # Graph expansion: records one edge away from the top matches, added as CONTEXT exactly
+        # like neighbours. They never displace a matching record, they are capped, and every hop was
+        # authorised inside graph.neighbours — an edge is not a permission.
+        graph_ids: set = set()
+        try:
+            from aletheia.graph import expand_candidates
+            reached = expand_candidates(sub, ctx, list(candidate_ids), hops=1, max_seeds=5, limit=10)
+            graph_ids = set(reached) - set(candidate_ids) - neighbor_ids
+            candidate_ids = candidate_ids + [rid for rid in reached if rid in graph_ids]
+        except Exception:
+            graph_ids = set()
+
         items: list[Item] = []
         seen_record_ids: set = set()
         for rid in candidate_ids:
@@ -477,7 +489,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             derived = bool(isinstance(rec.provenance, dict) and rec.provenance.get("machine_derived"))
             is_summary = rec.record_type == "Summary" or "-ss-" in rid or "summary" in rid.lower()
             items.append(Item(rid, rec.scope, text, tier, derived, is_summary=is_summary,
-                              neighbor=rid in neighbor_ids))
+                              neighbor=rid in neighbor_ids or rid in graph_ids))
             receipt.selected.append(rid)
             if _TIER_ORDER[tier] > _TIER_ORDER[receipt.tier]:
                 receipt.tier = tier
@@ -518,6 +530,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             "query_expansion" if len(expanded_queries) > 1 else None,
             "cross_encoder" if cross_encoder_applied else None,
             "graph_boost" if graph_applied else None,
+            "graph_expand" if graph_ids else None,
             "temporal_boost" if temporal_applied else None,
         ] if layer is not None
     ]

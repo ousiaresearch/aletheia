@@ -220,6 +220,31 @@ def neighbours(sub: Substrate, ctx: ScopeContext, record_id: str, *, hops: int =
     return reached
 
 
+def expand_candidates(sub: Substrate, ctx: ScopeContext, seed_ids: list[str], *, hops: int = 1,
+                      max_seeds: int = 5, limit: int = 20, at: float | None = None) -> list[str]:
+    """Record ids reachable from the first ``max_seeds`` seeds, as *context*, in a stable order.
+
+    Ordered by seed, then by distance, then by record id: a caller that retries the same query gets
+    the same list, which a set iteration would not give. Seeds are excluded. Bounded twice — by
+    ``hops`` and by ``limit`` — because a graph expansion that can add an unbounded number of
+    records is a way to make recall slow and its receipt meaningless.
+    """
+    ordered: list[str] = []
+    seen = set(seed_ids)
+    for seed in seed_ids[:max_seeds]:
+        if len(ordered) >= limit:
+            break
+        reached = neighbours(sub, ctx, seed, hops=hops, limit=limit, at=at)
+        for record_id in sorted(reached, key=lambda rid: (reached[rid], rid)):
+            if record_id in seen:
+                continue
+            seen.add(record_id)
+            ordered.append(record_id)
+            if len(ordered) >= limit:
+                break
+    return ordered
+
+
 def extraction_candidates(text: str) -> list[str]:
     """Predicates the rule set finds in ``text``, in the order they appear.
 

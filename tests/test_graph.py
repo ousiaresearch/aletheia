@@ -20,6 +20,7 @@ import pytest
 from aletheia.graph import (
     PREDICATES,
     Relation,
+    expand_candidates,
     extract_relations,
     extraction_candidates,
     neighbours,
@@ -226,6 +227,76 @@ def test_extraction_draws_edges_only_for_verified_citations(sub):
     edges = relations_from(sub, ctx, "citing")
     assert [(e.object, e.predicate) for e in edges] == [("target", "contradicts")]
     assert edges[0].source_ids == ("citing",), "an edge names what justifies it"
+
+
+def test_expansion_is_ordered_deterministic_and_excludes_the_seeds(sub):
+    seed(sub, "a", "b", "c", "d")
+    ctx = ctx_for("alpha")
+    record_relation(sub, ctx, edge("a", "b"))
+    record_relation(sub, ctx, edge("a", "c"))
+    record_relation(sub, ctx, edge("b", "d"))
+
+    assert set(expand_candidates(sub, ctx, ["a"])) == {"b", "c"}, "the default is one hop"
+
+    first = expand_candidates(sub, ctx, ["a"], hops=2)
+    second = expand_candidates(sub, ctx, ["a"], hops=2)
+    assert first == second, "the same query returns the same order"
+    assert "a" not in first
+    assert set(first) == {"b", "c", "d"}
+    assert first.index("b") < first.index("d"), "one hop before two"
+
+
+def test_expansion_respects_the_seed_and_node_caps(sub):
+    seed(sub, *["s", "n1", "n2", "n3", "n4", "n5"])
+    ctx = ctx_for("alpha")
+    for target in ("n1", "n2", "n3", "n4", "n5"):
+        record_relation(sub, ctx, edge("s", target))
+
+    assert len(expand_candidates(sub, ctx, ["s"], limit=3)) == 3
+    assert expand_candidates(sub, ctx, ["s"], max_seeds=0) == []
+
+
+def test_expansion_does_not_cross_into_an_ungranted_scope(sub, engine):
+    engine.known_scopes = {"alpha", "beta"}
+    seed(sub, "a", scope="alpha")
+    seed(sub, "b", scope="beta")
+    record_relation(sub, ctx_for("alpha", "beta"), edge("a", "b", scope="alpha"))
+
+    assert expand_candidates(sub, ctx_for("alpha"), ["a"]) == []
+
+
+def test_recall_adds_graph_neighbours_as_context_and_says_so_in_the_receipt(sub):
+    """The graph must reach retrieval, and reaching it must not promote context to a match."""
+    from aletheia.retrieval import recall
+
+    ctx = ctx_for("alpha")
+    sub.put(Record(record_id="match", record_type="Claim", scope="alpha", epistemic_status="derived",
+                   payload={"text": "the lighthouse keeper wrote about barnacles"}, attribution="agent"), ctx)
+    sub.put(record := Record(record_id="related", record_type="Claim", scope="alpha",
+                             epistemic_status="derived",
+                             payload={"text": "an unrelated observation about tide tables"},
+                             attribution="agent"), ctx)
+    assert record is not None
+    assert record_relation(sub, ctx, edge("match", "related", predicate="supports")) is True
+
+    items, receipt = recall(sub, "barnacles", ctx, mode="lexical", limit=5)
+    ids = [item.record_id for item in items]
+    assert ids[0] == "match", "the matching record keeps its slot"
+    assert "related" in ids, "the graph neighbour is reachable through the edge"
+    assert ids.index("related") > ids.index("match"), "context ranks after matches"
+    assert next(i for i in items if i.record_id == "related").neighbor is True
+    assert "graph_expand" in receipt.layers
+
+
+def test_recall_without_edges_reports_no_graph_layer(sub):
+    from aletheia.retrieval import recall
+
+    ctx = ctx_for("alpha")
+    sub.put(Record(record_id="solo", record_type="Claim", scope="alpha", epistemic_status="derived",
+                   payload={"text": "solitary needle"}, attribution="agent"), ctx)
+    items, receipt = recall(sub, "needle", ctx, mode="lexical", limit=5)
+    assert [i.record_id for i in items] == ["solo"]
+    assert "graph_expand" not in receipt.layers
 
 
 def test_extraction_in_an_ungranted_scope_does_nothing(sub, engine):

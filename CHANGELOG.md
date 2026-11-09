@@ -19,6 +19,10 @@ All notable changes to Aletheia are documented here.
     `alpha → shared → beta`.
   - `neighbours()` is bounded breadth-first: shortest distance, hop and node limits, closed windows
     invisible without being deleted.
+  - `expand_candidates()` reaches neighbours of the top matches in a stable order (seed, then
+    distance, then id) and recall uses it as a **context** layer: graph-reached records never
+    displace a matching record, are capped at ten, and are marked `neighbor` like adjacency
+    context. The receipt names the layer `graph_expand`, so "why is this here" has an answer.
   - `extract_relations()` is rule-based and deliberately small: a candidate predicate comes from a
     fixed pattern list and an edge is drawn only for a **citation the substrate can verify** — a
     record id present in the citing record's text. Nothing is inferred from a word alone, and every
