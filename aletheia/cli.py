@@ -80,6 +80,21 @@ def _parser() -> argparse.ArgumentParser:
     relate.add_argument("--scope", required=True)
     relate.add_argument("--limit", type=int, default=100, help="max records to scan")
 
+    importer = commands.add_parser("import", help="ingest files or a directory into one scope")
+    importer.add_argument("--scope", required=True)
+    importer.add_argument("--path", action="append", required=True,
+                          help="file or directory (repeatable)")
+    importer.add_argument("--recursive", action="store_true", help="walk directories recursively")
+    importer.add_argument("--limit", type=int, default=100, help="max files to ingest")
+    importer.add_argument("--dry-run", action="store_true", help="report what would be ingested")
+    importer.add_argument("--author", default="", help="attribution recorded on the document")
+
+    fetcher = commands.add_parser("fetch", help="ingest one http(s) page the operator names")
+    fetcher.add_argument("--scope", required=True)
+    fetcher.add_argument("--url", required=True)
+    fetcher.add_argument("--allow-egress", action="store_true",
+                         help="REQUIRED: this command reaches the network; nothing else does")
+
     redact = commands.add_parser(
         "redact", help="report shaped secrets already stored in a scope (records are not rewritten)")
     redact.add_argument("--scope", required=True)
@@ -351,6 +366,50 @@ def _run_relate(args) -> int:
     try:
         result = extract_relations(sub, ctx, args.scope, limit=args.limit)
         print(json.dumps({"status": "related", "scope": args.scope, **result}))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_import(args) -> int:
+    from aletheia.connectors import import_paths
+    from aletheia.ingest import Ingestor
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        report = import_paths(Ingestor(sub), ctx, args.scope, args.path, author=args.author,
+                              recursive=args.recursive, limit=args.limit, dry_run=args.dry_run)
+        print(json.dumps({"status": "import", "scope": args.scope, **report.summary()}, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_fetch(args) -> int:
+    from aletheia.connectors import fetch_page, ingest_fetched
+    from aletheia.ingest import Ingestor
+    if not args.allow_egress:
+        print(json.dumps({"status": "refused",
+                          "reason": "fetching reaches the network; pass --allow-egress to confirm"}))
+        return 1
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        try:
+            page = fetch_page(args.url)
+        except (ValueError, OSError) as exc:
+            print(json.dumps({"status": "refused", "url": args.url, "reason": str(exc)}))
+            return 1
+        record_id = ingest_fetched(Ingestor(sub), ctx, args.scope, page)
+        print(json.dumps({"status": "fetched", "scope": args.scope, "url": args.url,
+                          "final_url": page.final_url, "bytes": page.size,
+                          "record_id": record_id}, sort_keys=True))
         return 0
     finally:
         sub.close()
@@ -655,6 +714,10 @@ def main(argv: list[str] | None = None) -> int:
             return _run_retention(args)
         if args.command == "redact":
             return _run_redact(args)
+        if args.command == "import":
+            return _run_import(args)
+        if args.command == "fetch":
+            return _run_fetch(args)
         if args.command == "temporal":
             return _run_temporal(args)
         if args.command == "propose-rule":

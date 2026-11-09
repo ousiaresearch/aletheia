@@ -105,6 +105,22 @@ All notable changes to Aletheia are documented here.
   - `aletheia redact --scope <s>` reports shaped secrets already stored, and does not rewrite them:
     a record is immutable, and a find-and-replace would leave the raw value in the journal, the WAL
     and every backup. The erasure path is how such a record goes away.
+- **`aletheia/connectors.py` — batch import and one operator-named page (phase 12 / W2.4).**
+  `import_paths()` walks a file or directory in sorted order and gives **every** input an outcome:
+  `stored`, `refused` with the parser's reason, or `skipped` with why. One unreadable PDF does not
+  cost the other thirty-nine, and a truncation at `--limit` is reported rather than silently applied.
+  - `fetch_page()` reaches the network only for an address an operator typed and only when
+    `--allow-egress` is passed as well; every scheme except http/https is refused, so a `file://`
+    URL is a local read dressed as a fetch and is not allowed to look like one. Responses over 5 MiB
+    are refused rather than swallowed; the record keeps the *final* URL after redirects and the fetch
+    time, because "what I fetched" has to be the address the bytes came from.
+  - Markup is stripped without a parser dependency, script and style bodies first — a page's inline
+    JavaScript is the last thing anybody wants in a memory store.
+  - A fetched page is ingested through the ordinary document path, so observations, redaction and
+    content-hash deduplication all apply without a special case.
+  - `aletheia import --scope <s> --path P [--recursive] [--limit N] [--dry-run]` and
+    `aletheia fetch --scope <s> --url U --allow-egress`.
+  - No retry logic: ingest is idempotent by content hash, so re-running the import is the retry.
 
 ### Fixed
 - **The provider's runtime requirements are declared where they are installed from.** `mlx`,
