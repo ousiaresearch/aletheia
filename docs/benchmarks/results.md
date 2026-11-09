@@ -83,3 +83,25 @@ The Colab run above predates 2.1.0. This one is current code, run locally with
   F1 moved the other way (0.014 → 0.007), which is a sign the two runs do not score identically.
   Treat the improvement as indicative, not established, until both runs use one scoring path.
 
+### Hybrid, first honest look — 2026-11-09
+
+The vector arm had never run in a full-set benchmark: `create_substrate` called
+`embedder.embed_documents`, the alpha embedder has no such method, and a bare `except: pass` turned
+that into "no vectors, no error". Fixed; these are the first numbers from a working vector path.
+
+| Mode | Questions (offset 200–202) | EM | p50 per recall | Wall clock |
+|---|---|---|---|---|
+| Lexical | 3 | 2/3 | 14.6 ms | 3.5 s |
+| Hybrid (bge-m3 + bi-encoder rerank) | 3 | **1/3** | **43,662 ms** | 1,253 s |
+
+Two things, both provisional at N=3:
+
+1. **Hybrid is not a free win.** On these three questions it *lost* a hit that lexical found, and it
+   cost about 3,000× the latency. Cause not yet diagnosed — candidates are the fusion weighting, the
+   auto-enabled cross-encoder rerank demoting a lexical hit, or vector candidates crowding the
+   top-10. Diagnosing it is cheap; assuming it away is not.
+2. **It is unaffordable at haystack scale on one machine.** The MLX bge-m3 adapter embeds at ~1.8
+   documents/s on real message lengths (up to 5,085 characters each, 460 messages per question),
+   which is ~7 minutes per question and ~3 hours for a 25-question run. Batched embedding in the
+   adapter, or a GPU, is the prerequisite for any hybrid number worth quoting.
+
