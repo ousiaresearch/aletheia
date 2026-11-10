@@ -226,6 +226,17 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                          sample=sample, seed=seed if sample == "random" else None)
     if with_reader:
         summary["reading"] = _reading_summary(cases)
+        # Per-question outcomes are kept because a reading number is only auditable if its failures
+        # are inspectable: parity-measurement-spec.md §3 requires publishing judged-wrong examples,
+        # and an aggregate alone makes a systematic leniency or a guessing habit invisible.
+        summary["reading_cases"] = [
+            {"question_id": c["question_id"], "category": c.get("category"),
+             **{k: v for k, v in (c.get("reading") or {}).items() if k != "gold_ids"},
+             "cited_gold": bool(set((c.get("reading") or {}).get("cited") or [])
+                                & set((c.get("reading") or {}).get("gold_ids") or [])),
+             "retrieval_hit": c.get("hit")}
+            for c in cases if "error" not in c and c.get("reading")
+        ]
     summary["gold_validation"] = {
         **gold_validation,
         "unreachable_ids": gold_validation["unreachable_ids"][:10],

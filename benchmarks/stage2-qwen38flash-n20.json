@@ -1,0 +1,443 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 20,
+      "errors": 0,
+      "error_sample": null,
+      "graded": 15,
+      "gold_scored": 15,
+      "hits": 13,
+      "hit_at_k": 0.8666666666666667,
+      "hit_at_k_ci95": [
+        0.621,
+        0.963
+      ],
+      "mrr": 0.444,
+      "gold_unit": "record",
+      "mean_coverage": 0.706,
+      "full_recovery": 0.6,
+      "answer_in_context": 0.8666666666666667,
+      "answer_in_context_ci95": [
+        0.621,
+        0.963
+      ],
+      "answer_only_questions": 0,
+      "abstention_questions": 5,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 4,
+          "hits": 2,
+          "full": 1,
+          "hit_at_k": 0.5,
+          "coverage": 0.333,
+          "full_recovery": 0.25
+        },
+        "2": {
+          "n": 4,
+          "hits": 4,
+          "full": 3,
+          "hit_at_k": 1.0,
+          "coverage": 0.812,
+          "full_recovery": 0.75
+        },
+        "3": {
+          "n": 1,
+          "hits": 1,
+          "full": 1,
+          "hit_at_k": 1.0,
+          "coverage": 1.0,
+          "full_recovery": 1.0
+        },
+        "4": {
+          "n": 6,
+          "hits": 6,
+          "full": 4,
+          "hit_at_k": 1.0,
+          "coverage": 0.833,
+          "full_recovery": 0.667
+        }
+      },
+      "selection": {
+        "sample": "random",
+        "seed": 1
+      },
+      "elapsed_s": 248.8,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "reading": {
+        "measured": true,
+        "n": 20,
+        "answered": 10,
+        "abstentions": 10,
+        "graded": 15,
+        "exact_match": 0.2,
+        "exact_match_ci95": [
+          0.07,
+          0.452
+        ],
+        "token_f1": 0.301,
+        "cited_a_gold_record": 0.6666666666666666,
+        "model": "openai-compatible:qwen3.8-flash",
+        "prompt_version": "reader.v1",
+        "judge": null,
+        "comparable_to_published_answer_scores": false,
+        "note": "Stage 2 \u2014 reading over the evidence this system actually retrieved, so it is end-to-end in practice. Scored by exact match and token F1, NOT an LLM judge; no comparison to Mem0/Zep/MemHQ is licensed from these numbers."
+      },
+      "reading_cases": [
+        {
+          "question_id": "locomo-conv-30-qa-76",
+          "category": "4",
+          "text": "The general sentiment is positive and excited, with eager anticipation for the grand opening.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-30-ss-session_15_summary",
+            "locomo-conv-30-d15-18",
+            "locomo-conv-30-d15-13"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "excitement",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-30-qa-42",
+          "category": "4",
+          "text": "a contemporary piece",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-30-ss-session_1_summary",
+            "locomo-conv-30-d1-19"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "\"Finding Freedom\"",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-8",
+          "category": "1",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-d9-14",
+            "locomo-conv-47-d15-3",
+            "locomo-conv-47-d18-18",
+            "locomo-conv-47-d9-16"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Three dogs.",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-177",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-d24-14"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-149",
+          "category": "4",
+          "text": "Diet and exercise advice.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d24-12",
+            "locomo-conv-49-d24-11",
+            "locomo-conv-49-ss-session_24_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "diet plan and low-impact exercises",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-57",
+          "category": "3",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-d13-14",
+            "locomo-conv-49-evt-events_session_13-Sam-261",
+            "locomo-conv-49-ss-session_12_summary",
+            "locomo-conv-49-ss-session_11_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "California",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-29",
+          "category": "1",
+          "text": "He met a Canadian woman and came back with her, his new significant other.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d6-1",
+            "locomo-conv-49-evt-events_session_5-Evan-240",
+            "locomo-conv-49-d5-1",
+            "locomo-conv-49-d21-3"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Evan met the woman he fell in love with and returned with her.",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-217",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-48-d18-3",
+            "locomo-conv-48-ss-session_18_summary",
+            "locomo-conv-48-d18-5",
+            "locomo-conv-48-d10-13",
+            "locomo-conv-48-ss-session_10_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-211",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-48-d2-25",
+            "locomo-conv-48-evt-events_session_14-Jolene-304",
+            "locomo-conv-48-d28-25",
+            "locomo-conv-48-evt-events_session_8-Jolene-290"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-129",
+          "category": "4",
+          "text": "Brave by Sara Bareilles",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d15-23"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Brave by Sara Bareilles",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-26-qa-192",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-d16-15",
+            "locomo-conv-26-d18-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-58",
+          "category": "2",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-d14-4",
+            "locomo-conv-26-evt-events_session_5-Melanie-169",
+            "locomo-conv-26-evt-events_session_12-Melanie-178"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "24 August 2023",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-25",
+          "category": "2",
+          "text": "On the weekend",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d14-19",
+            "locomo-conv-42-evt-events_session_14-Joanna-274",
+            "locomo-conv-42-ss-session_11_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "The weekend after 3June, 2022.",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-44-qa-15",
+          "category": "1",
+          "text": "lack of time for exploring trails",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-ss-session_10_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Not being able to find pet friendly spots.",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-0",
+          "category": "2",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-evt-events_session_1-Audrey-265",
+            "locomo-conv-44-evt-events_session_2-Audrey-267",
+            "locomo-conv-44-d1-7",
+            "locomo-conv-44-d10-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "2020",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-163",
+          "category": "4",
+          "text": "German",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-evt-events_session_27-Tim-329",
+            "locomo-conv-43-d27-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "German",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-210",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-43-d14-5",
+            "locomo-conv-43-d14-3",
+            "locomo-conv-43-evt-events_session_14-John-297",
+            "locomo-conv-43-d19-7",
+            "locomo-conv-43-d14-11",
+            "locomo-conv-43-d14-9",
+            "locomo-conv-43-d14-7",
+            "locomo-conv-43-d25-10",
+            "locomo-conv-43-d13-9",
+            "locomo-conv-43-evt-events_session_19-Tim-307"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-20",
+          "category": "2",
+          "text": "Seattle",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-evt-events_session_6-John-274"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Seattle",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-125",
+          "category": "4",
+          "text": "He appreciates what he has and the need to give back.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d24-1",
+            "locomo-conv-41-ss-session_24_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "the resilience of the veterans and their inspiring stories",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-47",
+          "category": "1",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-d1-2",
+            "locomo-conv-50-evt-events_session_22-Dave-283",
+            "locomo-conv-50-evt-events_session_1-Dave-240",
+            "locomo-conv-50-d26-6"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "two",
+          "cited_gold": false,
+          "retrieval_hit": false
+        }
+      ],
+      "gold_validation": {
+        "questions_with_gold": 20,
+        "questions_with_unreachable_gold": 0,
+        "unreachable_ids": [],
+        "gold_ids_total": 31
+      }
+    }
+  ]
+}

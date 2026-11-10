@@ -304,6 +304,67 @@ full-recovery rate rather than hit@10.
 Gold counts across the 1,982 gradable questions: 1,555 need one record, 241 need two, 83 three, 60
 four, 20 five, and a tail out to nineteen.
 
+## The reading stage, first measurement — 2026-11-09
+
+The reader now exists (`aletheia/reader.py`, `PROMPT_VERSION = reader.v1`) and runs against a live
+model. This is its first number, on a 20-question seeded random sample, and it is bad.
+
+**Pinned reader:** `openai-compatible:qwen3.8-flash` via Alibaba's token-plan endpoint
+(`https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1`), temperature 0, 90 s
+timeout. Configured through `ALETHEIA_LLM_PROVIDER` / `ALETHEIA_LLM_MODEL` / `ALETHEIA_LLM_BASE_URL`
+and `ALETHEIA_LLM_API_KEY_ENV` — the key is referenced by variable name, never committed.
+
+| LoCoMo, N=20 seeded random, lexical k=10 | Value |
+|---|---|
+| retrieval hit@10 (same run) | 13/15 = 86.7% |
+| reader answered | 10 of 20 |
+| reader abstained | 10 of 20 |
+| exact match against gold | **20.0%** (3/15, CI 7.0–45.2) |
+| token F1 | **0.301** |
+| cited a gold record | 66.7% |
+
+Read the three columns together, because that is the finding: **the evidence was usually retrieved
+(86.7%) and the reader usually cited a gold record (66.7%), yet it abstained on half the questions and
+answered correctly by exact match only a fifth of the time.** One case makes the shape unmistakable —
+gold answer `"California"`, the gold record was retrieved, the reader cited it, and it returned an
+empty answer anyway. That is not a recall problem; it is the reading stage failing with the evidence in
+hand, which is exactly what the parity spec predicted the reading stage would show.
+
+Two caveats that cut both ways, stated rather than buried:
+
+- **Exact match is brutally strict here.** LoCoMo gold answers are bare spans — `"Three dogs."`,
+  `"\"Finding Freedom\""`, `"2022"`. "He met a Canadian woman and they married" against a gold answer
+  of "Evan met the woman he would marry" scores zero on exact match and is not wrong. Token F1 (0.301)
+  is the fairer interim read, and neither is a substitute for the judged score the spec requires.
+- **N=20 with an interval from 7% to 45%.** This establishes that the pipeline works and that the
+  reading stage is currently weak. It does not establish a rate.
+
+**No judge exists yet, so none of this is comparable to Mem0, Zep or MemHQ.** The artifact records
+`comparable_to_published_answer_scores: false` and `judge: null`. Publishing an unjudged answer number
+beside their judged ones would be the same category error this file spends its length warning about.
+
+### Two defects this run found and fixed
+
+1. **The reader inherited the transport's 30 s timeout**, and two of the first twenty questions died
+   with `TimeoutError` — an infrastructure failure that would have read as a reader failure had the
+   harness not counted errors separately. Raised to 90 s for a ten-item reasoning prompt; the re-run
+   had 0 errors.
+2. **The artifact kept only aggregates.** A reading number whose failures cannot be inspected is
+   unauditable, and the parity spec requires publishing the failures. `run.py` now stores
+   per-question outcomes — answered/abstained, the text, the citations, whether a cited record was a
+   gold record, and the retrieval outcome for the same question — which is how the
+   cited-the-gold-record-and-still-abstained case above was found at all.
+
+### The open question this raises
+
+An abstention rate of 10/20 on questions whose evidence was retrieved is high enough that the prompt
+is a candidate cause: it instructs the reader not to answer unless the evidence is sufficient, and a
+model facing ten loosely-relevant conversation turns may reasonably judge it insufficient. Tuning that
+is a **prompt version change** (`reader.v2`), not a tweak — the spec's rule is that a stage-2 number is
+only comparable to another taken with the same prompt version, so both numbers get published with
+their versions attached. No tuning has been done yet, and none should be done to improve a number
+without saying so.
+
 ## Audit of the LoCoMo harness — 2026-11-09
 
 Two independent adversarial audits ran against this work before it was trusted: one on whether

@@ -114,7 +114,8 @@ def _parse(raw: str) -> dict | None:
     return parsed if isinstance(parsed, dict) else None
 
 
-def read(question: str, items, *, max_tokens: int = 400, api_key: str | None = None) -> ReaderAnswer | None:
+def read(question: str, items, *, max_tokens: int = 400, api_key: str | None = None,
+         timeout: float = 90.0) -> ReaderAnswer | None:
     """Read one answer from ``items``. Returns ``None`` when no reader is configured.
 
     ``None`` means the stage did not run. Callers must report it as unmeasured; substituting zero
@@ -130,7 +131,12 @@ def read(question: str, items, *, max_tokens: int = 400, api_key: str | None = N
         return None
 
     prompt = build_prompt(question, items)
-    raw = llm_client.complete_text(prompt, max_tokens=max_tokens, temperature=0.0, api_key=api_key)
+    # 90 s, not the transport's 30 s default: a ten-item evidence prompt with per-item reasoning is a
+    # long generation, and a 30 s ceiling turned two of twenty LoCoMo questions into timeout errors
+    # that then read as a reader failure. Infrastructure timeouts are counted as errors by the
+    # harness, but they should be rare enough to mean something when they appear.
+    raw = llm_client.complete_text(prompt, max_tokens=max_tokens, temperature=0.0,
+                                   api_key=api_key, timeout=timeout)
 
     by_number = {str(n): getattr(item, "record_id", "") for n, item in enumerate(items, start=1)}
     parsed = _parse(raw or "")
