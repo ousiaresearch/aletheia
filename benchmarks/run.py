@@ -139,6 +139,62 @@ def _reading_items(items_out, meta: dict) -> list:
     return out
 
 
+#: Prompt for the second hop. Deliberately narrow: it is asked what *else* to look up, not for the
+#: answer, so a wrong guess costs a retrieval pass rather than polluting the evidence with prose.
+_HOP_PROMPT = """\
+A question is being answered from a memory of past conversations.
+
+Question: {question}
+
+Evidence retrieved so far:
+{evidence}
+
+What additional fact, name, event or topic would you need to look up to answer this well?
+Reply with ONE short search query (2-6 words) and nothing else. If the evidence above is already
+sufficient, reply exactly NONE.
+"""
+
+
+def _second_hop_query(question: str, items, api_key: str | None = None) -> str | None:
+    """Ask the model what to look for next. Returns None when it says the evidence is sufficient.
+
+    Why this and not query expansion: three cheaper mechanisms were measured and failed. Top-k
+    diversification addresses 26% of misses, paraphrase/HyDE expansion is a wash, and entity co-mention
+    reaches only 6.9% of misses when the bridge entities are selective (it reads as 74% only when
+    ubiquitous names like the conversation's protagonist count as bridges). All three share one flaw —
+    they cannot reason about what the missing evidence would *say*. This can.
+    """
+    from aletheia import llm_client
+
+    if llm_client.get_config(api_key) is None or not items:
+        return None
+    evidence = "\n".join(f"[{n}] {(getattr(it, 'text', '') or '')[:300]}"
+                         for n, it in enumerate(items[:limit_for_hop(items)], start=1))
+    raw = llm_client.complete_text(
+        _HOP_PROMPT.format(question=question.strip(), evidence=evidence),
+        max_tokens=40, temperature=0.0, api_key=api_key, timeout=45.0)
+    if not raw:
+        return None
+    query = " ".join(raw.strip().split())
+    query = query.strip('".\'')
+    if not query or query.upper().startswith("NONE") or len(query) > 120:
+        return None
+    return query
+
+
+def prefix_hop_name(text: str) -> str:
+    """Keep the hop prompt's query on one line, stripped of any label the model adds."""
+    for marker in ("query:", "search query:"):
+        if marker in text.lower():
+            text = text[text.lower().index(marker) + len(marker):]
+    return text.strip()
+
+
+def limit_for_hop(items) -> int:
+    """How many items the hop prompt sees. Enough to judge, few enough to stay cheap."""
+    return min(len(items), 6)
+
+
 def _gold_ids(qa) -> list[str] | None:
     return list(qa.evidence_ids) if getattr(qa, "evidence_ids", None) else None
 
@@ -159,7 +215,8 @@ def _is_abstention(qa) -> bool:
 
 def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "prefix",
         seed: int = 1, splits: list[str] | None = None, embedder=None,
-        with_reader: bool = False, with_expansion: bool = False) -> dict:
+        with_reader: bool = False, with_expansion: bool = False,
+        with_multihop: bool = False) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
@@ -218,6 +275,39 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                     items_out, _receipt = recall(sub, qa.question, ctx, limit=limit,
                                                  mode="hybrid" if embedder else "lexical",
                                                  embedder=embedder, token_getter=token_getter)
+                    hop_query, hop_failure = None, None
+                    if with_multihop:
+                        try:
+                            hop_query = _second_hop_query(qa.question, items_out)
+                        except Exception as exc:
+                            # The hop is an enhancement, so its failure must not cost the question —
+                            # but it must not be invisible either. A hop that timed out is recorded
+                            # and counted, and the question is scored on its first-hop retrieval.
+                            hop_failure = f"{exc.__class__.__name__}: {exc}"
+                        if hop_query:
+                            hop_items, _hop_receipt = recall(sub, prefix_hop_name(hop_query), ctx,
+                                                             limit=limit,
+                                                             mode="hybrid" if embedder else "lexical",
+                                                             embedder=embedder)
+                            # Keep most of the first-hop ranking and make room for the hop: new
+                            # evidence has to be able to occupy a slot or the second pass changes
+                            # nothing, but it must not evict the strongest matches either.
+                            keep = max(1, (limit * 7) // 10)
+                            seen_ids = {it.record_id for it in items_out[:keep]}
+                            merged = list(items_out[:keep])
+                            for item in hop_items:
+                                if len(merged) >= limit:
+                                    break
+                                if item.record_id not in seen_ids:
+                                    merged.append(item)
+                                    seen_ids.add(item.record_id)
+                            for item in items_out[keep:]:
+                                if len(merged) >= limit:
+                                    break
+                                if item.record_id not in seen_ids:
+                                    merged.append(item)
+                                    seen_ids.add(item.record_id)
+                            items_out = merged
                     from benchmarks.full.common import RecallResult
 
                     result = RecallResult(
@@ -240,6 +330,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                         "question_id": qa.question_id,
                         "question": qa.question,
                         "layers": list(getattr(_receipt, "layers", []) or []),
+                        "hop_query": hop_query,
+                        "hop_failure": hop_failure,
                         "reading": None if reading is None else {
                             "text": reading.text,
                             "abstained": reading.abstained,
@@ -353,6 +445,8 @@ def _summarise(dataset: str, cases: list, *, limit: int, elapsed: float,
         "answer_in_context_ci95": [round(aic_low, 3), round(aic_high, 3)] if graded else None,
         "answer_only_questions": len(answer_only),
         "expansion_questions": sum(1 for c in usable if "query_expansion" in (c.get("layers") or [])),
+        "hop_questions": sum(1 for c in usable if c.get("hop_query")),
+        "hop_failures": sum(1 for c in usable if c.get("hop_failure")),
         "abstention_questions": len(abstention),
         "abstention_correct": abstain_ok,
         "abstention_rate": round(abstain_ok / len(abstention), 3) if abstention else None,
@@ -443,6 +537,9 @@ def report(results: list[dict]) -> None:
         if r["answer_only_questions"]:
             print(f"  {r['answer_only_questions']} questions scored by answer string only "
                   f"(no evidence ids)")
+        if r.get("hop_questions") or with_multihop:
+            print(f"  second hop issued for {r.get('hop_questions', 0)}/{r['questions']} questions"
+                  f"{', ' + str(r['hop_failures']) + ' hop calls failed' if r.get('hop_failures') else ''}")
         if r.get("expansion_questions"):
             print(f"  query expansion applied to {r['expansion_questions']}/{r['questions']} questions")
         if r["abstention_questions"]:
@@ -493,6 +590,9 @@ def main(argv: list[str] | None = None) -> int:
                              "reader is configured rather than reporting zero")
     parser.add_argument("--expand", action="store_true",
                         help="LLM query expansion before retrieval (needs a configured provider)")
+    parser.add_argument("--multihop", action="store_true",
+                        help="ask the reader model what else to look up, then retrieve it (one extra "
+                             "LLM call per question)")
     parser.add_argument("--json", default=None)
     args = parser.parse_args(argv)
 
@@ -511,7 +611,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"running {name} ...", file=sys.stderr)
         results.append(run(name, limit=args.limit, n=args.n, sample=args.sample,
                            seed=args.seed, splits=args.splits, embedder=embedder,
-                           with_reader=args.reader, with_expansion=args.expand))
+                           with_reader=args.reader, with_expansion=args.expand,
+                           with_multihop=args.multihop))
     report(results)
 
     if args.json:

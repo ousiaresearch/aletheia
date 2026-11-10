@@ -375,6 +375,70 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### Second-hop retrieval — the first retrieval lever that works — 2026-11-09
+
+Three cheaper mechanisms were measured and failed: top-k diversification (addresses 26% of misses),
+paraphrase/HyDE expansion (a wash), and entity co-mention (6.9% of misses once the bridge entities are
+selective). They share one flaw — none of them can reason about what the missing evidence would *say*.
+
+`run.py --multihop` does. After a first pass it asks the reader model, given the question and the top
+six items, what else it would need to look up, takes a 2–6 word reply, retrieves on it, and merges the
+result so the strongest seven first-hop matches keep their slots and the hop competes for the rest. One
+extra LLM call and one extra recall per question.
+
+Same 40 questions, seed 2, two runs (the hop query is model-generated, so a single run is not a result):
+
+| | baseline | hop run 1 | hop run 2 |
+|---|---|---|---|
+| hit@10 | 60.0% (18/30) | 66.7% (20/30) | 69.0% (20/29) |
+| coverage | 0.519 | 0.578 | 0.632 |
+| full recovery | 46.7% | 50.0% | 58.6% |
+| MRR | 0.371 | 0.379 | 0.362 |
+| hop issued | — | 24/40 | 24/40 |
+
+**The hit count is identical across both runs — 20 questions retrieved, against a deterministic
+baseline of 18.** That is the part that matters: the baseline's retrieval is deterministic (three runs
+all read 18/30, 0.519, 46.7%), so a stable +2 questions is a real shift rather than generator noise,
+even though coverage and full recovery vary more between the two hop runs (the second hop changes which
+*extra* records are found, and that part is model-dependent).
+
+It also lands where the mechanism predicts. Category 1 (multi-hop) goes 66.7% → 77.8% hit@10 and 33.3% →
+44.4% full recovery, identically in both runs; category 2 (temporal) goes 40% → 75–80%. Category 3,
+three questions, went 33.3% → 0% — one question lost, which at n=3 is noise and is reported rather than
+smoothed.
+
+At N=30 an interval still spans roughly 49–83%, so this is a direction with a mechanism and a stable
+signal, not a significant improvement. It is, however, the first retrieval change in this programme that
+moved the number the right way while doing what it was designed to do.
+
+**One failure mode found and handled.** A hop call timed out on one question in run 2. The hop is an
+enhancement, so its failure now degrades to first-hop retrieval instead of costing the question — but it
+is recorded as `hop_failure` and counted in the summary, because a silently skipped enhancement is the
+defect class this repository keeps meeting.
+
+### Entity co-mention, and why 74% was an illusion — 2026-11-09
+
+The obvious bridge across the wall is the entity graph: the missing record sits in another session, but
+it shares a person or a topic with what we already retrieved. `diagnose_hops.py` measures exactly that
+— for each missed gold record, does it mention an entity the top-k already mentions?
+
+| Entity document-frequency ceiling | Missed gold records reached by co-mention |
+|---|---|
+| 60% of records (effectively no filter) | 676 / 913 = **74.0%** |
+| 15% | 86 / 913 = **9.4%** |
+| 5% | 63 / 913 = **6.9%** |
+
+**The 74% is an artefact of ubiquitous names.** At that ceiling the bridge entities are `caroline` and
+`melanie` — the two people the conversation is about, present in 46% and 31% of its records. "Any record
+mentioning Caroline" is not a selective signal; it is most of the corpus. Cut the ceiling to something
+that would actually rank candidates and the reachable share collapses by an order of magnitude.
+
+So entity co-mention can address under a tenth of the coverage gap, and it is not built. This also
+exposed a real weakness in `extract_entities`: it keeps any capitalised token longer than two
+characters past a short interrogative list, which is why `wow`, `thanks`, `that` and `they` are
+"entities" in the graph. That is a product defect worth fixing on its own merits, not a benchmark one,
+and it means the graph's precision is lower than its link count suggests.
+
 ### The vector arm against the 75% wall — 2026-11-09
 
 `diagnose_coverage.py --mode hybrid` reruns the same attribution on the same 427 multi-record
