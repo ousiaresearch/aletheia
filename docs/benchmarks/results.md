@@ -375,6 +375,33 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### A wider reader window does nothing — the ceiling is not evidence volume — 2026-11-09
+
+The depth curve said hit@50 is 78.3% against hit@10's 56.0%, so the records multi-hop questions need
+exist and simply never fit in a ten-item prompt. `--reader-items 50 --reader-item-chars 240` shows the
+reader fifty records while scoring stays at ten, so retrieval ordering is byte-identical and the only
+variable is what the reader sees.
+
+| reader window, same 120 questions, same retrieval | judged accuracy | paired |
+|---|---|---|
+| 10 items (reader.v4) | 46.6% (41/88) | — |
+| **50 items, 240 chars each** | **43.2%** (38/88) | gained 3, lost 5, **p = 0.727** |
+
+**More evidence does not convert.** Abandonment fell (42 abstentions against v4's 47) and exact match
+rose slightly (21.6% from 18.9%) — the reader is answering more, on evidence it cannot use — but judged
+accuracy went nowhere.
+
+That closes the last structural lever. Recounting what has now been measured at N≈88 on the same
+questions and found to be flat or negative:
+
+- **reranking** (deep pool + cross-encoder): retrieval +9.3 points, answers unchanged
+- **prompt wording** (reader.v4 against v3): 4 gained, 4 lost
+- **evidence volume** (50 items against 10): 3 gained, 5 lost
+
+Answer accuracy has sat between 42% and 47% through every one of them. Retrieval and reader-input
+manipulation are not the constraint. What remains untested at this sample size is the **reader model
+itself** — the one lever with a positive, if underpowered, prior (62.1% against ~60% at N=29).
+
 ### Re-judged with per-case verdicts: accuracy is hit@10 × conversion, and CE trades one for the other — 2026-11-09
 
 After the judge fix, all three configurations were judged again with a verdict stored for every graded
