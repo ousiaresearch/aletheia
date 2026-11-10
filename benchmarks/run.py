@@ -130,12 +130,19 @@ class _ReadingItem:
         self.when = when
 
 
-def _reading_items(items_out, meta: dict) -> list:
+def _reading_items(items_out, meta: dict, max_chars: int | None = None) -> list:
+    """Build reader items, optionally clipped to `max_chars` each.
+
+    Clipping exists so the reader can be shown a wide window (`--reader-items 50`) without the prompt
+    blowing up. The *scored* window stays at `--limit`, so hit@10 keeps meaning "in the first ten".
+    """
     out = []
     for item in items_out:
         speaker, when = meta.get(item.record_id, (None, None))
-        out.append(_ReadingItem(item.record_id, getattr(item, "text", "") or "",
-                               speaker=speaker, when=when))
+        text = getattr(item, "text", "") or ""
+        if max_chars and len(text) > max_chars:
+            text = text[:max_chars].rstrip() + "…"
+        out.append(_ReadingItem(item.record_id, text, speaker=speaker, when=when))
     return out
 
 
@@ -217,7 +224,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         seed: int = 1, splits: list[str] | None = None, embedder=None,
         with_reader: bool = False, with_expansion: bool = False,
         with_multihop: bool = False, hop_rounds: int = 1,
-        use_cross_encoder: bool = False, recall_depth: int | None = None) -> dict:
+        use_cross_encoder: bool = False, recall_depth: int | None = None,
+        reader_items: int | None = None, reader_item_chars: int | None = None) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
@@ -334,7 +342,13 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                     if with_reader:
                         from aletheia.reader import read as read_answer
 
-                        reading = read_answer(qa.question, _reading_items(items_out, reading_meta))
+                        # Distinct name: assigning to `reader_items` here shadowed the int parameter
+                        # and put a list of Item objects into the summary, which broke JSON output.
+                        reader_window = items_out[: (reader_items or limit)]
+                        reading = read_answer(
+                            qa.question,
+                            _reading_items(reader_window, reading_meta,
+                                           max_chars=reader_item_chars))
                     cases.append({
                         "question_id": qa.question_id,
                         "question": qa.question,
@@ -375,6 +389,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
     summary["hop_mode"] = with_multihop
     summary["cross_encoder"] = use_cross_encoder
     summary["recall_depth"] = recall_depth or limit
+    summary["reader_items"] = reader_items or limit
+    summary["reader_item_chars"] = reader_item_chars
     if with_reader:
         summary["reading"] = _reading_summary(cases)
         # Per-question outcomes are kept because a reading number is only auditable if its failures
@@ -546,7 +562,7 @@ def report(results: list[dict]) -> None:
         else:
             print("  hit@k: not available — this dataset carries no evidence ids")
         if r["graded"]:
-            print(f"  answer-in-context (proxy)  {r['answer_in_context']:.1%}  "
+            print(f"  answer-in-context (proxy)  {(r['answer_in_context'] or 0):.1%}  "
                   f"95% CI {r['answer_in_context_ci95'][0]:.1%}-{r['answer_in_context_ci95'][1]:.1%}"
                   f"  over {r['graded']} graded")
         if r["answer_only_questions"]:
@@ -567,8 +583,10 @@ def report(results: list[dict]) -> None:
         if r.get("expansion_questions"):
             print(f"  query expansion applied to {r['expansion_questions']}/{r['questions']} questions")
         if r["abstention_questions"]:
+            rate = r["abstention_rate"]
             print(f"  abstention  {r['abstention_correct']}/{r['abstention_questions']} correct "
-                  f"({r['abstention_rate']:.1%})")
+                  f"({rate:.1%})" if rate is not None else
+                  f"  abstention  {r['abstention_correct']}/{r['abstention_questions']} correct")
         reading = r.get("reading")
         if reading:
             print()
@@ -576,10 +594,16 @@ def report(results: list[dict]) -> None:
                 print(f"  reading (stage 2, {reading['model']}, {reading['prompt_version']})")
                 print(f"    answered {reading['answered']}/{reading['n']}, "
                       f"abstained {reading['abstentions']}")
-                print(f"    exact match {reading['exact_match']:.1%} "
-                      f"(95% CI {reading['exact_match_ci95'][0]:.1%}-"
-                      f"{reading['exact_match_ci95'][1]:.1%})  token F1 {reading['token_f1']:.3f}")
-                print(f"    cited a gold record {reading['cited_a_gold_record']:.1%}")
+                em, f1 = reading.get("exact_match"), reading.get("token_f1")
+                ci = reading.get("exact_match_ci95") or (None, None)
+                if em is None or f1 is None:
+                    print("    exact match n/a (no gradable answer strings in this slice)")
+                else:
+                    print(f"    exact match {em:.1%} (95% CI {ci[0]:.1%}-{ci[1]:.1%})  "
+                          f"token F1 {f1:.3f}")
+                cg = reading.get("cited_a_gold_record")
+                print(f"    cited a gold record {cg:.1%}" if cg is not None
+                      else "    cited a gold record n/a")
                 print(f"    no LLM judge: not comparable to published answer-level scores")
             else:
                 print(f"  reading (stage 2): UNMEASURED — {reading['reason']}")
@@ -619,6 +643,11 @@ def main(argv: list[str] | None = None) -> int:
                              "LLM call per question)")
     parser.add_argument("--hop-rounds", type=int, default=1,
                         help="how many times to ask the model what else to look up (needs --multihop)")
+    parser.add_argument("--reader-items", type=int, default=None,
+                        help="how many retrieved records the reader sees (default: --limit). The "
+                             "scored window stays at --limit, so hit@10 is unaffected.")
+    parser.add_argument("--reader-item-chars", type=int, default=None,
+                        help="clip each reader item to this many characters, so a wide window fits.")
     parser.add_argument("--recall-depth", type=int, default=None,
                         help="retrieve this many records before cutting to --limit; the candidate "
                              "pool is six times this, so a deep recall is how a wider pool gets "
@@ -647,11 +676,16 @@ def main(argv: list[str] | None = None) -> int:
                            with_reader=args.reader, with_expansion=args.expand,
                            with_multihop=args.multihop, hop_rounds=args.hop_rounds,
                            use_cross_encoder=args.cross_encoder,
+                           reader_items=args.reader_items,
+                           reader_item_chars=args.reader_item_chars,
                            recall_depth=args.recall_depth))
+    # Write before printing: a formatting bug in report() once killed a completed run and took the
+    # artifact with it. The record is the expensive thing; the table is disposable.
+    if args.json:
+        Path(args.json).write_text(json.dumps({"results": results}, indent=2), encoding="utf-8")
     report(results)
 
     if args.json:
-        Path(args.json).write_text(json.dumps({"results": results}, indent=2), encoding="utf-8")
         print(f"\nwrote {args.json}")
     return 0
 
