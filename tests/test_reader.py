@@ -47,9 +47,23 @@ def fake_llm(monkeypatch):
     return set_reply, state
 
 
+def _clear_ambient_llm_env(monkeypatch):
+    """Isolate from the developer's shell.
+
+    These tests were passing only while no ALETHEIA_LLM_* variable happened to be exported; running a
+    benchmark in the same shell then turned ``configured()`` true and three tests failed for a reason
+    that had nothing to do with the code under test. Ambient configuration must not be able to change a
+    test's meaning.
+    """
+    for name in ("ALETHEIA_LLM_PROVIDER", "ALETHEIA_LLM_MODEL", "ALETHEIA_LLM_API_KEY",
+                 "ALETHEIA_LLM_API_KEY_ENV", "ALETHEIA_LLM_BASE_URL"):
+        monkeypatch.delenv(name, raising=False)
+
+
 def test_no_configured_reader_returns_none(monkeypatch):
     """None means the stage did not run. Returning a zero or an empty answer would report the absence
     of a measurement as a measurement of absence."""
+    _clear_ambient_llm_env(monkeypatch)
     monkeypatch.setattr(llm_client, "get_config", lambda api_key=None: None)
     assert reader.read("anything", ITEMS) is None
     assert reader.configured() is False
