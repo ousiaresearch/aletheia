@@ -362,6 +362,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
 
     summary = _summarise(dataset, cases, limit=limit, elapsed=time.time() - started,
                          sample=sample, seed=seed if sample == "random" else None)
+    summary["hop_mode"] = with_multihop
     if with_reader:
         summary["reading"] = _reading_summary(cases)
         # Per-question outcomes are kept because a reading number is only auditable if its failures
@@ -537,7 +538,11 @@ def report(results: list[dict]) -> None:
         if r["answer_only_questions"]:
             print(f"  {r['answer_only_questions']} questions scored by answer string only "
                   f"(no evidence ids)")
-        if r.get("hop_questions") or with_multihop:
+        # Gated on what the run recorded, not on the CLI flag: report() has no access to the flag, and
+        # referencing it was a NameError that killed the table and the JSON write for every run without
+        # --multihop. The earlier hop runs survived only because their hop count was truthy and
+        # short-circuited the `or`.
+        if r.get("hop_mode"):
             print(f"  second hop issued for {r.get('hop_questions', 0)}/{r['questions']} questions"
                   f"{', ' + str(r['hop_failures']) + ' hop calls failed' if r.get('hop_failures') else ''}")
         if r.get("expansion_questions"):
