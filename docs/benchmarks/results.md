@@ -375,6 +375,38 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### Mechanisms do not compose — more retrieval machinery made answers worse — 2026-11-09
+
+Every mechanism that showed a gain was switched on together, on the same 40 questions: deep pool (depth
+50), cross-encoder rerank, one hop round, reader.v3.
+
+| Configuration | hit@10 | MRR | coverage | full recovery | **judged accuracy** |
+|---|---|---|---|---|---|
+| reader.v2 alone | 60.0% (18/30) | 0.371 | 0.519 | 46.7% | **60.0%** (18/30) |
+| reader.v3 alone | 60.7% (17/28) | 0.362 | 0.539 | 50.0% | **60.7%** (17/28) |
+| `qwen3.8-max` reader | 58.6% (17/29) | 0.367 | 0.503 | 44.8% | **62.1%** (18/29) |
+| hop + reader | 63.3% (19/30) | 0.375 | 0.561 | 50.0% | **56.7%** (17/30) |
+| deep pool + cross-encoder | **66.7% (20/30)** | 0.462 | **0.628** | **56.7%** | not yet measured |
+| deep pool + CE + hop + reader | 62.1% (18/29) | **0.471** | 0.580 | 51.7% | **48.3%** (14/29) |
+
+**The best retrieval configuration produced the worst answers.** Adding the hop to the winning
+retrieval setup cost two gold records and roughly five judged-correct answers; judged accuracy fell from
+60.0% to 48.3% while MRR went *up*. Retrieval quality and answer quality moved in opposite directions.
+
+The mechanism is now visible across four independent observations: **whenever the reader is handed more
+or different records, conversion falls.** The crosstab said the reader converts ~76% of what it is
+given; these runs say that figure is not constant — marginal extra records actively dilute it. The hop
+adds records, and the deep pool adds *candidates*, and what reaches the reader changes character even
+when hit@10 rises.
+
+That reframes the goal rather than closing it. "Highest answer-level accuracy" is not achieved by
+maximising retrieval recall; it needs retrieval *precision at the reader's interface* — a small, clean
+evidence set. The next measurement is reader depth: the same deep-pool + cross-encoder configuration,
+cutting to five items instead of ten before the reader sees them.
+
+The one number that did improve in the stacked run is MRR (0.471) and judge repeat agreement slipped to
+93.1% there, from 100% in every other run — both noted, neither explained.
+
 ### The cross-encoder was never the problem; the pool was — 2026-11-09
 
 The cross-encoder looked useless earlier: it lifted MRR and coverage while leaving hit@10 at 18/30. The
