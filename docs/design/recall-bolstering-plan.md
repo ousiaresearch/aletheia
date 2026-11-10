@@ -137,7 +137,10 @@ affordable on one machine.
 **P5 — the reading stage.** answer-in-context is 44.2% while hit@10 is 97.0%: the evidence is usually
 retrieved and the answer is usually not readable from the top-10 as plain text. This is where an
 actual reader (and the paper's Chain-of-Note/JSON findings) belongs, and it is a separate layer from
-anything above.
+anything above. Whether Aletheia ships one at all — for measurement only, or not at all — is the
+open operator decision in `parity-measurement-spec.md` §4, and until it is answered no answer-level
+number exists for this system, which means no comparison to Mem0/Zep/MemHQ is licensed in either
+direction.
 
 ## 6. What is still unmeasured
 
