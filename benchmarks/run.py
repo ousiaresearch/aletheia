@@ -159,12 +159,24 @@ def _is_abstention(qa) -> bool:
 
 def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "prefix",
         seed: int = 1, splits: list[str] | None = None, embedder=None,
-        with_reader: bool = False) -> dict:
+        with_reader: bool = False, with_expansion: bool = False) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
     else:
         rows = DATASETS[dataset](n, sample, seed)
+
+    # Query expansion is gated on a token getter inside recall(), and the provider behind it was only
+    # wired up on 2026-11-09. The layers each recall reports are recorded below so a run can prove
+    # expansion actually happened rather than silently falling back to the original query.
+    token_getter = None
+    if with_expansion:
+        from aletheia import llm_client
+
+        expansion_config = llm_client.get_config()
+        if expansion_config is None:
+            raise SystemExit("--expand needs a configured provider; set ALETHEIA_LLM_PROVIDER/MODEL")
+        token_getter = lambda: expansion_config.api_key  # noqa: E731
 
     by_conv: dict[str, list] = {}
     for conv_id, records, qa in rows:
@@ -205,7 +217,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
 
                     items_out, _receipt = recall(sub, qa.question, ctx, limit=limit,
                                                  mode="hybrid" if embedder else "lexical",
-                                                 embedder=embedder)
+                                                 embedder=embedder, token_getter=token_getter)
                     from benchmarks.full.common import RecallResult
 
                     result = RecallResult(
@@ -226,6 +238,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                         reading = read_answer(qa.question, _reading_items(items_out, reading_meta))
                     cases.append({
                         "question_id": qa.question_id,
+                        "question": qa.question,
+                        "layers": list(getattr(_receipt, "layers", []) or []),
                         "reading": None if reading is None else {
                             "text": reading.text,
                             "abstained": reading.abstained,
@@ -263,6 +277,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         # and an aggregate alone makes a systematic leniency or a guessing habit invisible.
         summary["reading_cases"] = [
             {"question_id": c["question_id"], "category": c.get("category"),
+             "question": c.get("question"),
              **{k: v for k, v in (c.get("reading") or {}).items() if k != "gold_ids"},
              "cited_gold": bool(set((c.get("reading") or {}).get("cited") or [])
                                 & set((c.get("reading") or {}).get("gold_ids") or [])),
@@ -337,6 +352,7 @@ def _summarise(dataset: str, cases: list, *, limit: int, elapsed: float,
         "answer_in_context": aic / len(graded) if graded else None,
         "answer_in_context_ci95": [round(aic_low, 3), round(aic_high, 3)] if graded else None,
         "answer_only_questions": len(answer_only),
+        "expansion_questions": sum(1 for c in usable if "query_expansion" in (c.get("layers") or [])),
         "abstention_questions": len(abstention),
         "abstention_correct": abstain_ok,
         "abstention_rate": round(abstain_ok / len(abstention), 3) if abstention else None,
@@ -427,6 +443,8 @@ def report(results: list[dict]) -> None:
         if r["answer_only_questions"]:
             print(f"  {r['answer_only_questions']} questions scored by answer string only "
                   f"(no evidence ids)")
+        if r.get("expansion_questions"):
+            print(f"  query expansion applied to {r['expansion_questions']}/{r['questions']} questions")
         if r["abstention_questions"]:
             print(f"  abstention  {r['abstention_correct']}/{r['abstention_questions']} correct "
                   f"({r['abstention_rate']:.1%})")
@@ -473,6 +491,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--reader", action="store_true",
                         help="also run the reading stage (stage 2); reports UNMEASURED when no "
                              "reader is configured rather than reporting zero")
+    parser.add_argument("--expand", action="store_true",
+                        help="LLM query expansion before retrieval (needs a configured provider)")
     parser.add_argument("--json", default=None)
     args = parser.parse_args(argv)
 
@@ -491,7 +511,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"running {name} ...", file=sys.stderr)
         results.append(run(name, limit=args.limit, n=args.n, sample=args.sample,
                            seed=args.seed, splits=args.splits, embedder=embedder,
-                           with_reader=args.reader))
+                           with_reader=args.reader, with_expansion=args.expand))
     report(results)
 
     if args.json:

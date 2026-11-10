@@ -343,6 +343,50 @@ Two caveats that cut both ways, stated rather than buried:
 `comparable_to_published_answer_scores: false` and `judge: null`. Publishing an unjudged answer number
 beside their judged ones would be the same category error this file spends its length warning about.
 
+### Query expansion, attempted and measured — 2026-11-09
+
+The 74%-unexplored finding pointed at query expansion, and `aletheia/query_expansion.py` already had
+the machinery — it had simply never been given a working provider. `run.py --expand` now wires the
+pinned reader model into it (paraphrase expansion, HyDE and multi-hop decomposition, fused by RRF).
+Same 40 questions, seed 2:
+
+| | lexical | + expansion |
+|---|---|---|
+| hit@10 | 60.0% | 63.3% |
+| MRR | 0.371 | **0.327** |
+| coverage | 0.519 | 0.567 |
+| full recovery | 46.7% | 50.0% |
+| expansion applied to | — | 40 of 40 questions |
+
+**A wash with a ranking cost.** One more question retrieved and one more fully recovered, on N=30
+gradable — a single question either way at 3.3 points each — while MRR fell 0.044. The intervals
+overlap almost entirely (42.3–75.4 against 45.5–78.1). This does not justify expansion as a default.
+
+The reason is visible in what expansion can and cannot produce. Paraphrase expansion and HyDE generate
+different *phrasings* of the question; the multi-hop decomposition generates *sub-questions*, but it
+only fires on questions containing and/or/also/then/after/before. LoCoMo's hard multi-hop questions are
+not compound sentences — "What fields would Caroline be likely to pursue in her education?" — so the
+decomposition that would help never triggers.
+
+More fundamentally, **a record sharing no terms with the question is never a lexical candidate at all**,
+so no amount of rephrasing the query reaches it. That is the mechanism behind the 74% in unexplored
+sessions, and it bounds what query work can do. The levers that can reach such a record are semantic
+candidate generation (the vector arm) or entity-hop traversal — and the vector arm is the only one
+already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
+full recovery 52.5% → 58.3%, at ~15x the query latency.
+
+### A judge for stage 2 — 2026-11-09
+
+`benchmarks/judge.py` implements the judged score parity-measurement-spec.md §3 requires: a pinned
+model and prompt version, a repeatability check (n judgements per case with the agreement rate
+published, and `supportable` false below 90%), and the judged-wrong examples stored rather than
+summarised away. It is deliberately shown only question, gold answer and prediction — never the
+retrieved evidence, because a judge that sees the evidence can reward an answer the evidence supports
+over one that matches the gold answer, which is a different question than the benchmark asks.
+
+No judged number has been published yet: the first judged run is the next measurement, and its
+agreement rate decides whether it may be quoted at all.
+
 ### reader.v2 — same questions, same retrieval, better reading
 
 Developed on dev slice `--seed 2` (N=40) and compared against a `reader.v1` baseline taken on the
