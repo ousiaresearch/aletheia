@@ -375,6 +375,48 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### Six configurations, one underpowered dataset — and what conversion says — 2026-11-09
+
+Every configuration measured on the same 40-question dev slice, with the judge pinned at
+`qwen3.8-flash` / `judge.v1` / repeat 2 throughout:
+
+| Configuration | hit@10 | judged accuracy | 95% CI | **conversion given evidence retrieved** |
+|---|---|---|---|---|
+| reader.v2 alone, depth 10 | 60.0% | 60.0% (18/30) | 42.3–75.4 | **77.8%** |
+| reader.v3 alone | 60.7% | 60.7% (17/28) | 42.4–76.4 | 76.5% |
+| `qwen3.8-max` reader | 58.6% | **62.1%** (18/29) | 44.0–77.3 | 76.5% |
+| hop x1 + reader | 63.3% | 56.7% (17/30) | 39.2–72.6 | 73.7% |
+| deep pool + CE + reader | **67.9%** | 53.6% (15/28) | 35.8–70.5 | **63.2%** |
+| deep pool + CE + hop + reader | 62.1% | 48.3% (14/29) | 31.4–65.6 | 66.7% |
+
+**Two conclusions, held to their proper strength.**
+
+*Retrieval moved and it is measurable in its own terms:* hit@10 rises from 60.0% to 67.9% with a deep
+pool and a cross-encoder, and the metrics around it move together — MRR 0.371 → 0.492, coverage 0.519 →
+0.637, full recovery 46.7% → 57.1%. That is a coherent, mechanism-backed improvement.
+
+*Answer accuracy did not follow, and the spread across all six configurations is not significant.* The
+judged numbers span 48.3% to 62.1% — thirteen points, four questions — with intervals around ±13 points.
+**None of those differences can be separated individually**, and comparing six configurations on the same
+thirty questions is multiple-comparison territory: at that rate one apparent effect is expected by chance
+alone. What the table supports is a *direction*, not a ranking.
+
+**Conversion is where the direction is legible.** The share of retrieved-evidence questions answered
+correctly is monotone in how far a configuration departs from plain lexical order: 77.8% (plain), 76.5%
+(v3, and the max reader), 73.7% (hop), 66.7% (CE + hop), 63.2% (CE). The best retriever is the worst
+converter. The plausible mechanism is that a cross-encoder trained on web passage relevance promotes
+records that *read* like answers — one measured instance answered "custom-made with an octopus" where
+the evidence said "custom-made yellow guitar with an octopus" — while the reader needs the
+conversational record, not the passage that best matches the query surface.
+
+That mechanism is a hypothesis. What is established is that **a better ranker is not automatically a
+better memory**, which is worth more than the four questions separating these configurations.
+
+**The exploration phase is over.** Six configurations on thirty questions is enough to generate
+hypotheses and not enough to test them, so the two that matter — plain reader and CE + reader — are being
+re-run at N=120, where intervals tighten from ±13 points to roughly ±8 and the comparison can separate
+or fail honestly.
+
 ### Mechanisms do not compose — more retrieval machinery made answers worse — 2026-11-09
 
 Every mechanism that showed a gain was switched on together, on the same 40 questions: deep pool (depth

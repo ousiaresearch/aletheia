@@ -1,0 +1,23 @@
+
+locomo  lexical  k=10  40 questions, 2 errors
+---------------------------------------------
+  hit@10 (gold evidence)  19/28 = 67.9%  95% CI 49.3%-82.1%
+  MRR 0.492
+  mean coverage 0.637   full recovery 57.1%   (gold unit: record)
+  answer-in-context (proxy)  67.9%  95% CI 49.3%-82.1%  over 28 graded
+  cross-encoder rerank over a pool from depth 50
+  abstention  0/10 correct (0.0%)
+
+  reading (stage 2, openai-compatible:qwen3.8-flash, reader.v3)
+    answered 26/38, abstained 12
+    exact match 28.6% (95% CI 15.3%-47.1%)  token F1 0.506
+    cited a gold record 67.9%
+    no LLM judge: not comparable to published answer-level scores
+  by category:
+    1                        n=7     hit@10 71.4%  coverage 0.548  full 28.6%
+    2                        n=5     hit@10 80.0%  coverage 0.800  full 80.0%
+    3                        n=3     hit@10 33.3%  coverage 0.333  full 33.3%
+    4                        n=13    hit@10 69.2%  coverage 0.692  full 69.2%
+  elapsed 699.4s
+
+wrote benchmarks/dev-s2-pool-ce-reader.json
