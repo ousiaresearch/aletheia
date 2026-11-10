@@ -375,6 +375,37 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The fact layer is real, never populated, and expensive — pilot measurement — 2026-11-09
+
+`benchmarks/pilot_facts.py` extracted facts from one conversation to price the option before spending on
+it. Two things surfaced first, both of the fail-silent kind:
+
+- **Substrate records have no `.text` attribute.** Their text lives in `payload["text"]`, so a probe
+  reading `getattr(record, "text", "")` gets `''` for every record, and `_extract_facts('')` returns `[]`
+  without complaint. The extractor looked useless when it had never been given anything.
+- **Extraction is gated behind `ALETHEIA_EXTRACT_ALLOW_EXTERNAL=1`** — a deliberate opt-in before scope
+  text leaves the host — and the refusal is silent. "Extraction switched off" and "nothing extractable
+  here" are the same observation from outside.
+
+With the gate open and real text, on `locomo-conv-26` (463 records, 199 questions):
+
+| measured | value |
+|---|---|
+| claims produced | 51 over 20 records = **2.55 claims/record** |
+| records yielding no claim | 7 of 20 = **35%** |
+| latency | **21.8 s/record** |
+| projected, this conversation | **168 minutes** |
+| projected, all ten conversations | **~27 hours serial** |
+
+Claim quality is reasonable where it fires — `(Melanie) --painted--> (a lake sunrise)`,
+`(Melanie) --ran--> (charity race)`, `(Caroline) --is planning to continue--> (her education)` — but a
+third of records produce nothing, including ones that plainly contain facts ("Caroline attended an LGBTQ
+support group recently"). So the layer is usable at roughly two-thirds yield.
+
+**The cost is the decision.** ~27 hours serial is not a benchmark run, and concurrency only divides it
+(batch extraction, or 8 workers, gets it to roughly 3 hours). Measured before the spend, which is the
+only reason it is a choice rather than a surprise.
+
 ### The judge is not the constraint either, and what that leaves — 2026-11-09
 
 Re-judged the same artifact (`confirm-C`, reader.v4, 88 graded) with two other judge models:

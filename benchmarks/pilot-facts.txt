@@ -1,0 +1,22 @@
+conversation locomo-conv-26: 463 records, 199 questions
+extracting from the first 20 records
+
+  5/20 records, 13 claims, 21.47s/record
+  10/20 records, 28 claims, 21.18s/record
+  15/20 records, 43 claims, 20.22s/record
+  20/20 records, 51 claims, 21.77s/record
+
+claims: 51 over 20 records (2.55/record), 7 records yielded nothing
+cost: 21.77s/record -> this conversation ~168.0 min, all ten ~1632.8 min
+
+sample claims:
+  locomo-conv-26-d1-3: no claims from 'Caroline attended an LGBTQ support group recently and found the transg'
+  locomo-conv-26-d1-7: no claims from 'The support group has made Caroline feel accepted and given her courag'
+  locomo-conv-26-d1-9: (Caroline) --is planning to continue--> (her education)
+  locomo-conv-26-d1-2: (Melanie) --manages--> (kids)
+  locomo-conv-26-d1-14: (Melanie) --painted--> (a lake sunrise)
+  locomo-conv-26-d1-16: (Melanie) --finds--> (painting fun)
+  locomo-conv-26-d1-18: (Melanie) --is going swimming--> (with the kids)
+  locomo-conv-26-d2-1: (Melanie) --ran--> (charity race)
+
+wrote benchmarks/pilot-facts.json
