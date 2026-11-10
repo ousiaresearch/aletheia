@@ -132,7 +132,8 @@ def _is_abstention(qa) -> bool:
 
 
 def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "prefix",
-        seed: int = 1, splits: list[str] | None = None, embedder=None) -> dict:
+        seed: int = 1, splits: list[str] | None = None, embedder=None,
+        with_reader: bool = False) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
@@ -186,8 +187,23 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                                          _is_abstention(qa), gold)
                     selected = set(result.selected_ids[:limit])
                     gold_set = set(gold or [])
+                    reading = None
+                    if with_reader:
+                        from aletheia.reader import read as read_answer
+
+                        reading = read_answer(qa.question, items_out)
                     cases.append({
                         "question_id": qa.question_id,
+                        "reading": None if reading is None else {
+                            "text": reading.text,
+                            "abstained": reading.abstained,
+                            "cited": reading.cited,
+                            "model": reading.model,
+                            "prompt_version": reading.prompt_version,
+                            "dropped_citations": reading.dropped_citations,
+                            "gold_ids": list(gold or []),
+                            "gold_answer": str(qa.gold_answer or ""),
+                        },
                         "category": getattr(qa, "category", None) or "unknown",
                         "abstention": _is_abstention(qa),
                         "abstention_correct": score.abstention_correct,
@@ -208,6 +224,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
 
     summary = _summarise(dataset, cases, limit=limit, elapsed=time.time() - started,
                          sample=sample, seed=seed if sample == "random" else None)
+    if with_reader:
+        summary["reading"] = _reading_summary(cases)
     summary["gold_validation"] = {
         **gold_validation,
         "unreachable_ids": gold_validation["unreachable_ids"][:10],
@@ -289,6 +307,58 @@ def _summarise(dataset: str, cases: list, *, limit: int, elapsed: float,
     }
 
 
+def _reading_summary(cases: list) -> dict:
+    """Stage 2: answer accuracy with retrieval held constant, plus what the citations actually name.
+
+    There is no LLM judge here on purpose. A judged number without a declared, versioned, repeatability
+    -checked judge is exactly the kind of figure parity-measurement-spec.md exists to prevent, so this
+    reports exact match and token F1 as an interim reading measure and says so. It is not comparable to
+    a published answer-level score.
+    """
+    usable = [c for c in cases if "error" not in c and c.get("reading")]
+    if not usable:
+        return {"measured": False,
+                "reason": "no reader configured — set ALETHEIA_LLM_PROVIDER/MODEL/KEY, or point "
+                          "ALETHEIA_LLM_BASE_URL at a local OpenAI-compatible endpoint"}
+    answered = [c for c in usable if not c["reading"]["abstained"]]
+    graded = [c for c in usable if str(c["reading"].get("gold_answer") or "").strip()]
+    exact = 0
+    f1_total = 0.0
+    cited_gold = 0
+    for c in graded:
+        gold = str(c["reading"]["gold_answer"]).strip().lower()
+        text = str(c["reading"]["text"] or "").strip().lower()
+        if gold and gold == text:
+            exact += 1
+        if gold:
+            g, p = gold.split(), text.split()
+            common = sum(min(g.count(w), p.count(w)) for w in set(g))
+            if common:
+                precision, recall = common / max(len(p), 1), common / max(len(g), 1)
+                f1_total += 2 * precision * recall / (precision + recall)
+        if set(c["reading"]["cited"]) & set(c["reading"]["gold_ids"] or []):
+            cited_gold += 1
+    low, high = wilson(exact, len(graded))
+    return {
+        "measured": True,
+        "n": len(usable),
+        "answered": len(answered),
+        "abstentions": len(usable) - len(answered),
+        "graded": len(graded),
+        "exact_match": exact / len(graded) if graded else None,
+        "exact_match_ci95": [round(low, 3), round(high, 3)] if graded else None,
+        "token_f1": round(f1_total / len(graded), 3) if graded else None,
+        "cited_a_gold_record": cited_gold / len(graded) if graded else None,
+        "model": usable[0]["reading"]["model"],
+        "prompt_version": usable[0]["reading"]["prompt_version"],
+        "judge": None,
+        "comparable_to_published_answer_scores": False,
+        "note": ("Stage 2 — reading over the evidence this system actually retrieved, so it is "
+                 "end-to-end in practice. Scored by exact match and token F1, NOT an LLM judge; no "
+                 "comparison to Mem0/Zep/MemHQ is licensed from these numbers."),
+    }
+
+
 def report(results: list[dict]) -> None:
     for r in results:
         print()
@@ -317,6 +387,20 @@ def report(results: list[dict]) -> None:
         if r["abstention_questions"]:
             print(f"  abstention  {r['abstention_correct']}/{r['abstention_questions']} correct "
                   f"({r['abstention_rate']:.1%})")
+        reading = r.get("reading")
+        if reading:
+            print()
+            if reading.get("measured"):
+                print(f"  reading (stage 2, {reading['model']}, {reading['prompt_version']})")
+                print(f"    answered {reading['answered']}/{reading['n']}, "
+                      f"abstained {reading['abstentions']}")
+                print(f"    exact match {reading['exact_match']:.1%} "
+                      f"(95% CI {reading['exact_match_ci95'][0]:.1%}-"
+                      f"{reading['exact_match_ci95'][1]:.1%})  token F1 {reading['token_f1']:.3f}")
+                print(f"    cited a gold record {reading['cited_a_gold_record']:.1%}")
+                print(f"    no LLM judge: not comparable to published answer-level scores")
+            else:
+                print(f"  reading (stage 2): UNMEASURED — {reading['reason']}")
         gv = r.get("gold_validation") or {}
         if gv.get("questions_with_unreachable_gold"):
             print(f"  gold validation: {gv['questions_with_unreachable_gold']} of "
@@ -343,6 +427,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sample", choices=["prefix", "random"], default="prefix")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--splits", nargs="*", default=["100K"], help="BEAM splits")
+    parser.add_argument("--reader", action="store_true",
+                        help="also run the reading stage (stage 2); reports UNMEASURED when no "
+                             "reader is configured rather than reporting zero")
     parser.add_argument("--json", default=None)
     args = parser.parse_args(argv)
 
@@ -360,7 +447,8 @@ def main(argv: list[str] | None = None) -> int:
     for name in names:
         print(f"running {name} ...", file=sys.stderr)
         results.append(run(name, limit=args.limit, n=args.n, sample=args.sample,
-                           seed=args.seed, splits=args.splits, embedder=embedder))
+                           seed=args.seed, splits=args.splits, embedder=embedder,
+                           with_reader=args.reader))
     report(results)
 
     if args.json:

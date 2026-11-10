@@ -71,7 +71,28 @@ Requirements for any answer-level figure we publish:
 Mem0, Zep and MemHQ publish answer-level numbers because generation is inside their product. Aletheia
 deliberately is not that: `recall` returns scoped, receipted evidence and the host agent generates.
 There is no reader in our path, so **Aletheia currently has no answer-level number — not a low one,
-none.** Two legitimate ways forward, and this needs a decision rather than drift:
+none.**
+
+**Decided 2026-11-09 — Option A.** A reference reader ships, and the operator's intent is that it may
+be promoted from measurement into the product rather than remaining a benchmark fixture. That changes
+the build: it is a first-class module (`aletheia/reader.py`), not a harness script, and it is
+constrained structurally so promotion cannot create an injection path —
+
+- it takes a query and already-retrieved items and returns an answer plus the ids it used; it never
+  imports the substrate and has no write path, so design invariant 6 ("composite artifacts never
+  injectable") and invariant 10 ("recall is not re-ingested") hold because the artifact has nowhere
+  to go;
+- every cited id is validated against the input set and dropped if it was not retrieved, so an
+  invented citation cannot make itself look like evidence;
+- with no reader configured it returns `None`, and the harness reports the stage as **UNMEASURED**.
+  Zero would be reporting the absence of a measurement as a measurement of absence.
+
+Still open and not decided by choosing A: **which reader**. A local model through an
+OpenAI-compatible endpoint is free, offline and shippable; a hosted model is closer to what the
+competitors use in their published numbers. The choice affects comparability as much as cost, so it
+is recorded here rather than defaulted.
+
+Two legitimate ways forward, and choosing between them was the decision:
 
 - **Option A — ship a reference reader for measurement only.** A pinned local model, a pinned prompt,
   used to produce end-to-end numbers for comparison and never enabled in the recall path. Costs a

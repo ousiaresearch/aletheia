@@ -54,9 +54,11 @@ generation. Aletheia's `recall` returns receipted evidence and the host agent ge
 has no answer-level number at all — and no amount of retrieval work produces one.
 
 **Deliverables:**
-1. **Decision, recorded:** ship a reference reader used only for measurement (spec §4 Option A), or
-   compete on retrieval explicitly and refuse the answer-level table (Option B). This is an operator
-   decision, not an engineering default.
+1. **Decision, taken 2026-11-09: Option A** — ship a reference reader, with the operator's intent
+   that it may later be promoted from measurement into the product. `aletheia/reader.py` exists with
+   ten tests; it cannot reach the substrate, cannot cite evidence it was not given, and reports
+   UNMEASURED when no reader is configured. The open sub-decision is which model: local
+   (OpenAI-compatible endpoint, free and shippable) or hosted (closer to what competitors publish).
 2. Coverage and full-recovery metrics in the published suite as first-class numbers, not extras.
    Already measured: 11.9% full recovery on multi-record questions.
 3. Abstention scored as its own gate. Already measured: 0/444 — recall never declines.
