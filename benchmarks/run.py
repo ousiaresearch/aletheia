@@ -225,7 +225,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         with_reader: bool = False, with_expansion: bool = False,
         with_multihop: bool = False, hop_rounds: int = 1,
         use_cross_encoder: bool = False, recall_depth: int | None = None,
-        reader_items: int | None = None, reader_item_chars: int | None = None) -> dict:
+        reader_items: int | None = None, reader_item_chars: int | None = None,
+        facts_cache: str | None = None) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
@@ -244,6 +245,15 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
             raise SystemExit("--expand needs a configured provider; set ALETHEIA_LLM_PROVIDER/MODEL")
         token_getter = lambda: expansion_config.api_key  # noqa: E731
 
+    claims_ingested_total = 0
+    claims_resolved_total = 0
+    facts_by_record: dict[str, list] = {}
+    if facts_cache:
+        from benchmarks.facts import load_facts
+        facts_by_record = load_facts(facts_cache)
+        if not facts_by_record:
+            raise SystemExit(f"--facts-cache {facts_cache!r} holds no facts; refusing to run an arm "
+                             f"that would silently be the no-facts baseline")
     by_conv: dict[str, list] = {}
     for conv_id, records, qa in rows:
         by_conv.setdefault(conv_id, []).append((records, qa))
@@ -274,7 +284,35 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                 gold_validation["questions_with_unreachable_gold"] += 1
                 gold_validation["unreachable_ids"].append(
                     {"question_id": qa.question_id, "missing": missing[:4]})
-        sub = create_substrate(f"run-{dataset}-{conv_id}", records, embedder=embedder)
+        # Fact-mediated retrieval: claims are ingested as records so recall can reach them, and every
+        # retrieved claim is resolved back to the record it was extracted from before scoring. Without
+        # that resolution a claim matching the question would occupy a slot while the evidence was
+        # never retrieved — improving hit@10 by renaming the answer.
+        claim_to_source: dict[str, str] = {}
+        claims_added = 0
+        substrate_records = records
+        if facts_by_record:
+            from aletheia.substrate import Record as _SubRecord
+            from benchmarks.facts import claim_records as _claim_records
+
+            conv_ids = {rec.record_id for rec in records}
+            extra = []
+            for claim in _claim_records(facts_by_record, only=conv_ids):
+                claim_to_source[claim.record_id] = claim.source_id
+                extra.append(_SubRecord(record_id=claim.record_id,
+                                        # knowledge.RULES: a Claim may only be written by agent
+                                        # attribution and only as "derived".
+                                        record_type="Claim",
+                                        scope="benchmark",
+                                        payload={"text": claim.text, "fact_type": claim.fact_type},
+                                        epistemic_status="derived",
+                                        attribution="agent",
+                                        source_ids=[claim.source_id],
+                                        provenance={"confidence": claim.confidence}))
+            claims_added = len(extra)
+            claims_ingested_total += claims_added
+            substrate_records = list(records) + extra
+        sub = create_substrate(f"run-{dataset}-{conv_id}", substrate_records, embedder=embedder)
         ctx = make_ctx()
         try:
             for _records, qa in items:
@@ -289,6 +327,19 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                                                  mode="hybrid" if embedder else "lexical",
                                                  embedder=embedder, token_getter=token_getter,
                                                  use_cross_encoder=use_cross_encoder)
+                    claims_resolved = 0
+                    if claim_to_source:
+                        from benchmarks.facts import resolve_claims
+
+                        by_id = {rec.record_id: _ReadingItem(
+                                     rec.record_id,
+                                     str((rec.payload or {}).get("text") or ""),
+                                     speaker=reading_meta.get(rec.record_id, (None, None))[0],
+                                     when=reading_meta.get(rec.record_id, (None, None))[1])
+                                 for rec in records}
+                        items_out, claims_resolved = resolve_claims(
+                            items_out, claim_to_source, by_id, limit=depth)
+                        claims_resolved_total += claims_resolved
                     hop_query, hop_failure, hop_queries = None, None, []
                     if with_multihop:
                         # The hop can run more than once: each round is shown the evidence gathered so
@@ -390,6 +441,11 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
     summary["cross_encoder"] = use_cross_encoder
     summary["recall_depth"] = recall_depth or limit
     summary["reader_items"] = reader_items or limit
+    summary["facts_cache"] = facts_cache
+    # Audit fields: a facts arm that ingested nothing, or resolved nothing, is the no-facts baseline
+    # wearing a different label. These make that impossible to miss.
+    summary["claims_ingested"] = claims_ingested_total
+    summary["claims_resolved"] = claims_resolved_total
     summary["reader_item_chars"] = reader_item_chars
     if with_reader:
         summary["reading"] = _reading_summary(cases)
@@ -576,6 +632,9 @@ def report(results: list[dict]) -> None:
             print(f"  cross-encoder rerank over a pool from depth {r.get('recall_depth')}")
         elif r.get("recall_depth") and r["recall_depth"] != r["k"]:
             print(f"  retrieved at depth {r['recall_depth']}, scored at {r['k']}")
+        if r.get("facts_cache"):
+            print(f"  facts: {r.get('claims_ingested', 0)} claims ingested, "
+                  f"{r.get('claims_resolved', 0)} claim hits resolved to their source record")
         if r.get("hop_mode"):
             print(f"  second hop issued for {r.get('hop_questions', 0)}/{r['questions']} questions"
                   f" (mean {r.get('hop_rounds_mean')} rounds)"
@@ -648,6 +707,9 @@ def main(argv: list[str] | None = None) -> int:
                              "scored window stays at --limit, so hit@10 is unaffected.")
     parser.add_argument("--reader-item-chars", type=int, default=None,
                         help="clip each reader item to this many characters, so a wide window fits.")
+    parser.add_argument("--facts-cache", default=None,
+                        help="JSONL of extracted facts; claims are ingested as records and every "
+                             "retrieved claim is scored as the record it came from.")
     parser.add_argument("--recall-depth", type=int, default=None,
                         help="retrieve this many records before cutting to --limit; the candidate "
                              "pool is six times this, so a deep recall is how a wider pool gets "
@@ -678,6 +740,7 @@ def main(argv: list[str] | None = None) -> int:
                            use_cross_encoder=args.cross_encoder,
                            reader_items=args.reader_items,
                            reader_item_chars=args.reader_item_chars,
+                           facts_cache=args.facts_cache,
                            recall_depth=args.recall_depth))
     # Write before printing: a formatting bug in report() once killed a completed run and took the
     # artifact with it. The record is the expensive thing; the table is disposable.
