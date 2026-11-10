@@ -138,6 +138,52 @@ Two things, both provisional at N=3:
    which is ~7 minutes per question and ~3 hours for a 25-question run. Batched embedding in the
    adapter, or a GPU, is the prerequisite for any hybrid number worth quoting.
 
+## The suite, on one command — 2026-11-09
+
+`benchmarks/run.py` is now the entrypoint Phase 9 asked for: one documented command, gold answers and
+reproduction steps committed (`docs/benchmarks/REPRODUCE.md`), results published here and referenced
+from `README.md`.
+
+```bash
+env -u PYTHONPATH .venv/bin/python benchmarks/run.py --dataset locomo
+```
+
+| Dataset | Metric | Result | N |
+|---|---|---|---|
+| LoCoMo, whole benchmark, lexical | hit@10 against gold evidence records | **64.4%** (95% CI 61.9–66.7) | 990 / 1,538 answerable |
+| LoCoMo | MRR | 0.389 | 1,538 |
+| LoCoMo | mean evidence coverage | 0.574 | 1,538 |
+| LoCoMo | full evidence recovery | 52.2% | 1,538 |
+| LoCoMo, >1 record needed | full evidence recovery | **11.9%** | 427 |
+| LoCoMo, no gold answer | correct abstention | **0.0%** | 444 |
+| LongMemEval-S | hit@10 against gold evidence sessions | 97.0% (95% CI 95.1–98.2) | 500 |
+| BEAM 100K | answer-in-context (proxy) | not a retrieval number | — |
+
+**Two changes from the figures earlier in this file, both deliberate.**
+
+1. **The denominator moved.** The 444 LoCoMo questions with no gold answer are now scored as
+   abstention questions rather than as evidence-retrieval questions, which leaves 1,538 answerable
+   questions instead of 1,982. That is why the whole-set rate reads 64.4% here and 64.6% there: the
+   same run, without the questions whose correct behaviour is to decline.
+2. **Abstention is measured, and it fails.** All 444 return results. Recall never declines, so
+   abstention accuracy is 0.0%. This is the first time the suite has scored the thing Phase 9's
+   "abstention assertions" deliverable was for, and the assertion does not pass.
+
+Gold units are not interchangeable, and the runner labels them instead of emitting one number across
+three datasets:
+
+| Dataset | Gold unit | hit@k | coverage | abstention |
+|---|---|---|---|---|
+| LoCoMo | a record | yes | yes | yes |
+| LongMemEval-S | a session (~460 records) | yes | **no** — one session id is hundreds of records, so "coverage" of it is meaningless | yes |
+| BEAM | none shipped | **no** — the probing questions carry no evidence ids | no | yes |
+
+LongMemEval's 100% hit@10 is a units artefact worth stating plainly: finding any single message of
+the gold session counts as a hit, so the session is "retrieved" once one of its ~460 messages lands.
+A coverage column would read near-zero and mean nothing. Reporting that beside LoCoMo's coverage
+would be the error this file spends most of its length warning about, so the runner suppresses it
+and says why.
+
 ## LoCoMo, the whole benchmark — 2026-11-09
 
 `benchmarks/diagnose_locomo.py`, lexical, every conversation, no sampling:

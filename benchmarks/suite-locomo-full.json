@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 1986,
+      "errors": 0,
+      "error_sample": null,
+      "graded": 1542,
+      "gold_scored": 1538,
+      "hits": 990,
+      "hit_at_k": 0.6436931079323797,
+      "hit_at_k_ci95": [
+        0.619,
+        0.667
+      ],
+      "mrr": 0.389,
+      "gold_unit": "record",
+      "mean_coverage": 0.574,
+      "full_recovery": 0.522,
+      "answer_in_context": 0.6426718547341116,
+      "answer_in_context_ci95": [
+        0.618,
+        0.666
+      ],
+      "answer_only_questions": 4,
+      "abstention_questions": 444,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 282,
+          "hits": 153,
+          "full": 31,
+          "hit_at_k": 0.543,
+          "coverage": 0.287,
+          "full_recovery": 0.11
+        },
+        "2": {
+          "n": 321,
+          "hits": 218,
+          "full": 199,
+          "hit_at_k": 0.679,
+          "coverage": 0.648,
+          "full_recovery": 0.62
+        },
+        "3": {
+          "n": 92,
+          "hits": 35,
+          "full": 16,
+          "hit_at_k": 0.38,
+          "coverage": 0.257,
+          "full_recovery": 0.174
+        },
+        "4": {
+          "n": 841,
+          "hits": 582,
+          "full": 555,
+          "hit_at_k": 0.692,
+          "coverage": 0.677,
+          "full_recovery": 0.66
+        },
+        "5": {
+          "n": 2,
+          "hits": 2,
+          "full": 2,
+          "hit_at_k": 1.0,
+          "coverage": 1.0,
+          "full_recovery": 1.0
+        }
+      },
+      "selection": {
+        "sample": "prefix",
+        "seed": null
+      },
+      "elapsed_s": 35.9,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval."
+    }
+  ]
+}

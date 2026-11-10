@@ -290,6 +290,40 @@ Restart the gateway after setup. Provider readiness loads and probes both models
 take time and memory on startup. There is no `aletheia models fetch` command or built-in licence
 consent flow. Optional media models are separate.
 
+## Benchmarks
+
+Measured on the public suites the field uses, with the numbers published in full — including where
+they are bad.
+
+| Dataset | Metric | Result | N |
+|---|---|---|---|
+| LoCoMo (whole benchmark, lexical) | hit@10 against gold evidence records | **64.4%** (95% CI 61.9–66.7) | 1,538 answerable questions of 1,986 |
+| LoCoMo, questions needing >1 record | full evidence recovery | **11.9%** | 427 |
+| LoCoMo, unanswerable questions | correct abstention | **0%** | 444 |
+| LongMemEval-S | hit@10 against gold evidence sessions | 97.0% (95% CI 95.1–98.2) | 500 |
+
+Three things that table is telling you honestly:
+
+- **hit@10 overstates retrieval.** It counts a question as retrieved when any one gold record lands
+  in the top 10. On the 427 LoCoMo questions that need more than one record, mean coverage is 0.317
+  and full recovery is 11.9% — and five times the depth only raises that to 26.9%. Complete-evidence
+  retrieval is the real deficit.
+- **Recall never declines.** All 444 unanswerable LoCoMo questions return results instead of an
+  abstention, so abstention accuracy is 0%.
+- **Cross-paper comparison is not possible yet.** Mem0, Zep and MemHQ publish answer-level scores
+  from an LLM judge; the numbers above are retrieval-level. There is no like-for-like comparison, and
+  no parity claim is made either way.
+
+Reproduce any of it with one command:
+
+```bash
+env -u PYTHONPATH .venv/bin/python benchmarks/run.py --dataset locomo
+```
+
+Full methodology, per-category breakdowns, the paired configuration diagnostics and the audit of the
+harness itself are in [`docs/benchmarks/results.md`](docs/benchmarks/results.md); exact commands and
+expected output are in [`docs/benchmarks/REPRODUCE.md`](docs/benchmarks/REPRODUCE.md).
+
 ## Design invariants
 
 1. Scope before relevance.

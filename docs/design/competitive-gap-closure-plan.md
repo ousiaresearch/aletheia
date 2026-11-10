@@ -164,7 +164,7 @@ them are largely done.** The order this plan intends is not the order the work h
 
 | Phase | Priority | Status | Evidence |
 |---|---|---|---|
-| 9 — Benchmark suite | P0 | **Partial** | Harness, adapters, committed gold answers and published results all exist (`benchmarks/`, `docs/benchmarks/results.md`). The acceptance criteria requiring the harness to run from a single README command and results to be referenced in the README are **not met**: `README.md` contains no benchmark reference at all. |
+| 9 — Benchmark suite | P0 | **Closed 2026-11-09** | One entrypoint (`benchmarks/run.py`), documented from `README.md` and from `benchmarks/README.md`; gold answers and reproduction steps committed in `docs/benchmarks/REPRODUCE.md`; results published in `docs/benchmarks/results.md` and referenced from `README.md`; abstention now measured rather than assumed — and it reads 0/444, so the assertion exists and fails, which is the point of having one. Two independent adversarial audits of the harness ran before publication (see `results.md`). |
 | 10 — MCP server | P0 | **Not shipped** | `aletheia/mcp_server.py` exists but `aletheia/mcp_tools.py` does not, and `pyproject.toml` declares only `aletheia` and `aletheia-server` — there is no `aletheia-mcp` entrypoint, so `aletheia-mcp --help` fails. `README.md` mentions MCP zero times. This is the plan's stated adoption gate and it is open. |
 | 11 — Background extraction | P1 | **Shipped** | `aletheia/extraction.py`; `extract` and `consolidate` are live CLI commands. |
 | 12 — Graph / temporal reasoning | P1 | **Shipped** | `graph.py`, `temporal.py`, `entity_link.py`; `relate`, `graph`, `temporal`, `link-entities` CLI; recall reaches the graph as a bounded context layer (W2.1). |
@@ -195,7 +195,6 @@ a synonym for behind** — but neither is it a synonym for close.
 1. **Finish Phase 10 before more retrieval work.** It is a P0, it is the adoption surface, and it is
    one entrypoint plus one module away from its acceptance criteria. Nothing in the recall roadmap
    unlocks distribution the way this does.
-2. **Close Phase 9's README criterion.** Published results that nothing links to do not satisfy the
-   gate that Phase 9 exists for.
+2. ~~Close Phase 9's README criterion.~~ Done 2026-11-09 with the suite entrypoint.
 3. **Then the coverage work**, judged on full-recovery rate for multi-evidence questions, which is
    where the measurable deficit is largest and where hit@10 has been hiding it.
