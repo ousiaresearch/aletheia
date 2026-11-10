@@ -1,0 +1,313 @@
+{
+  "artifact": "benchmarks/confirm-C-plain120-v4.json",
+  "cases": 88,
+  "judged": 50,
+  "unusable_judgements": 76,
+  "correct": 26,
+  "accuracy": 0.52,
+  "repeat": 2,
+  "agreement_n": 50,
+  "agreement_rate": 1.0,
+  "judge_model": "openai-compatible:glm-5.3",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "attended a music festival",
+      "judge_reason": "The system answer says Dave attended a music festival, which does not match the reference fact that he was attending a car show."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "attended a music festival",
+      "judge_reason": "The system answer says Dave attended a music festival, which does not match the reference fact that he was attending a car show."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-42-qa-14",
+      "gold": "Jo",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and an empty answer is incorrect."
+    },
+    {
+      "question_id": "locomo-conv-42-qa-14",
+      "gold": "Jo",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and an empty answer is incorrect."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-59",
+      "gold": "The summer of 2022",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-59",
+      "gold": "The summer of 2022",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-68",
+      "gold": "aerial yoga",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-68",
+      "gold": "aerial yoga",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and an empty answer is incorrect."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-117",
+      "gold": "a yellow coffee cup with a handwritten message",
+      "predicted": "the last hike with her friend Karlie",
+      "judge_reason": "The system answer describes a photo of a hike with a friend, not a yellow coffee cup with a handwritten message."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-117",
+      "gold": "a yellow coffee cup with a handwritten message",
+      "predicted": "the last hike with her friend Karlie",
+      "judge_reason": "The system answer describes a photo of a hike with a friend, not a yellow coffee cup with a handwritten message."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-135",
+      "gold": "comforted",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and an empty answer is incorrect."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-135",
+      "gold": "comforted",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and an empty answer is incorrect."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and empty answers are incorrect."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, and empty answers are incorrect."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-5",
+      "gold": "John's favorite game is CS:GO, and James's is Apex Legends.",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-5",
+      "gold": "John's favorite game is CS:GO, and James's is Apex Legends.",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-21",
+      "gold": "Seattle, Chicago, New York",
+      "predicted": "New York City",
+      "judge_reason": "The system answer only lists New York City, omitting Seattle and Chicago mentioned in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-21",
+      "gold": "Seattle, Chicago, New York",
+      "predicted": "New York City",
+      "judge_reason": "The system answer only lists New York City, omitting Seattle and Chicago mentioned in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-155",
+      "gold": "It was a huge success.",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is always incorrect."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-155",
+      "gold": "It was a huge success.",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by rule."
+    }
+  ],
+  "failures_total": 48,
+  "failures_stored": 40,
+  "failure_cap_note": "`failures` is a capped sample for inspection; `case_verdicts` holds the verdict for every graded question and is what paired comparisons must use.",
+  "case_verdicts": {
+    "locomo-conv-50-qa-134": false,
+    "locomo-conv-50-qa-63": false,
+    "locomo-conv-50-qa-1": false,
+    "locomo-conv-50-qa-126": false,
+    "locomo-conv-50-qa-44": true,
+    "locomo-conv-50-qa-48": false,
+    "locomo-conv-50-qa-74": true,
+    "locomo-conv-50-qa-26": false,
+    "locomo-conv-50-qa-144": true,
+    "locomo-conv-49-qa-152": true,
+    "locomo-conv-49-qa-125": true,
+    "locomo-conv-49-qa-70": false,
+    "locomo-conv-49-qa-59": true,
+    "locomo-conv-49-qa-45": false,
+    "locomo-conv-26-qa-73": false,
+    "locomo-conv-42-qa-134": true,
+    "locomo-conv-42-qa-52": true,
+    "locomo-conv-42-qa-155": true,
+    "locomo-conv-42-qa-14": false,
+    "locomo-conv-41-qa-42": true,
+    "locomo-conv-41-qa-20": true,
+    "locomo-conv-41-qa-59": false,
+    "locomo-conv-41-qa-51": true,
+    "locomo-conv-41-qa-68": false,
+    "locomo-conv-41-qa-26": true,
+    "locomo-conv-41-qa-36": true,
+    "locomo-conv-48-qa-160": true,
+    "locomo-conv-48-qa-48": false,
+    "locomo-conv-48-qa-34": true,
+    "locomo-conv-48-qa-157": true,
+    "locomo-conv-48-qa-117": false,
+    "locomo-conv-48-qa-165": true,
+    "locomo-conv-48-qa-135": false,
+    "locomo-conv-47-qa-83": true,
+    "locomo-conv-47-qa-85": true,
+    "locomo-conv-47-qa-33": false,
+    "locomo-conv-47-qa-58": true,
+    "locomo-conv-47-qa-5": false,
+    "locomo-conv-43-qa-125": true,
+    "locomo-conv-43-qa-21": false,
+    "locomo-conv-43-qa-155": false,
+    "locomo-conv-43-qa-174": true,
+    "locomo-conv-44-qa-43": false,
+    "locomo-conv-44-qa-77": true,
+    "locomo-conv-44-qa-45": false,
+    "locomo-conv-44-qa-53": false,
+    "locomo-conv-44-qa-76": true,
+    "locomo-conv-44-qa-87": false,
+    "locomo-conv-44-qa-4": false,
+    "locomo-conv-44-qa-56": true
+  },
+  "elapsed_s": 426.7,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

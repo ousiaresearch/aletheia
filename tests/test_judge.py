@@ -106,3 +106,18 @@ def test_report_stores_a_verdict_for_every_graded_case():
     assert "case_verdicts" in source
     assert "failures_total" in source
     assert "verdict_by_qid" in source
+
+
+def test_case_verdicts_uses_the_same_rule_as_the_headline_accuracy():
+    """A published rate must agree with its own per-case record.
+
+    `accuracy` is computed from the first repeat while `case_verdicts` originally required unanimity,
+    so a 46.6% headline sat beside a 45.5% verdict map with nothing explaining the gap.
+    """
+    import inspect
+    from benchmarks import judge
+
+    source = inspect.getsource(judge)
+    assert "case_verdicts_unanimous" in source
+    assert "repeat_disagreement_qids" in source
+    assert "verdict_by_qid[qid] = per_case[0]" in source

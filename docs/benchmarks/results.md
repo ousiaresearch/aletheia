@@ -375,6 +375,41 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The judge is not the constraint either, and what that leaves — 2026-11-09
+
+Re-judged the same artifact (`confirm-C`, reader.v4, 88 graded) with two other judge models:
+
+| judge | cases graded | accuracy (first repeat) | own repeat agreement |
+|---|---|---|---|
+| `qwen3.8-flash` (baseline) | 88 | 46.6% | 98.9% |
+| `qwen3.8-max` | 88 | 45.5% | 97.7% |
+| `glm-5.3` | 50 | 52.0% | 100.0% |
+
+Under the unanimity rule, **flash and max agree on all 88 verdicts and glm agrees with flash on all 50 it
+could grade.** `glm-5.3` only produced usable verdicts for 50 of 88 cases, and its 52.0% is that subset —
+flash scores the identical 52.0% on the same 50 questions. So the apparent six-point gap is case
+selection, not leniency.
+
+**Judge choice moves the measured accuracy by at most one question.** ~46% is not an artifact of the
+instrument, which was worth establishing given two judge defects were found today.
+
+Also fixed while doing this: the headline `accuracy` was computed from the first repeat while
+`case_verdicts` required unanimity, so a 46.6% headline sat beside a 45.5% per-case record with nothing
+explaining the difference. Both rules are now recorded (`case_verdicts`, `case_verdicts_unanimous`) with
+the disagreement count explicit, and a test pins them to the same rule.
+
+**So the answer-level state of this system on LoCoMo is: ~46%, flat across every knob at the read stage,
+and not an artifact of the judge.** Four levers failed and the ruler is sound. What has not been tried is
+anything below the read stage — and there is a specific, already-measured hole there: **the structured
+layer is empty.** The audit of the first LoCoMo conversation found zero `relations` rows in the substrate
+while `entity_links` held 1,088 rows over 456 records, with noisy tokens among them. Benchmark ingestion
+populates records and vectors, not the fact graph.
+
+That matters because of what the failing questions need. Multi-hop sits at 34.6% and temporal at 40.0%;
+the gold answers are aggregations ("I was diagnosed with ... and prescribed ...", "which state do they
+live in", "what nickname") that a top-10 snippet window cannot assemble. A populated fact layer is the one
+component Aletheia was built to have that the benchmarks have never exercised.
+
 ### The reader model does not matter either — four levers, all flat — 2026-11-09
 
 Same 120 questions, same retrieval, only the reader model changed:

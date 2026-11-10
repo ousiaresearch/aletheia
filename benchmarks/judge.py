@@ -130,6 +130,8 @@ def run(artifact: str, *, repeat: int = 2, sample: int | None = None, seed: int 
     started = time.time()
     verdicts: list[list[bool]] = []
     verdict_by_qid: dict[str, bool] = {}
+    verdict_unanimous_by_qid: dict[str, bool] = {}
+    disagreement_qids: list[str] = []
     failures: list[dict] = []
     failures_total = 0
     unusable = 0
@@ -151,7 +153,15 @@ def run(artifact: str, *, repeat: int = 2, sample: int | None = None, seed: int 
                                  "predicted": case.get("text"),
                                  "judge_reason": result["reason"]})
         if per_case:
-            verdict_by_qid[str(case.get("question_id"))] = all(per_case)
+            qid = str(case.get("question_id"))
+            # The headline accuracy below uses per_case[0] (the first repeat). The per-case maps must
+            # use the SAME rule or a published rate and its own record disagree by the number of
+            # repeat-disagreements — which is exactly what happened (46.6% headline against a 45.5%
+            # map). Both rules are recorded so a stricter reading is still available.
+            verdict_by_qid[qid] = per_case[0]
+            verdict_unanimous_by_qid[qid] = all(per_case)
+            if len(set(per_case)) > 1:
+                disagreement_qids.append(qid)
             verdicts.append(per_case)
 
     judged = [v[0] for v in verdicts]
@@ -177,6 +187,10 @@ def run(artifact: str, *, repeat: int = 2, sample: int | None = None, seed: int 
         "failure_cap_note": ("`failures` is a capped sample for inspection; `case_verdicts` holds the "
                              "verdict for every graded question and is what paired comparisons must use."),
         "case_verdicts": verdict_by_qid,
+        "case_verdicts_unanimous": verdict_unanimous_by_qid,
+        "repeat_disagreement_qids": disagreement_qids,
+        "verdict_rule": ("case_verdicts uses the first repeat, matching `accuracy`; "
+                         "case_verdicts_unanimous requires every repeat to agree"),
         "elapsed_s": round(time.time() - started, 1),
         "note": ("A judged number is published only with its judge model, prompt version and repeat "
                  "agreement. Below 90% agreement the judge cannot support a one-point claim."),
