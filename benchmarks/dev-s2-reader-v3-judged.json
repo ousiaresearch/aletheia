@@ -1,0 +1,150 @@
+{
+  "artifact": "benchmarks/dev-s2-reader-v3.json",
+  "cases": 28,
+  "judged": 28,
+  "unusable_judgements": 0,
+  "correct": 17,
+  "accuracy": 0.6071428571428571,
+  "repeat": 2,
+  "agreement_n": 28,
+  "agreement_rate": 1.0,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is incorrect by the rules."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "rainbow flag mural, painting 'Embracing Identity', grandmother's necklace",
+      "judge_reason": "It omits the transgender symbol and includes extra unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "rainbow flag mural, painting 'Embracing Identity', grandmother's necklace",
+      "judge_reason": "The system answer omits the transgender symbol and includes different items."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+      "predicted": "The Name of the Wind",
+      "judge_reason": "The system answer lists only one book instead of all books in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+      "predicted": "The Name of the Wind",
+      "judge_reason": "The system answer omits most of the books listed in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-154",
+      "gold": "electric and intense",
+      "predicted": "Really electric and memorable",
+      "judge_reason": "The system answer omits the key quality 'intense' from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-154",
+      "gold": "electric and intense",
+      "predicted": "Really electric and memorable",
+      "judge_reason": "The answer mentions electric but omits the key fact that the atmosphere was intense."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    }
+  ],
+  "elapsed_s": 171.9,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

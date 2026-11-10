@@ -1,0 +1,17 @@
+
+locomo  lexical  k=10  40 questions, 0 errors
+---------------------------------------------
+  hit@10 (gold evidence)  20/30 = 66.7%  95% CI 48.8%-80.8%
+  MRR 0.379
+  mean coverage 0.577   full recovery 50.0%   (gold unit: record)
+  answer-in-context (proxy)  66.7%  95% CI 48.8%-80.8%  over 30 graded
+  second hop issued for 24/40 questions (mean 2.92 rounds), 1 hop calls failed
+  abstention  0/10 correct (0.0%)
+  by category:
+    1                        n=9     hit@10 88.9%  coverage 0.646  full 44.4%
+    2                        n=5     hit@10 60.0%  coverage 0.500  full 40.0%
+    3                        n=3     hit@10 0.0%  coverage 0.000  full 0.0%
+    4                        n=13    hit@10 69.2%  coverage 0.692  full 69.2%
+  elapsed 563.1s
+
+wrote benchmarks/dev-s2-hop3.json

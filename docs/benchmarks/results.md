@@ -375,6 +375,62 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### More hop rounds do not help — the reasoning approach saturates — 2026-11-09
+
+One round of "what else should I look up" moved hit@10 from 18 to 20 of 30. Two more rounds, on the
+same questions:
+
+| | baseline | hop x1 | hop x3 |
+|---|---|---|---|
+| hit@10 | 60.0% (18/30) | 66.7% (20/30) | 66.7% (20/30) |
+| coverage | 0.519 | 0.578 | 0.577 |
+| full recovery | 46.7% | 50.0% | 50.0% |
+| category 1 (multi-hop) | 66.7% | 77.8% | **88.9%** |
+| category 2 (temporal) | 40.0% | 80.0% | 60.0% |
+
+**The second and third rounds find nothing.** The model issued 2.92 rounds on average — it kept
+generating queries — and hit@10, coverage and full recovery are identical to one round. Additional
+reasoning about what is missing stops paying immediately.
+
+Two details worth keeping: the extra rounds *did* move multi-hop (77.8% → 88.9%, one more question of
+nine) while costing temporal (80% → 60%), which nets to zero — the hop's queries drift toward the
+conversation's people and away from its timeline. And one hop call failed even here, which the run
+counted rather than hiding.
+
+So the default stays at one round, and the reasoning-based approach is exhausted at that point. What
+remains is index-side: the candidate pool is `limit * 6 = 60` records, and the cross-encoder can only
+reorder what is inside it. A larger pool with cross-encoder reranking is the one untested configuration
+that could change *membership* of the top 10 rather than its order.
+
+### Answer accuracy tracks retrieval almost exactly — 2026-11-09
+
+The most useful analysis in this file, and it corrected a conclusion drawn an hour earlier. Cross-
+tabulating judged correctness against whether the gold evidence was retrieved, over three
+configurations on the same 40 questions:
+
+| Configuration | judged accuracy | retrieval hit@10 | accuracy *given* evidence retrieved |
+|---|---|---|---|
+| reader.v2 alone | 60.0% (18/30) | 60.0% | **77.8%** (14/18) |
+| second hop + reader | 56.7% (17/30) | 63.3% | **73.7%** (14/19) |
+| reader.v3 alone | 60.7% (17/28) | 60.7% | **76.5%** (13/17) |
+
+Three things follow, and the first two are uncomfortable.
+
+1. **The aggregate answer number is pinned to hit@10.** It reads 60.0% against 60.0%, 56.7% against
+   63.3%, 60.7% against 60.7%. Any claim that "retrieval is no longer the binding constraint" was wrong;
+   it was drawn from a single hop experiment and the cross-tab contradicts it.
+2. **The hop raised retrieval and lowered conversion.** Conditional accuracy fell from 77.8% to 73.7%
+   with the hop in place: its extra records are sometimes noise that confuses the reader. Improving a
+   ranker and a reader independently is not the same as improving the pair.
+3. **The reader converts about 76% of what it is handed**, with 3–4 questions answered correctly even
+   without a retrieval hit (adjacent context supplying the fact). So reading is a real but secondary
+   loss: roughly a quarter of retrieved evidence, against a third of questions whose evidence is never
+   retrieved at all.
+
+**Therefore answer-level work is retrieval work**, and it must be judged on hit@10 specifically. Three
+reader changes — the abstention fix, the hop's better evidence, and the list/absolute-date instructions
+— all land at 60%, which is what a ~60% retrieval rate plus a ~76% conversion rate predicts.
+
 ### Retrieval gains do not pay out at the answer level — 2026-11-09
 
 The hop retrieves more evidence. Does it produce better answers? Same 40 questions, same reader, same

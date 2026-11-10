@@ -216,7 +216,8 @@ def _is_abstention(qa) -> bool:
 def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "prefix",
         seed: int = 1, splits: list[str] | None = None, embedder=None,
         with_reader: bool = False, with_expansion: bool = False,
-        with_multihop: bool = False) -> dict:
+        with_multihop: bool = False, hop_rounds: int = 1,
+        use_cross_encoder: bool = False) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
@@ -274,34 +275,36 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
 
                     items_out, _receipt = recall(sub, qa.question, ctx, limit=limit,
                                                  mode="hybrid" if embedder else "lexical",
-                                                 embedder=embedder, token_getter=token_getter)
-                    hop_query, hop_failure = None, None
+                                                 embedder=embedder, token_getter=token_getter,
+                                                 use_cross_encoder=use_cross_encoder)
+                    hop_query, hop_failure, hop_queries = None, None, []
                     if with_multihop:
-                        try:
-                            hop_query = _second_hop_query(qa.question, items_out)
-                        except Exception as exc:
-                            # The hop is an enhancement, so its failure must not cost the question —
-                            # but it must not be invisible either. A hop that timed out is recorded
-                            # and counted, and the question is scored on its first-hop retrieval.
-                            hop_failure = f"{exc.__class__.__name__}: {exc}"
-                        if hop_query:
-                            hop_items, _hop_receipt = recall(sub, prefix_hop_name(hop_query), ctx,
-                                                             limit=limit,
-                                                             mode="hybrid" if embedder else "lexical",
-                                                             embedder=embedder)
-                            # Keep most of the first-hop ranking and make room for the hop: new
-                            # evidence has to be able to occupy a slot or the second pass changes
-                            # nothing, but it must not evict the strongest matches either.
+                        # The hop can run more than once: each round is shown the evidence gathered so
+                        # far and asked what is still missing. One round moved hit@10 by a question,
+                        # and the wall is 75% of missed evidence in sessions nothing has reached, so
+                        # a second round of reasoning is the cheapest remaining attempt at it.
+                        for _round in range(max(1, hop_rounds)):
+                            try:
+                                hop_query = _second_hop_query(qa.question, items_out)
+                            except Exception as exc:
+                                # The hop is an enhancement, so its failure must not cost the
+                                # question — but it must not be invisible either.
+                                hop_failure = f"{exc.__class__.__name__}: {exc}"
+                                break
+                            if not hop_query:
+                                break
+                            hop_queries.append(hop_query)
+                            hop_items, _hop_receipt = recall(
+                                sub, prefix_hop_name(hop_query), ctx, limit=limit,
+                                mode="hybrid" if embedder else "lexical", embedder=embedder,
+                                use_cross_encoder=use_cross_encoder)
+                            # Keep most of the current ranking and make room for the hop: new evidence
+                            # has to be able to occupy a slot or the pass changes nothing, but it must
+                            # not evict the strongest matches either.
                             keep = max(1, (limit * 7) // 10)
                             seen_ids = {it.record_id for it in items_out[:keep]}
                             merged = list(items_out[:keep])
-                            for item in hop_items:
-                                if len(merged) >= limit:
-                                    break
-                                if item.record_id not in seen_ids:
-                                    merged.append(item)
-                                    seen_ids.add(item.record_id)
-                            for item in items_out[keep:]:
+                            for item in list(hop_items) + list(items_out[keep:]):
                                 if len(merged) >= limit:
                                     break
                                 if item.record_id not in seen_ids:
@@ -330,7 +333,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                         "question_id": qa.question_id,
                         "question": qa.question,
                         "layers": list(getattr(_receipt, "layers", []) or []),
-                        "hop_query": hop_query,
+                        "hop_query": hop_queries[0] if hop_queries else None,
+                        "hop_queries": hop_queries,
                         "hop_failure": hop_failure,
                         "reading": None if reading is None else {
                             "text": reading.text,
@@ -363,6 +367,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
     summary = _summarise(dataset, cases, limit=limit, elapsed=time.time() - started,
                          sample=sample, seed=seed if sample == "random" else None)
     summary["hop_mode"] = with_multihop
+    summary["cross_encoder"] = use_cross_encoder
     if with_reader:
         summary["reading"] = _reading_summary(cases)
         # Per-question outcomes are kept because a reading number is only auditable if its failures
@@ -447,6 +452,8 @@ def _summarise(dataset: str, cases: list, *, limit: int, elapsed: float,
         "answer_only_questions": len(answer_only),
         "expansion_questions": sum(1 for c in usable if "query_expansion" in (c.get("layers") or [])),
         "hop_questions": sum(1 for c in usable if c.get("hop_query")),
+        "hop_rounds_mean": (round(sum(len(c.get("hop_queries") or []) for c in usable)
+                                  / max(1, sum(1 for c in usable if c.get("hop_query"))), 2)),
         "hop_failures": sum(1 for c in usable if c.get("hop_failure")),
         "abstention_questions": len(abstention),
         "abstention_correct": abstain_ok,
@@ -542,8 +549,11 @@ def report(results: list[dict]) -> None:
         # referencing it was a NameError that killed the table and the JSON write for every run without
         # --multihop. The earlier hop runs survived only because their hop count was truthy and
         # short-circuited the `or`.
+        if r.get("cross_encoder"):
+            print("  cross-encoder rerank: requested")
         if r.get("hop_mode"):
             print(f"  second hop issued for {r.get('hop_questions', 0)}/{r['questions']} questions"
+                  f" (mean {r.get('hop_rounds_mean')} rounds)"
                   f"{', ' + str(r['hop_failures']) + ' hop calls failed' if r.get('hop_failures') else ''}")
         if r.get("expansion_questions"):
             print(f"  query expansion applied to {r['expansion_questions']}/{r['questions']} questions")
@@ -598,6 +608,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--multihop", action="store_true",
                         help="ask the reader model what else to look up, then retrieve it (one extra "
                              "LLM call per question)")
+    parser.add_argument("--hop-rounds", type=int, default=1,
+                        help="how many times to ask the model what else to look up (needs --multihop)")
+    parser.add_argument("--cross-encoder", action="store_true",
+                        help="rerank the candidate pool with the local cross-encoder (needs "
+                             "sentence-transformers and its weights)")
     parser.add_argument("--json", default=None)
     args = parser.parse_args(argv)
 
@@ -617,7 +632,8 @@ def main(argv: list[str] | None = None) -> int:
         results.append(run(name, limit=args.limit, n=args.n, sample=args.sample,
                            seed=args.seed, splits=args.splits, embedder=embedder,
                            with_reader=args.reader, with_expansion=args.expand,
-                           with_multihop=args.multihop))
+                           with_multihop=args.multihop, hop_rounds=args.hop_rounds,
+                           use_cross_encoder=args.cross_encoder))
     report(results)
 
     if args.json:
