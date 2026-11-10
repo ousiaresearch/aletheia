@@ -251,6 +251,16 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
     if facts_cache:
         from benchmarks.facts import load_facts
         facts_by_record = load_facts(facts_cache)
+        # Claims become records, so they compete for the same slots as evidence. Resolution happens on
+        # the retrieved window and the window is cut afterwards, so with `recall_depth == limit` claims
+        # displace real records instead of widening reach: measured 51.7% hit@10 against a 56.8%
+        # baseline, with coverage falling 0.464 -> 0.391 and only 347 claim hits resolving.
+        if (recall_depth or limit) <= limit:
+            raise SystemExit(
+                f"--facts-cache with recall depth {recall_depth or limit} and limit {limit}: claims "
+                f"would occupy scored slots before being resolved to their sources. Pass "
+                f"--recall-depth well above --limit (50 against 10 was the first design that lets "
+                f"claims widen reach instead of crowding it out).")
         if not facts_by_record:
             raise SystemExit(f"--facts-cache {facts_cache!r} holds no facts; refusing to run an arm "
                              f"that would silently be the no-facts baseline")

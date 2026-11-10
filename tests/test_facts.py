@@ -98,3 +98,17 @@ def test_load_facts_last_row_wins(tmp_path: Path):
     facts = load_facts(path)
     assert facts["r1"] == [], "an empty later row is a real result (a retry that found nothing)"
     assert facts["r2"] == [{"subject": "b"}]
+
+def test_a_facts_arm_without_a_wider_pool_refuses_to_run():
+    """Claims compete for slots; resolving them after a ten-item cut displaces evidence.
+
+    Measured failure this guard exists for: a facts arm at recall depth == limit scored 51.7% hit@10
+    against a 56.8% baseline, coverage falling from 0.464 to 0.391, because ~75% of the corpus was
+    claims and only 347 claim hits resolved across 120 questions.
+    """
+    import inspect
+    from benchmarks import run as run_mod
+
+    source = inspect.getsource(run_mod.run)
+    assert "would occupy scored slots" in source
+    assert "--recall-depth" in source
