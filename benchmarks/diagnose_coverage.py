@@ -44,11 +44,18 @@ def main(argv: list[str] | None = None) -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--n", type=int, default=None, help="QA pairs (default: all)")
     parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--mode", choices=["lexical", "vector", "hybrid"], default="lexical",
+                        help="which retrieval arm to attribute the misses to")
     parser.add_argument("--json", default=None)
     args = parser.parse_args(argv)
 
     from aletheia.retrieval import recall
 
+    embedder = None
+    if args.mode != "lexical":
+        from aletheia.adapters import default_text_embedder
+
+        embedder = default_text_embedder()
     ctx = make_ctx()
     rows = []
     started = time.time()
@@ -57,13 +64,14 @@ def main(argv: list[str] | None = None) -> int:
         if not records or not qas:
             continue
         session_of = _session_of(records)
-        sub = create_substrate(f"cov-{conv_id}", records)
+        sub = create_substrate(f"cov-{conv_id}-{args.mode}", records, embedder=embedder)
         try:
             for qa in qas:
                 gold = list(qa.evidence_ids or [])
                 if len(gold) < 2:
                     continue  # single-record questions cannot lose coverage this way
-                items, _receipt = recall(sub, qa.question, ctx, limit=args.limit, mode="lexical")
+                items, _receipt = recall(sub, qa.question, ctx, limit=args.limit, mode=args.mode,
+                                         embedder=embedder)
                 got = [it.record_id for it in items]
                 got_set, gold_set = set(got), set(gold)
                 sessions_seen = {session_of.get(r, "?") for r in got}
@@ -104,6 +112,7 @@ def main(argv: list[str] | None = None) -> int:
         b["new"] += r["missed_in_new_session"]
 
     summary = {
+        "mode": args.mode,
         "questions": len(rows),
         "limit": args.limit,
         "full_recovery": round(len(full) / len(rows), 3) if rows else None,
@@ -120,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
                            "is in regions the candidate pool never reached, so depth or ranking is."),
     }
 
-    print(f"{len(rows)} multi-record questions at depth {args.limit}")
+    print(f"{len(rows)} multi-record questions, mode={args.mode}, depth {args.limit}")
     print(f"  full recovery            {len(full)}/{len(rows)} = "
           f"{len(full)/len(rows):.1%}" if rows else "")
     print(f"  missed gold records      {missed_total}")

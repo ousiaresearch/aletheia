@@ -1,0 +1,15 @@
+427 multi-record questions, mode=hybrid, depth 10
+  full recovery            69/427 = 16.2%
+  missed gold records      838
+    in a session already in the top-10   210  (25.1% of misses)
+    in a session never reached     628  (74.9% of misses)
+  distinct sessions per top-10: mean 8.51
+
+  by category: n  full  missed  seen  new
+    1      277    40     588   139  449
+    2       40     9      50    15   35
+    3       50     3     131    29  102
+    4       46    16      48    19   29
+    5       14     1      21     8   13
+
+wrote benchmarks/coverage-hybrid.json

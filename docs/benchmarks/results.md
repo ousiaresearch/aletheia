@@ -375,6 +375,37 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The vector arm against the 75% wall — 2026-11-09
+
+`diagnose_coverage.py --mode hybrid` reruns the same attribution on the same 427 multi-record
+questions with the embedding arm in the candidate pool:
+
+| 427 multi-record questions | lexical | hybrid |
+|---|---|---|
+| full recovery | 11.9% | **16.2%** |
+| missed gold records | 913 | 838 |
+| … in a session the top-k reached | 236 (25.8%) | 210 (25.1%) |
+| … in a session never reached | 677 (74.2%) | 628 (74.9%) |
+| distinct sessions per top-10 | 8.59 | 8.51 |
+
+Optimistically, that is +4.3 points of complete-evidence recovery and 75 fewer missed gold records, and
+it lands where it should: category 1 (multi-hop) goes 29/277 → 40/277 fully recovered, category 4 10/46
+→ 16/46.
+
+Pessimistically — and this is the part that matters — **the share of misses in never-reached sessions
+does not move at all**: 74.2% → 74.9%. Adding semantic candidates retrieves more of what was already
+within reach and does not break the wall. Both arms are bounded by the same thing: the second hop of a
+multi-hop question shares neither terms nor topic with the question, and in a conversation of 500–800
+turns the chance that any single global ranking surfaces it is small.
+
+That reframes what "highest retrieval accuracy" can mean here. On the evidence gathered, the remaining
+points are not in a better global ranker — they are in **structured retrieval**: locating the hop
+through an entity or relation rather than through similarity to the question. Aletheia already stores
+the substrate for that (`entity_link`, `graph`, `relate`) and recall reaches the graph only as bounded
+context, ranked after every match. Making graph-reached records able to occupy match slots is the
+change with a mechanism behind it, and it collides with the existing invariant that a neighbour never
+displaces a match — which is a design decision to take deliberately, not to slip in.
+
 ### A judge for stage 2 — 2026-11-09
 
 `benchmarks/judge.py` implements the judged score parity-measurement-spec.md §3 requires: a pinned
@@ -414,9 +445,51 @@ Two changes produced it, both capability fixes rather than test-fitting:
    retrieved. v2 answers when the evidence supports an answer and abstains only when the specific fact
    is absent.
 
-**Read the intervals, not the point estimates:** 9.5–37.3 against 16.7–47.9 overlap, so at N=40 this
-establishes a direction and a plausible mechanism, not a significant improvement. Abstention is still
-14 of 40 (35%), which is the next reading-side lever.
+**Retracted, same day — the reader is not deterministic, and the effect was the size of the noise.**
+Two runs of *identical* configuration (reader.v2, qwen3.8-flash, temperature 0, same 40 questions, same
+retrieved items, same prompt version) disagreed:
+
+| | v2 run 1 | v2 run 2 |
+|---|---|---|
+| questions answered | 26 of 40 | 24 of 40 |
+| exact match | 30.0% (16.7–47.9) | **20.0%** (9.5–37.3) |
+| token F1 | 0.541 | 0.450 |
+| cited a gold record | 50.0% | 56.7% |
+
+Paired per question: **2 abstention flips and 9 of the 24 answered texts differ** — `"two"` vs `"2"`,
+`"last year"` vs `"2022"`, `"weight training"` vs `"weight training classes"`. Temperature 0 does not
+make a hosted model deterministic; batching and routing are not under our control.
+
+So the v1 → v2 improvement of 10 exact-match points is **the same magnitude as the difference between
+two identical v2 runs**, and the claim that v2 improved exact match is withdrawn. What survives is the
+mechanism — v1 abstained on 18 of 40 questions whose evidence had been retrieved, which is a defect
+either way — and the honest statement is that its measured effect is not separated from reader noise at
+this sample size. Separating it needs k repeated runs per configuration, reported as a range, which is
+now part of the protocol below.
+
+**Exact match was measuring surface form, not correctness.** The judge scores the same 30 gradable
+answers at 60.0% while exact match scores them at 20.0%: `"two"` against a gold `"2"` is a correct
+answer marked wrong. Token F1 splits the difference and is still a proxy. This is the argument for the
+judge that the spec predicted, made with our own numbers.
+
+### First judged answer-level number — 2026-11-09
+
+`benchmarks/judge.py`, prompt `judge.v1`, `--repeat 2`, on the 30 gradable cases above:
+
+| Judge | Judged accuracy | Repeat agreement | Unusable judgements |
+|---|---|---|---|
+| `qwen3.8-flash` (same family as the reader) | 18/30 = **60.0%** | 100% | 0 |
+| `glm-5.3` (independent family) | 13/21 = **61.9%** | 100% | 18 of 60 calls |
+
+Two judges from different families land within 1.9 points of each other, which is the check that
+matters: a reader judged only by its own model could be flattering itself, and here it is not. Both
+report 100% repeat agreement, so this judge can support a claim; attention should go to `glm-5.3`'s 30%
+unusable-output rate, which is a judge-reliability problem rather than an accuracy one.
+
+**This is the first apples-to-apples-shaped number this project has had**: answer-level, judged, with
+the judge declared and its repeatability published. It is still N=30 on a dev slice, from a reader whose
+own run-to-run spread is ±7 exact-match points, and it says nothing about Mem0, Zep or MemHQ because
+their questions, scorer and judge are not ours.
 
 ### Two defects this run found and fixed
 

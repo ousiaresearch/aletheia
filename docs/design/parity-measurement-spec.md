@@ -65,6 +65,15 @@ Requirements for any answer-level figure we publish:
   prior number, so the version lives in the artifact.
 - **Publish the failures**: store judged-wrong examples, because a judge's systematic leniency is
   visible in them and invisible in an aggregate.
+- **Judge with a different model from the reader where possible**, and report both when they differ. A
+  reader judged by its own model may be flattering itself; on the first measured pair, an independent
+  family agreed within 1.9 points, which is what made the self-judged number usable.
+- **Account for generator non-determinism.** Temperature 0 does not make a hosted model deterministic.
+  Two identical reader runs over the same questions and the same retrieved items disagreed by 10
+  exact-match points, with 2 abstention flips and 9 of 24 answers differing in wording (`"two"` vs
+  `"2"`). A stage-2 or end-to-end number must therefore be the mean of k >= 2 runs with the observed
+  range reported, or it must state that its effect is not separated from run-to-run noise. A single
+  run's point estimate is not a result.
 
 ## 4. The reader question, which is a product decision
 
