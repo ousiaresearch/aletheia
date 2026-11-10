@@ -144,8 +144,11 @@ anything above.
 - ~~LoCoMo with evidence-id scoring~~ — **measured 2026-11-09 over the whole benchmark: hit@10 64.6%
   (N=1,982, CI 62.5–66.7), MRR 0.394, mean evidence coverage 0.591.** The 62.6% it replaces was a
   contiguous 200-question slice, 199 of it from one conversation. A parity claim still cannot be
-  made, because the 93.0 floor and the Mem0/Zep/MemHQ numbers are answer-level and ours is
-  retrieval-level, but the retrieval number is now real and whole. See `docs/benchmarks/results.md`.
+  made: the Mem0/Zep/MemHQ numbers are answer-level and ours is retrieval-level, and the "93.0 floor"
+  this document previously cited does not exist in `competitive-gap-closure-plan.md` or anywhere else
+  in the repo — it was introduced by the benchmark commit itself and is withdrawn. The retrieval
+  number is now real and whole; there is still no parity target to compare it to. See
+  `docs/benchmarks/results.md`.
 - **Multi-evidence coverage is the live failure and the next thing to fix.** On the 427 questions
   needing more than one record, hit@10 reads 57.6% while mean per-question coverage is 0.317 and full
   recovery 11.9% (51 of them; 181 recover nothing). Coverage here is bimodal, so "a third" is a mean

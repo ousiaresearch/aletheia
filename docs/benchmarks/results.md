@@ -82,10 +82,16 @@ LongMemEval-S by question type (N=500, lexical):
 | temporal-reasoning | 133 | 95.5% | 0.857 | 21.8% |
 | single-session-preference | 30 | 76.7% | 0.533 | 0.0% |
 
-**LoCoMo is where the gap actually is.** 62.6% on this single-conversation slice against the 93.0
-floor in the parity plan, with MRR 0.448. The whole-benchmark run below supersedes the slice: 64.6%
-over all ten conversations, and the gap that matters is complete-evidence recovery, not hit@10. Any
-recall work should be judged on LoCoMo.
+**LoCoMo is where the gap is.** 62.6% on this single-conversation slice, MRR 0.448; the
+whole-benchmark run below supersedes it at 64.6% over all ten conversations, and the gap that matters
+is complete-evidence recovery, not hit@10. Any recall work should be judged on LoCoMo.
+
+> Correction 2026-11-09: this paragraph previously measured the slice against "the 93.0 floor in the
+> parity plan". No such floor exists — `docs/design/competitive-gap-closure-plan.md` sets no numeric
+> parity target anywhere, and the figure entered the repo in the same commit that wrote this
+> paragraph. It was mine, not the plan's, and it is withdrawn. The only external comparison numbers
+> in this file (Mem0 67.1, Zep 75.1, MemHQ 83.2) are answer-level and LLM-judged, so they are not a
+> retrieval floor either.
 
 | Slice | N | Exact match | 95% CI | p50 |
 |---|---|---|---|---|

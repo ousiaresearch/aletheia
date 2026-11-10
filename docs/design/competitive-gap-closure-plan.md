@@ -153,3 +153,49 @@ Phase 14 (Docker) ─────┘
 Phases 9 and 10 can start in parallel. Phase 11 depends on Phase 10 being reviewed so extraction results can be exposed via MCP. Phase 12 can proceed independently. Phase 14 depends on Phase 10 (server). Phase 13 and 15 depend on 9–12 being closed.
 
 Each phase stops for adversarial review before it is marked complete. No phase is considered finished until the reviewer returns APPROVED.
+
+---
+
+## Where the plan actually stands — reconciliation 2026-11-09
+
+Checked against each phase's own acceptance criteria, by opening the artifacts rather than trusting
+the phase list. The short version: **the two P0 items are the weakest, and the P1/P2 items behind
+them are largely done.** The order this plan intends is not the order the work happened in.
+
+| Phase | Priority | Status | Evidence |
+|---|---|---|---|
+| 9 — Benchmark suite | P0 | **Partial** | Harness, adapters, committed gold answers and published results all exist (`benchmarks/`, `docs/benchmarks/results.md`). The acceptance criteria requiring the harness to run from a single README command and results to be referenced in the README are **not met**: `README.md` contains no benchmark reference at all. |
+| 10 — MCP server | P0 | **Not shipped** | `aletheia/mcp_server.py` exists but `aletheia/mcp_tools.py` does not, and `pyproject.toml` declares only `aletheia` and `aletheia-server` — there is no `aletheia-mcp` entrypoint, so `aletheia-mcp --help` fails. `README.md` mentions MCP zero times. This is the plan's stated adoption gate and it is open. |
+| 11 — Background extraction | P1 | **Shipped** | `aletheia/extraction.py`; `extract` and `consolidate` are live CLI commands. |
+| 12 — Graph / temporal reasoning | P1 | **Shipped** | `graph.py`, `temporal.py`, `entity_link.py`; `relate`, `graph`, `temporal`, `link-entities` CLI; recall reaches the graph as a bounded context layer (W2.1). |
+| 13 — Procedural memory | P2 | **Shipped** | `aletheia/procedural.py`; `propose-rule` and `active-rules` CLI. |
+| 14 — Turnkey deployment | P2 | **Present, unverified** | `Dockerfile` and `docker-compose.yml` are in the repo; the "<60 s on a machine with Docker" criterion has not been measured here. |
+| 15 — Community | P3 | **Not started** | GitHub reports 0 stars and Discussions disabled; README has no integration docs for Hermes, OpenCode or Claude Code. |
+
+### The measurement that Phase 9 was a gate for
+
+Phase 9 asks for credible published numbers, and now has them for LoCoMo — with the caveat that they
+are retrieval numbers, not answer numbers:
+
+- whole benchmark, lexical, N=1,982 gradable of 1,986: hit@10 **64.6%** (CI 62.5–66.7), MRR 0.394,
+  mean evidence coverage 0.591, full recovery 54.8%
+- the questions that need more than one record (n=427) are the real gap: hit@10 57.6%, coverage
+  0.317, full recovery **11.9%**, and depth 50 only lifts that to 26.9%
+
+**There is no numeric parity target in this plan, and there never was.** The "93.0 floor" that
+appeared in `results.md` and in `recall-bolstering-plan.md` on 2026-11-09 was introduced by the
+benchmark commit itself and has been withdrawn. The competitor numbers that do exist (Mem0 67.1,
+Zep/Graphiti 75.1, MemHQ 83.2 on LoCoMo) are answer-level and LLM-judged; ours are retrieval-level.
+A like-for-like comparison needs one scoring path across all of them, and that does not exist yet.
+So the honest position is: **credibility gate partially cleared, parity unknown, and unknown is not
+a synonym for behind** — but neither is it a synonym for close.
+
+### What this implies for sequencing
+
+1. **Finish Phase 10 before more retrieval work.** It is a P0, it is the adoption surface, and it is
+   one entrypoint plus one module away from its acceptance criteria. Nothing in the recall roadmap
+   unlocks distribution the way this does.
+2. **Close Phase 9's README criterion.** Published results that nothing links to do not satisfy the
+   gate that Phase 9 exists for.
+3. **Then the coverage work**, judged on full-recovery rate for multi-evidence questions, which is
+   where the measurable deficit is largest and where hit@10 has been hiding it.
