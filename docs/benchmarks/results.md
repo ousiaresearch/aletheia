@@ -375,6 +375,32 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### Retrieval gains do not pay out at the answer level — 2026-11-09
+
+The hop retrieves more evidence. Does it produce better answers? Same 40 questions, same reader, same
+judge, same protocol:
+
+| | reader alone | hop + reader |
+|---|---|---|
+| retrieval hit@10 | 60.0% (18/30) | 63.3% (19/30) |
+| questions answered | 24–26 of 40 | 27 of 40 |
+| judged accuracy, `qwen3.8-flash` judge | 18/30 = **60.0%** | 17/30 = **56.7%** |
+| judged accuracy, `glm-5.3` judge | 13/21 = 61.9% | 10/17 = 58.8% |
+| repeat agreement | 100% | 100% |
+
+**Two more gold records retrieved produced one fewer correct answer.** Both judges agree on the
+direction, both at 100% repeat agreement, and both differences sit inside noise at N=30 — but there is
+no gain to report, and the honest reading is that retrieval is no longer the binding constraint on
+answer accuracy.
+
+That is the stage-isolation logic from the parity spec, measured in our own system: answer accuracy is
+*bounded* by retrieval but not *implied* by it. LongMemEval showed the same shape long before this
+(97.0% hit@10 against 44.2% answer-in-context); LoCoMo confirms it with a judged score.
+
+So the next answer-level lever is the reader, not the ranker — and the two obvious candidates are its
+capability (the pinned model is a flash tier) and its habit of declining: 13 to 16 of 40 questions still
+end in abstention despite retrieved evidence.
+
 ### Second-hop retrieval — the first retrieval lever that works — 2026-11-09
 
 Three cheaper mechanisms were measured and failed: top-k diversification (addresses 26% of misses),
