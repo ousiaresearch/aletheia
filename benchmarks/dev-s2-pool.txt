@@ -1,0 +1,36 @@
+=== A: deep pool + cross-encoder, score at 10 ===
+
+locomo  lexical  k=10  40 questions, 0 errors
+---------------------------------------------
+  hit@10 (gold evidence)  20/30 = 66.7%  95% CI 48.8%-80.8%
+  MRR 0.462
+  mean coverage 0.628   full recovery 56.7%   (gold unit: record)
+  answer-in-context (proxy)  66.7%  95% CI 48.8%-80.8%  over 30 graded
+  cross-encoder rerank over a pool from depth 50
+  abstention  0/10 correct (0.0%)
+  by category:
+    1                        n=9     hit@10 66.7%  coverage 0.537  full 33.3%
+    2                        n=5     hit@10 80.0%  coverage 0.800  full 80.0%
+    3                        n=3     hit@10 33.3%  coverage 0.333  full 33.3%
+    4                        n=13    hit@10 69.2%  coverage 0.692  full 69.2%
+  elapsed 21.1s
+
+wrote benchmarks/dev-s2-pool-ce.json
+=== B: deep pool, no reranker ===
+
+locomo  lexical  k=10  40 questions, 0 errors
+---------------------------------------------
+  hit@10 (gold evidence)  18/30 = 60.0%  95% CI 42.3%-75.4%
+  MRR 0.371
+  mean coverage 0.519   full recovery 46.7%   (gold unit: record)
+  answer-in-context (proxy)  60.0%  95% CI 42.3%-75.4%  over 30 graded
+  retrieved at depth 50, scored at 10
+  abstention  0/10 correct (0.0%)
+  by category:
+    1                        n=9     hit@10 66.7%  coverage 0.454  full 33.3%
+    2                        n=5     hit@10 40.0%  coverage 0.300  full 20.0%
+    3                        n=3     hit@10 33.3%  coverage 0.333  full 33.3%
+    4                        n=13    hit@10 69.2%  coverage 0.692  full 69.2%
+  elapsed 8.7s
+
+wrote benchmarks/dev-s2-pool-plain.json

@@ -1,0 +1,86 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 40,
+      "errors": 0,
+      "error_sample": null,
+      "graded": 30,
+      "gold_scored": 30,
+      "hits": 18,
+      "hit_at_k": 0.6,
+      "hit_at_k_ci95": [
+        0.423,
+        0.754
+      ],
+      "mrr": 0.371,
+      "gold_unit": "record",
+      "mean_coverage": 0.519,
+      "full_recovery": 0.467,
+      "answer_in_context": 0.6,
+      "answer_in_context_ci95": [
+        0.423,
+        0.754
+      ],
+      "answer_only_questions": 0,
+      "expansion_questions": 0,
+      "hop_questions": 0,
+      "hop_rounds_mean": 0.0,
+      "hop_failures": 0,
+      "abstention_questions": 10,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 9,
+          "hits": 6,
+          "full": 3,
+          "hit_at_k": 0.667,
+          "coverage": 0.454,
+          "full_recovery": 0.333
+        },
+        "2": {
+          "n": 5,
+          "hits": 2,
+          "full": 1,
+          "hit_at_k": 0.4,
+          "coverage": 0.3,
+          "full_recovery": 0.2
+        },
+        "3": {
+          "n": 3,
+          "hits": 1,
+          "full": 1,
+          "hit_at_k": 0.333,
+          "coverage": 0.333,
+          "full_recovery": 0.333
+        },
+        "4": {
+          "n": 13,
+          "hits": 9,
+          "full": 9,
+          "hit_at_k": 0.692,
+          "coverage": 0.692,
+          "full_recovery": 0.692
+        }
+      },
+      "selection": {
+        "sample": "random",
+        "seed": 2
+      },
+      "elapsed_s": 8.7,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "hop_mode": false,
+      "cross_encoder": false,
+      "recall_depth": 50,
+      "gold_validation": {
+        "questions_with_gold": 40,
+        "questions_with_unreachable_gold": 0,
+        "unreachable_ids": [],
+        "gold_ids_total": 59
+      }
+    }
+  ]
+}

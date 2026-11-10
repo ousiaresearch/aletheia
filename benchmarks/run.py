@@ -217,7 +217,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         seed: int = 1, splits: list[str] | None = None, embedder=None,
         with_reader: bool = False, with_expansion: bool = False,
         with_multihop: bool = False, hop_rounds: int = 1,
-        use_cross_encoder: bool = False) -> dict:
+        use_cross_encoder: bool = False, recall_depth: int | None = None) -> dict:
     started = time.time()
     if dataset == "beam":
         rows = _iter_beam(n, sample, seed, splits or ["100K"])
@@ -273,7 +273,11 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                 try:
                     from aletheia.retrieval import recall
 
-                    items_out, _receipt = recall(sub, qa.question, ctx, limit=limit,
+                    # Retrieve deep and score shallow when asked: the candidate pool is
+                    # `recall depth * 6`, so a deeper recall is how a wider pool gets reranked before
+                    # the top-k is cut. Scoring depth stays `limit`, so hit@10 still means hit@10.
+                    depth = recall_depth or limit
+                    items_out, _receipt = recall(sub, qa.question, ctx, limit=depth,
                                                  mode="hybrid" if embedder else "lexical",
                                                  embedder=embedder, token_getter=token_getter,
                                                  use_cross_encoder=use_cross_encoder)
@@ -295,7 +299,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                                 break
                             hop_queries.append(hop_query)
                             hop_items, _hop_receipt = recall(
-                                sub, prefix_hop_name(hop_query), ctx, limit=limit,
+                                sub, prefix_hop_name(hop_query), ctx, limit=depth,
                                 mode="hybrid" if embedder else "lexical", embedder=embedder,
                                 use_cross_encoder=use_cross_encoder)
                             # Keep most of the current ranking and make room for the hop: new evidence
@@ -313,6 +317,8 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                             items_out = merged
                     from benchmarks.full.common import RecallResult
 
+                    # Score at `limit`, whatever depth was retrieved.
+                    items_out = items_out[:limit]
                     result = RecallResult(
                         question_id=qa.question_id, mode="hybrid" if embedder else "lexical",
                         selected_ids=[it.record_id for it in items_out],
@@ -368,6 +374,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                          sample=sample, seed=seed if sample == "random" else None)
     summary["hop_mode"] = with_multihop
     summary["cross_encoder"] = use_cross_encoder
+    summary["recall_depth"] = recall_depth or limit
     if with_reader:
         summary["reading"] = _reading_summary(cases)
         # Per-question outcomes are kept because a reading number is only auditable if its failures
@@ -550,7 +557,9 @@ def report(results: list[dict]) -> None:
         # --multihop. The earlier hop runs survived only because their hop count was truthy and
         # short-circuited the `or`.
         if r.get("cross_encoder"):
-            print("  cross-encoder rerank: requested")
+            print(f"  cross-encoder rerank over a pool from depth {r.get('recall_depth')}")
+        elif r.get("recall_depth") and r["recall_depth"] != r["k"]:
+            print(f"  retrieved at depth {r['recall_depth']}, scored at {r['k']}")
         if r.get("hop_mode"):
             print(f"  second hop issued for {r.get('hop_questions', 0)}/{r['questions']} questions"
                   f" (mean {r.get('hop_rounds_mean')} rounds)"
@@ -610,6 +619,10 @@ def main(argv: list[str] | None = None) -> int:
                              "LLM call per question)")
     parser.add_argument("--hop-rounds", type=int, default=1,
                         help="how many times to ask the model what else to look up (needs --multihop)")
+    parser.add_argument("--recall-depth", type=int, default=None,
+                        help="retrieve this many records before cutting to --limit; the candidate "
+                             "pool is six times this, so a deep recall is how a wider pool gets "
+                             "reranked. Scoring stays at --limit.")
     parser.add_argument("--cross-encoder", action="store_true",
                         help="rerank the candidate pool with the local cross-encoder (needs "
                              "sentence-transformers and its weights)")
@@ -633,7 +646,8 @@ def main(argv: list[str] | None = None) -> int:
                            seed=args.seed, splits=args.splits, embedder=embedder,
                            with_reader=args.reader, with_expansion=args.expand,
                            with_multihop=args.multihop, hop_rounds=args.hop_rounds,
-                           use_cross_encoder=args.cross_encoder))
+                           use_cross_encoder=args.cross_encoder,
+                           recall_depth=args.recall_depth))
     report(results)
 
     if args.json:

@@ -1,0 +1,86 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 40,
+      "errors": 0,
+      "error_sample": null,
+      "graded": 30,
+      "gold_scored": 30,
+      "hits": 20,
+      "hit_at_k": 0.6666666666666666,
+      "hit_at_k_ci95": [
+        0.488,
+        0.808
+      ],
+      "mrr": 0.462,
+      "gold_unit": "record",
+      "mean_coverage": 0.628,
+      "full_recovery": 0.567,
+      "answer_in_context": 0.6666666666666666,
+      "answer_in_context_ci95": [
+        0.488,
+        0.808
+      ],
+      "answer_only_questions": 0,
+      "expansion_questions": 0,
+      "hop_questions": 0,
+      "hop_rounds_mean": 0.0,
+      "hop_failures": 0,
+      "abstention_questions": 10,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 9,
+          "hits": 6,
+          "full": 3,
+          "hit_at_k": 0.667,
+          "coverage": 0.537,
+          "full_recovery": 0.333
+        },
+        "2": {
+          "n": 5,
+          "hits": 4,
+          "full": 4,
+          "hit_at_k": 0.8,
+          "coverage": 0.8,
+          "full_recovery": 0.8
+        },
+        "3": {
+          "n": 3,
+          "hits": 1,
+          "full": 1,
+          "hit_at_k": 0.333,
+          "coverage": 0.333,
+          "full_recovery": 0.333
+        },
+        "4": {
+          "n": 13,
+          "hits": 9,
+          "full": 9,
+          "hit_at_k": 0.692,
+          "coverage": 0.692,
+          "full_recovery": 0.692
+        }
+      },
+      "selection": {
+        "sample": "random",
+        "seed": 2
+      },
+      "elapsed_s": 21.1,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "hop_mode": false,
+      "cross_encoder": true,
+      "recall_depth": 50,
+      "gold_validation": {
+        "questions_with_gold": 40,
+        "questions_with_unreachable_gold": 0,
+        "unreachable_ids": [],
+        "gold_ids_total": 59
+      }
+    }
+  ]
+}

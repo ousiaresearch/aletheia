@@ -375,6 +375,38 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The cross-encoder was never the problem; the pool was — 2026-11-09
+
+The cross-encoder looked useless earlier: it lifted MRR and coverage while leaving hit@10 at 18/30. The
+reason was not the reranker but what it had to work with — `recall` builds a candidate pool of
+`limit * 6 = 60` records, so a reranker could only reorder sixty candidates before ten were cut.
+
+Retrieving deep and scoring shallow separates the two. `run.py --recall-depth 50` retrieves into a pool
+of ~300 and still scores at 10, so `hit@10` keeps its meaning:
+
+| Same 40 questions, seed 2 | baseline (depth 10) | depth 50, no reranker | **depth 50 + cross-encoder** |
+|---|---|---|---|
+| hit@10 | 60.0% (18/30) | 60.0% (18/30) | **66.7% (20/30)** |
+| MRR | 0.371 | 0.371 | **0.462** |
+| mean coverage | 0.519 | 0.519 | **0.628** |
+| full recovery | 46.7% | 46.7% | **56.7%** |
+| category 2 (temporal) | 40.0% | 40.0% | **80.0%** |
+
+**Deep retrieval alone changes nothing — the numbers are identical to baseline, digit for digit.** The
+entire gain comes from reranking a wider pool. That is the cleanest attribution in this file: one
+variable moved, one variable moved the result.
+
+It is also the strongest retrieval result measured here — +2 questions, +24% relative MRR, +0.109
+coverage and +10 points of full recovery. For comparison: one hop round also gave +2 questions but with
+far less MRR and coverage movement, and three hop rounds gave nothing at all.
+
+Two things follow. First, the production configuration this implies is that `recall` should build a
+wider pool and rerank it when a cross-encoder is available — the current `limit * 6` pool leaves most of
+the reranker's value on the floor. That is a change to shipped behaviour and belongs behind its own
+review, not in a benchmark commit. Second, the answer-level question is now open again: hit@10 moved,
+and the cross-tab says answers follow hit@10, so a judged run at this configuration is the next
+measurement rather than an assumption.
+
 ### More hop rounds do not help — the reasoning approach saturates — 2026-11-09
 
 One round of "what else should I look up" moved hit@10 from 18 to 20 of 30. Two more rounds, on the
