@@ -101,14 +101,23 @@ the same set we are using:
 converter; `sample.py` now reports hit@10 and MRR over evidence sessions *and* answer-in-context, so
 the proxy can never again be quoted as retrieval quality.
 
-**P1 — remove the two retrieval defects.**
-- Rerank must not discard the fused rank. Either blend (`α · RRF_norm + (1−α) · cosine_norm`, α
-  lexical-dominant) or restrict rerank to swapping within adjacent bands, which is the rule the codebase
-  already uses for boosts ("a boost can never lift a candidate over a strictly more relevant one").
-- Weight the RRF lists (lexical vs vector) instead of treating them equally, and/or reserve slots for
-  each list's top candidates so a single-list hit cannot be crowded out.
-- Delete or default-off the bi-encoder rerank path; keep the cross-encoder.
-Success criterion: q201 hit under `lexical+rerank`, and no regression in the 500-question hit@10.
+**P1 — remove the two retrieval defects.** *(Outcome, measured 2026-11-09 on LoCoMo, N=100 across
+all ten conversations: see `docs/benchmarks/results.md`.)*
+
+- **Rerank discarding the fused rank: no measured benefit left on LoCoMo.** On that 100-question
+  sample `hybrid` and `hybrid+rerank` carry identical hit flags and paired gained/lost (11/3), while
+  the rerank lowers MRR (0.416 → 0.393) at about ten times the latency (3,104 ms against 323 ms).
+  That is an absence of benefit on one unrepresentative sample, not proof of the band limit — the
+  invariant is tested in `tests/test_rerank_fusion.py`. Default-off stands on this evidence; the
+  cross-encoder path was never measured.
+- **RRF crowding out single-list hits: measured as 3 losses against 11 gains on that sample.** The
+  mechanism is unconfirmed — the artifact records no retrieved id lists, so nothing shows which list
+  a lost record came from — and no weighted-fusion configuration was run, so the recoverable headroom
+  from re-weighting is unknown, including on the questions both configurations miss. Demote it below
+  the coverage work rather than closing it.
+- Delete or default-off the bi-encoder rerank path; keep the cross-encoder. *(default-off done; the
+  cross-encoder was not measured on LoCoMo — the 8 GB box could not hold torch beside MLX without
+  thrashing.)*
 
 **P2 — temporal retrieval (targets the 95.5% / MRR 0.857 category).** Parse relative time expressions
 in the query ("a few months ago", "last week", "in March") against `question_date`, resolve to a
@@ -132,9 +141,30 @@ anything above.
 
 ## 6. What is still unmeasured
 
-- **LoCoMo with evidence-id scoring** — the number that compares to Mem0/Zep and to the 93.0 floor in
-  the parity plan. The LoCoMo converter already scores against gold record ids; a 200-question slice is
-  running. Until that lands, no parity claim is supportable.
-- **Hybrid/vector end to end at scale** — blocked on the fusion fixes above and on the 1.8 docs/s
-  embedding rate.
+- ~~LoCoMo with evidence-id scoring~~ — **measured 2026-11-09 over the whole benchmark: hit@10 64.6%
+  (N=1,982, CI 62.5–66.7), MRR 0.394, mean evidence coverage 0.591.** The 62.6% it replaces was a
+  contiguous 200-question slice, 199 of it from one conversation. A parity claim still cannot be
+  made, because the 93.0 floor and the Mem0/Zep/MemHQ numbers are answer-level and ours is
+  retrieval-level, but the retrieval number is now real and whole. See `docs/benchmarks/results.md`.
+- **Multi-evidence coverage is the live failure and the next thing to fix.** On the 427 questions
+  needing more than one record, hit@10 reads 57.6% while mean per-question coverage is 0.317 and full
+  recovery 11.9% (51 of them; 181 recover nothing). Coverage here is bimodal, so "a third" is a mean
+  and not a typical case. Category 1 is the sharpest at 11.0% full recovery — with the caveat that
+  the category names in `results.md` are inferred from question content, not from a shipped key.
+  Every retrieval improvement above should be judged on coverage and full-recovery rate rather than
+  hit@10, which cannot see this. Whether a reader could answer from partial evidence, and whether the
+  evidence a question needs is even reachable given how the converter builds records, are separate
+  and unmeasured.
+- **Abstention on LoCoMo's 446 adversarial questions.** 444 of them carry no answer field at all and
+  two answer "No"; the converter hardcodes `abstain=False`, so they are graded as evidence-retrieval
+  questions. They do not distort the aggregate (64.3% excluding them against 64.6%), but the right
+  metric for them is whether recall declines to answer, and nothing measures that.
+- **Hybrid/vector end to end at scale** — still blocked, for a measured reason: on this 8 GB machine
+  the embedder costs about 11 records/s on index builds and turns a 20–27 ms query into ~300 ms
+  (2,700–3,100 ms with a bi-encoder rerank). The seeded random N=120 sample is now the largest and
+  only representative fusion measurement: lexical 66.7%, vector 65.0% (15 gained / 17 lost, p=0.86 —
+  a wash), hybrid 73.3% (15 gained / 7 lost, p=0.134). Fusion leads by 6.6 points and nothing at this
+  N establishes it; vectors alone are not what helps. A larger random sample, sized by a prospective
+  power calculation, is the next measurement. Nothing currently licenses a benchmark-wide fusion
+  claim.
 - **Isolation** (W3.2) — untouched, and still the only place in the plan where we would be first.

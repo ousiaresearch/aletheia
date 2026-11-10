@@ -1,0 +1,4737 @@
+{
+  "offset": 0,
+  "requested": 120,
+  "limit": 10,
+  "selection": {
+    "mode": "random",
+    "per_conversation": null,
+    "requested": 120,
+    "seed": 1,
+    "selected": 120,
+    "note": "A prefix selection is one contiguous run of the file and is category-skewed; a random selection with a recorded seed is reproducible and representative."
+  },
+  "conversations": {
+    "locomo-conv-26": 11,
+    "locomo-conv-30": 5,
+    "locomo-conv-41": 10,
+    "locomo-conv-42": 11,
+    "locomo-conv-43": 16,
+    "locomo-conv-44": 12,
+    "locomo-conv-47": 9,
+    "locomo-conv-48": 18,
+    "locomo-conv-49": 12,
+    "locomo-conv-50": 16
+  },
+  "rows": [
+    {
+      "config": "lexical",
+      "n": 120,
+      "attempted": 120,
+      "hits": 80,
+      "k": 10,
+      "hit_at_k": 0.6667,
+      "ci95": [
+        0.578,
+        0.745
+      ],
+      "mrr": 0.41,
+      "p50_ms": 20.3,
+      "p95_ms": 45.5,
+      "mean_coverage": 0.5946,
+      "full_recovery_rate": 0.525,
+      "errors": 0,
+      "by_category": {
+        "1": {
+          "n": 22,
+          "hits": 11,
+          "full": 4,
+          "hit_rate": 0.5,
+          "mean_coverage": 0.33,
+          "full_recovery_rate": 0.182
+        },
+        "2": {
+          "n": 19,
+          "hits": 16,
+          "full": 13,
+          "hit_rate": 0.842,
+          "mean_coverage": 0.759,
+          "full_recovery_rate": 0.684
+        },
+        "3": {
+          "n": 6,
+          "hits": 3,
+          "full": 1,
+          "hit_rate": 0.5,
+          "mean_coverage": 0.361,
+          "full_recovery_rate": 0.167
+        },
+        "4": {
+          "n": 49,
+          "hits": 38,
+          "full": 34,
+          "hit_rate": 0.776,
+          "mean_coverage": 0.735,
+          "full_recovery_rate": 0.694
+        },
+        "5": {
+          "n": 24,
+          "hits": 12,
+          "full": 11,
+          "hit_rate": 0.5,
+          "mean_coverage": 0.479,
+          "full_recovery_rate": 0.458
+        }
+      }
+    },
+    {
+      "config": "vector",
+      "n": 120,
+      "attempted": 120,
+      "hits": 78,
+      "k": 10,
+      "hit_at_k": 0.65,
+      "ci95": [
+        0.561,
+        0.729
+      ],
+      "mrr": 0.3872,
+      "p50_ms": 296.4,
+      "p95_ms": 437.9,
+      "mean_coverage": 0.5801,
+      "full_recovery_rate": 0.525,
+      "errors": 0,
+      "by_category": {
+        "1": {
+          "n": 22,
+          "hits": 16,
+          "full": 6,
+          "hit_rate": 0.727,
+          "mean_coverage": 0.479,
+          "full_recovery_rate": 0.273
+        },
+        "2": {
+          "n": 19,
+          "hits": 17,
+          "full": 14,
+          "hit_rate": 0.895,
+          "mean_coverage": 0.794,
+          "full_recovery_rate": 0.737
+        },
+        "3": {
+          "n": 6,
+          "hits": 3,
+          "full": 2,
+          "hit_rate": 0.5,
+          "mean_coverage": 0.417,
+          "full_recovery_rate": 0.333
+        },
+        "4": {
+          "n": 49,
+          "hits": 33,
+          "full": 33,
+          "hit_rate": 0.673,
+          "mean_coverage": 0.673,
+          "full_recovery_rate": 0.673
+        },
+        "5": {
+          "n": 24,
+          "hits": 9,
+          "full": 8,
+          "hit_rate": 0.375,
+          "mean_coverage": 0.354,
+          "full_recovery_rate": 0.333
+        }
+      },
+      "paired_vs_lexical": {
+        "n": 120,
+        "pairs_with_errors": 0,
+        "lost": 17,
+        "gained": 15
+      }
+    },
+    {
+      "config": "hybrid-noRerank",
+      "n": 120,
+      "attempted": 120,
+      "hits": 88,
+      "k": 10,
+      "hit_at_k": 0.7333,
+      "ci95": [
+        0.648,
+        0.804
+      ],
+      "mrr": 0.4643,
+      "p50_ms": 298.6,
+      "p95_ms": 353.5,
+      "mean_coverage": 0.655,
+      "full_recovery_rate": 0.5833,
+      "errors": 0,
+      "by_category": {
+        "1": {
+          "n": 22,
+          "hits": 17,
+          "full": 6,
+          "hit_rate": 0.773,
+          "mean_coverage": 0.523,
+          "full_recovery_rate": 0.273
+        },
+        "2": {
+          "n": 19,
+          "hits": 16,
+          "full": 13,
+          "hit_rate": 0.842,
+          "mean_coverage": 0.741,
+          "full_recovery_rate": 0.684
+        },
+        "3": {
+          "n": 6,
+          "hits": 3,
+          "full": 2,
+          "hit_rate": 0.5,
+          "mean_coverage": 0.417,
+          "full_recovery_rate": 0.333
+        },
+        "4": {
+          "n": 49,
+          "hits": 38,
+          "full": 36,
+          "hit_rate": 0.776,
+          "mean_coverage": 0.755,
+          "full_recovery_rate": 0.735
+        },
+        "5": {
+          "n": 24,
+          "hits": 14,
+          "full": 13,
+          "hit_rate": 0.583,
+          "mean_coverage": 0.562,
+          "full_recovery_rate": 0.542
+        }
+      },
+      "paired_vs_lexical": {
+        "n": 120,
+        "pairs_with_errors": 0,
+        "lost": 7,
+        "gained": 15
+      }
+    },
+    {
+      "config": "hybrid+rerank",
+      "n": 120,
+      "attempted": 120,
+      "hits": 88,
+      "k": 10,
+      "hit_at_k": 0.7333,
+      "ci95": [
+        0.648,
+        0.804
+      ],
+      "mrr": 0.4434,
+      "p50_ms": 2742.4,
+      "p95_ms": 11058.8,
+      "mean_coverage": 0.655,
+      "full_recovery_rate": 0.5833,
+      "errors": 0,
+      "by_category": {
+        "1": {
+          "n": 22,
+          "hits": 17,
+          "full": 6,
+          "hit_rate": 0.773,
+          "mean_coverage": 0.523,
+          "full_recovery_rate": 0.273
+        },
+        "2": {
+          "n": 19,
+          "hits": 16,
+          "full": 13,
+          "hit_rate": 0.842,
+          "mean_coverage": 0.741,
+          "full_recovery_rate": 0.684
+        },
+        "3": {
+          "n": 6,
+          "hits": 3,
+          "full": 2,
+          "hit_rate": 0.5,
+          "mean_coverage": 0.417,
+          "full_recovery_rate": 0.333
+        },
+        "4": {
+          "n": 49,
+          "hits": 38,
+          "full": 36,
+          "hit_rate": 0.776,
+          "mean_coverage": 0.755,
+          "full_recovery_rate": 0.735
+        },
+        "5": {
+          "n": 24,
+          "hits": 14,
+          "full": 13,
+          "hit_rate": 0.583,
+          "mean_coverage": 0.562,
+          "full_recovery_rate": 0.542
+        }
+      },
+      "paired_vs_lexical": {
+        "n": 120,
+        "pairs_with_errors": 0,
+        "lost": 7,
+        "gained": 15
+      }
+    }
+  ],
+  "categories": {
+    "locomo-conv-26-qa-129": "4",
+    "locomo-conv-26-qa-192": "5",
+    "locomo-conv-26-qa-58": "2",
+    "locomo-conv-26-qa-4": "1",
+    "locomo-conv-26-qa-62": "2",
+    "locomo-conv-26-qa-45": "2",
+    "locomo-conv-26-qa-52": "1",
+    "locomo-conv-26-qa-18": "1",
+    "locomo-conv-26-qa-59": "3",
+    "locomo-conv-26-qa-44": "2",
+    "locomo-conv-26-qa-70": "1",
+    "locomo-conv-30-qa-76": "4",
+    "locomo-conv-30-qa-42": "4",
+    "locomo-conv-30-qa-10": "2",
+    "locomo-conv-30-qa-5": "1",
+    "locomo-conv-30-qa-48": "4",
+    "locomo-conv-41-qa-125": "4",
+    "locomo-conv-41-qa-164": "5",
+    "locomo-conv-41-qa-139": "4",
+    "locomo-conv-41-qa-150": "4",
+    "locomo-conv-41-qa-173": "5",
+    "locomo-conv-41-qa-168": "5",
+    "locomo-conv-41-qa-144": "4",
+    "locomo-conv-41-qa-76": "4",
+    "locomo-conv-41-qa-84": "4",
+    "locomo-conv-41-qa-50": "3",
+    "locomo-conv-42-qa-25": "2",
+    "locomo-conv-42-qa-48": "2",
+    "locomo-conv-42-qa-153": "4",
+    "locomo-conv-42-qa-210": "5",
+    "locomo-conv-42-qa-96": "4",
+    "locomo-conv-42-qa-110": "4",
+    "locomo-conv-42-qa-184": "4",
+    "locomo-conv-42-qa-124": "4",
+    "locomo-conv-42-qa-84": "3",
+    "locomo-conv-42-qa-0": "3",
+    "locomo-conv-42-qa-254": "5",
+    "locomo-conv-43-qa-163": "4",
+    "locomo-conv-43-qa-210": "5",
+    "locomo-conv-43-qa-20": "2",
+    "locomo-conv-43-qa-41": "1",
+    "locomo-conv-43-qa-129": "4",
+    "locomo-conv-43-qa-155": "4",
+    "locomo-conv-43-qa-23": "2",
+    "locomo-conv-43-qa-107": "4",
+    "locomo-conv-43-qa-139": "4",
+    "locomo-conv-43-qa-184": "5",
+    "locomo-conv-43-qa-95": "4",
+    "locomo-conv-43-qa-48": "1",
+    "locomo-conv-43-qa-226": "5",
+    "locomo-conv-43-qa-70": "3",
+    "locomo-conv-43-qa-91": "4",
+    "locomo-conv-43-qa-10": "2",
+    "locomo-conv-44-qa-15": "1",
+    "locomo-conv-44-qa-0": "2",
+    "locomo-conv-44-qa-109": "4",
+    "locomo-conv-44-qa-81": "4",
+    "locomo-conv-44-qa-16": "2",
+    "locomo-conv-44-qa-133": "5",
+    "locomo-conv-44-qa-140": "5",
+    "locomo-conv-44-qa-26": "1",
+    "locomo-conv-44-qa-40": "1",
+    "locomo-conv-44-qa-23": "1",
+    "locomo-conv-44-qa-35": "1",
+    "locomo-conv-44-qa-124": "5",
+    "locomo-conv-47-qa-8": "1",
+    "locomo-conv-47-qa-177": "5",
+    "locomo-conv-47-qa-87": "4",
+    "locomo-conv-47-qa-53": "2",
+    "locomo-conv-47-qa-173": "5",
+    "locomo-conv-47-qa-158": "5",
+    "locomo-conv-47-qa-131": "4",
+    "locomo-conv-47-qa-46": "2",
+    "locomo-conv-47-qa-49": "1",
+    "locomo-conv-48-qa-217": "5",
+    "locomo-conv-48-qa-211": "5",
+    "locomo-conv-48-qa-214": "5",
+    "locomo-conv-48-qa-224": "5",
+    "locomo-conv-48-qa-78": "2",
+    "locomo-conv-48-qa-130": "4",
+    "locomo-conv-48-qa-58": "4",
+    "locomo-conv-48-qa-139": "4",
+    "locomo-conv-48-qa-39": "1",
+    "locomo-conv-48-qa-135": "4",
+    "locomo-conv-48-qa-174": "4",
+    "locomo-conv-48-qa-109": "4",
+    "locomo-conv-48-qa-25": "4",
+    "locomo-conv-48-qa-176": "4",
+    "locomo-conv-48-qa-14": "1",
+    "locomo-conv-48-qa-92": "4",
+    "locomo-conv-48-qa-34": "2",
+    "locomo-conv-48-qa-164": "4",
+    "locomo-conv-49-qa-149": "4",
+    "locomo-conv-49-qa-57": "3",
+    "locomo-conv-49-qa-29": "1",
+    "locomo-conv-49-qa-125": "4",
+    "locomo-conv-49-qa-56": "1",
+    "locomo-conv-49-qa-129": "4",
+    "locomo-conv-49-qa-175": "5",
+    "locomo-conv-49-qa-113": "4",
+    "locomo-conv-49-qa-147": "4",
+    "locomo-conv-49-qa-161": "5",
+    "locomo-conv-49-qa-47": "2",
+    "locomo-conv-49-qa-2": "1",
+    "locomo-conv-50-qa-47": "1",
+    "locomo-conv-50-qa-153": "4",
+    "locomo-conv-50-qa-64": "1",
+    "locomo-conv-50-qa-141": "4",
+    "locomo-conv-50-qa-22": "1",
+    "locomo-conv-50-qa-202": "5",
+    "locomo-conv-50-qa-168": "5",
+    "locomo-conv-50-qa-115": "4",
+    "locomo-conv-50-qa-94": "4",
+    "locomo-conv-50-qa-106": "4",
+    "locomo-conv-50-qa-52": "2",
+    "locomo-conv-50-qa-135": "4",
+    "locomo-conv-50-qa-198": "5",
+    "locomo-conv-50-qa-82": "4",
+    "locomo-conv-50-qa-25": "2",
+    "locomo-conv-50-qa-144": "4"
+  },
+  "per_question": {
+    "lexical": {
+      "locomo-conv-26-qa-129": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 69.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-192": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 26.6,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-58": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 17.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-4": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 20.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-62": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 26.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-45": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 19.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 13.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-18": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 18.7,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-59": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 77.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-44": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 16.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-70": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 17.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-76": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 14.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-42": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 19.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-10": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 22.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-5": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 9.8,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-48": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 12.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-125": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 25.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-164": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 30.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 119.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-150": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 26.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-173": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 22.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-168": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 19.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-144": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 17.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-76": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 20.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 19.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-50": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 45.5,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-25": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 17.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-48": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 26.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-153": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 16.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-210": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 18.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-96": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 15.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-110": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 20.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-184": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 15.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-124": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 14.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 35.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-0": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 23.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-254": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 14.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-163": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 20.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-210": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 16.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-20": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 19.1,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.25,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-41": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 25.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-129": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 16.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-155": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 29.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-23": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 17.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-107": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 27.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 15.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-184": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 22.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-95": {
+        "hit": true,
+        "mrr": 0.1,
+        "latency_ms": 17.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-48": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 23.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-226": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 19.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-70": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 29.6,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-91": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 15.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-10": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 20.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-15": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 18.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-0": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 21.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-109": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 21.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-81": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 27.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-16": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 30.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-133": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 18.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-140": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 27.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-26": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 16.2,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-40": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 20.2,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-23": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 17.1,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-35": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 27.3,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-124": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 24.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-8": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 16.4,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-177": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 22.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-87": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 23.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-53": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 24.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-173": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 25.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-158": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 17.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-131": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 16.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-46": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 34.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-49": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 28.5,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-217": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 18.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-211": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 17.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-214": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 27.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-224": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 23.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-78": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 16.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-130": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 19.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-58": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 37.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-139": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 23.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-39": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 25.7,
+        "gold": true,
+        "gold_n": 5,
+        "coverage": 0.6,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-135": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 35.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-174": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 18.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-109": {
+        "hit": true,
+        "mrr": 0.1,
+        "latency_ms": 44.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-25": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 21.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-176": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 18.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-14": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 16.1,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-92": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 29.8,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-34": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 19.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-164": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 14.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-149": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 19.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-57": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 17.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-29": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 17.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-125": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 14.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-56": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 17.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-129": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 13.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-175": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 14.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-113": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 14.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-147": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 21.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-161": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 14.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-47": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 16.8,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-2": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 15.1,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-47": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 30.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-153": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 101.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-64": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 35.8,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-141": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 35.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-22": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 28.4,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-202": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 27.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-168": {
+        "hit": true,
+        "mrr": 0.1,
+        "latency_ms": 20.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-115": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 25.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-94": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 18.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-106": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 213.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-52": {
+        "hit": true,
+        "mrr": 0.1,
+        "latency_ms": 22.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-135": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 19.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-198": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 13.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-82": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 24.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-25": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 21.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-144": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 15.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      }
+    },
+    "vector": {
+      "locomo-conv-26-qa-129": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 90.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-192": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 119.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-58": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 93.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-4": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 129.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-62": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 117.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-45": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 99.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 102.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-18": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 91.4,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-59": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 148.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-44": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 107.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-70": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 157.6,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-76": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 94.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-42": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 158.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-10": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 111.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-5": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 78.0,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-48": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 73.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-125": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 495.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-164": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 394.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 437.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-150": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 437.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-173": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 419.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-168": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 327.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-144": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 343.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-76": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 374.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 361.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-50": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 443.7,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-25": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 299.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-48": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 249.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-153": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 280.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-210": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 257.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-96": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 253.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-110": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 286.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-184": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 263.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-124": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 256.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 337.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-0": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 265.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-254": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 270.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-163": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 335.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-210": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 332.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-20": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 298.1,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.25,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-41": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 346.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-129": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 290.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-155": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 312.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-23": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 312.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-107": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 294.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 289.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-184": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 317.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-95": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 296.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-48": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 300.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-226": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 309.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-70": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 309.0,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-91": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 304.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-10": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 302.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-15": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 293.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-0": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 291.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-109": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 272.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-81": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 368.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-16": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 375.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-133": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 307.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-140": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 293.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-26": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 313.5,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-40": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 314.3,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-23": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 296.4,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-35": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 292.1,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-124": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 283.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-8": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 344.4,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-177": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 329.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-87": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 315.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-53": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 311.4,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-173": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 340.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-158": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 305.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-131": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 328.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-46": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 320.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-49": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 335.8,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-217": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 323.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-211": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 282.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-214": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 298.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-224": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 291.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-78": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 297.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-130": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 301.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-58": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 400.8,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-139": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 333.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-39": {
+        "hit": true,
+        "mrr": 0.1,
+        "latency_ms": 285.1,
+        "gold": true,
+        "gold_n": 5,
+        "coverage": 0.2,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-135": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 343.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-174": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 288.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-109": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 336.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-25": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 301.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-176": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 360.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-14": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 312.1,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-92": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 336.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-34": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 378.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-164": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 341.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-149": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 199.9,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-57": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 197.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-29": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 205.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-125": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 171.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-56": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 213.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-129": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 150.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-175": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 172.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-113": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 170.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-147": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 195.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-161": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 160.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-47": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 187.7,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-2": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 182.3,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-47": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 223.0,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-153": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 341.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-64": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 335.9,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-141": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 309.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-22": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 441.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-202": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 210.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-168": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 6342.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-115": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 255.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-94": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 233.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-106": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 401.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 229.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-135": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 737.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-198": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 190.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-82": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 206.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-25": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 269.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-144": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 219.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      }
+    },
+    "hybrid-noRerank": {
+      "locomo-conv-26-qa-129": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 87.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-192": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 90.6,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-58": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 87.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-4": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 92.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-62": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 88.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-45": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 92.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 96.9,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-18": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 81.1,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-59": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 89.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-44": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 90.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-70": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 88.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-76": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 82.0,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-42": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 98.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-10": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 97.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-5": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 80.7,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-48": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 76.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-125": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 351.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-164": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 335.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 324.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-150": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 341.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-173": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 346.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-168": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 329.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-144": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 354.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-76": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 356.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 344.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-50": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 304.2,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-25": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 279.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-48": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 263.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-153": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 276.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-210": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 256.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-96": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 275.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-110": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 276.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-184": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 255.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-124": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 269.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 286.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-0": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 277.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-254": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 300.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-163": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 304.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-210": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 348.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-20": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 314.5,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.25,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-41": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 327.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-129": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 302.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-155": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 309.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-23": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 325.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-107": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 349.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 310.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-184": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 317.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-95": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 310.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-48": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 322.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-226": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 314.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-70": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 325.2,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-91": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 297.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-10": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 329.4,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-15": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 319.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-0": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 288.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-109": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 281.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-81": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 313.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-16": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 340.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-133": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 306.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-140": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 299.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-26": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 302.9,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-40": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 294.2,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-23": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 300.4,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-35": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 300.2,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-124": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 303.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-8": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 353.6,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-177": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 348.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-87": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 343.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-53": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 353.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-173": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 339.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-158": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 336.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-131": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 350.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-46": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 343.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-49": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 368.1,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-217": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 309.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-211": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 316.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-214": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 316.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-224": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 298.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-78": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 313.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-130": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 316.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-58": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 332.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-139": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 315.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-39": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 297.9,
+        "gold": true,
+        "gold_n": 5,
+        "coverage": 0.6,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-135": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 332.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-174": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 296.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-109": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 310.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-25": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 312.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-176": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 361.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-14": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 300.2,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-92": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 336.0,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-34": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 342.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-164": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 336.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-149": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 227.0,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-57": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 185.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-29": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 177.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-125": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 189.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-56": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 188.6,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-129": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 163.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-175": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 162.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-113": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 178.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-147": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 166.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-161": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 172.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-47": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 179.1,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-2": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 177.4,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-47": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 230.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-153": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 243.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-64": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 247.0,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.75,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-141": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 245.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-22": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 236.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-202": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 216.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-168": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 240.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-115": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 236.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-94": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 227.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-106": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 230.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 205.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-135": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 224.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-198": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 200.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-82": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 206.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-25": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 214.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-144": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 239.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      }
+    },
+    "hybrid+rerank": {
+      "locomo-conv-26-qa-129": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 7864.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-192": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 2476.9,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-58": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2791.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-4": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 6134.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-62": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 2121.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-45": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 6493.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2186.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-18": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 8324.9,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-59": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 4729.0,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-26-qa-44": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 4052.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-26-qa-70": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 16605.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-76": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 6911.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-42": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 5059.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-30-qa-10": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1841.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-5": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 1389.4,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-30-qa-48": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2430.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-125": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 4015.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-164": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 6281.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 5862.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-150": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 3433.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-173": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1780.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-168": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 1662.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-144": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2703.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-41-qa-76": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 2070.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 7410.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-41-qa-50": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 4884.0,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-25": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 2486.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-48": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1882.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-153": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 3674.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-210": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 4588.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-96": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 2385.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-110": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1501.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-184": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 3561.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-124": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 7665.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-42-qa-84": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 3967.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-0": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 2219.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-42-qa-254": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 1906.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-163": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 2913.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-210": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 3773.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-20": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 2523.9,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.25,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-41": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 1496.1,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-129": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 3053.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-155": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1655.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-23": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1879.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-107": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 2117.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-139": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2194.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-184": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 1747.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-95": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 4832.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-48": {
+        "hit": true,
+        "mrr": 0.1429,
+        "latency_ms": 2580.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-226": {
+        "hit": true,
+        "mrr": 0.125,
+        "latency_ms": 3225.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-70": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1684.8,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-43-qa-91": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 2761.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-43-qa-10": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 1530.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-15": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 7590.8,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-0": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1634.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-109": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 2927.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-81": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 4230.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-16": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 2116.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-133": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 3979.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-140": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 1449.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-44-qa-26": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 2350.6,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-40": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 1770.2,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-23": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1479.8,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-35": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 1860.9,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-44-qa-124": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1608.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-8": {
+        "hit": true,
+        "mrr": 0.1111,
+        "latency_ms": 4037.0,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-177": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1672.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-87": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1755.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-53": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 3007.6,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-173": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1711.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-158": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1757.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-47-qa-131": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 1463.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-46": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2063.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-47-qa-49": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1685.4,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-217": {
+        "hit": true,
+        "mrr": 0.1,
+        "latency_ms": 2461.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-211": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1740.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-214": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1560.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-224": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1828.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-78": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 4463.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-130": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 6833.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-58": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 6437.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-139": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 2328.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-39": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 5959.9,
+        "gold": true,
+        "gold_n": 5,
+        "coverage": 0.6,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-135": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2550.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-174": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 18183.1,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-109": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 4731.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-25": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 2867.8,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-176": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 1850.7,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-14": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2710.2,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-92": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 5658.2,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.5,
+        "full_recovery": false
+      },
+      "locomo-conv-48-qa-34": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1941.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-48-qa-164": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 3072.3,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-149": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 4045.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-57": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 6867.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-29": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 1606.7,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-125": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 2280.9,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-56": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 3276.5,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-129": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 1592.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-175": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1437.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-113": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 1520.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-49-qa-147": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1450.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-161": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 1327.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-47": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1342.5,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.3333,
+        "full_recovery": false
+      },
+      "locomo-conv-49-qa-2": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1606.6,
+        "gold": true,
+        "gold_n": 3,
+        "coverage": 0.6667,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-47": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 16679.3,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-153": {
+        "hit": true,
+        "mrr": 0.25,
+        "latency_ms": 15664.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-64": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 9410.6,
+        "gold": true,
+        "gold_n": 4,
+        "coverage": 0.75,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-141": {
+        "hit": false,
+        "mrr": 0.0,
+        "latency_ms": 8478.2,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 0.0,
+        "full_recovery": false
+      },
+      "locomo-conv-50-qa-22": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 5257.0,
+        "gold": true,
+        "gold_n": 2,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-202": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 4357.6,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-168": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 4182.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-115": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 1620.0,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-94": {
+        "hit": true,
+        "mrr": 0.3333,
+        "latency_ms": 19112.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-106": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 4167.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-52": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 4679.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-135": {
+        "hit": true,
+        "mrr": 1.0,
+        "latency_ms": 5337.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-198": {
+        "hit": true,
+        "mrr": 0.1667,
+        "latency_ms": 2742.4,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-82": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 11058.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-25": {
+        "hit": true,
+        "mrr": 0.5,
+        "latency_ms": 2959.5,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      },
+      "locomo-conv-50-qa-144": {
+        "hit": true,
+        "mrr": 0.2,
+        "latency_ms": 5243.8,
+        "gold": true,
+        "gold_n": 1,
+        "coverage": 1.0,
+        "full_recovery": true
+      }
+    }
+  }
+}
