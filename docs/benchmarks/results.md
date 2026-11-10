@@ -375,6 +375,57 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### Re-judged with per-case verdicts: accuracy is hit@10 × conversion, and CE trades one for the other — 2026-11-09
+
+After the judge fix, all three configurations were judged again with a verdict stored for every graded
+question, so the paired statistics below are computed on real per-case data.
+
+| | hit@10 | answer accuracy | conversion (correct / retrieved) |
+|---|---|---|---|
+| plain reader, v3 | 56.3% | 46.0% (40/87) | **61.2%** |
+| deep pool + CE | **65.6%** | 42.2% (38/90) | 50.8% |
+| plain reader, v4 | 56.8% | 45.5% (41/88) | **62.0%** |
+
+Paired, exact sign tests on shared questions:
+
+- v3 → CE: **gained 3, lost 6** (p = 0.508)
+- v3 → v4: **gained 4, lost 4** (p = 1.000)
+- CE → v4: gained 5, lost 2 (p = 0.453)
+
+**The cross-encoder buys retrieval and pays for it in conversion.** +9.3 points of hit@10 against −10.4
+points of conversion, and the answer rate does not move. That is the most coherent reading of every
+measurement today, and it now rests on per-case verdicts rather than a truncated list. It is still not
+statistically separated — six configurations and three re-judged runs on ~90 questions cannot separate
+three questions' worth of difference — but the mechanism is consistent in direction across every run.
+
+**Do not read `hit@10 × conversion` as an identity.** Conversion is measured over the retrieved subset
+(61.2% of 56.3% is 34%, not the measured 46%), because a question with no retrieved record can still be
+answered correctly from general knowledge or a lucky partial. The defensible statement is weaker and
+sufficient: accuracy is bounded both by what retrieval returns and by what the reader makes of it, and
+today only the retrieval term moved.
+
+**Category breakdown, pooled over the three configurations (265 graded cases):**
+
+| category | | accuracy |
+|---|---|---|
+| 1 | multi-hop | 27/78 = 34.6% |
+| 2 | temporal | 20/50 = 40.0% |
+| 3 | open-domain | **0/18 = 0.0%** |
+| 4 | single-hop | 71/119 = 59.7% |
+| | **overall** | **118/265 = 44.5%** |
+
+Category 3's zero has two different causes, and only one is the system's fault. Three of its questions are
+plain factual lookups whose record was never retrieved — a nickname (`Jo`), a US state (`Alaska`), another
+state (`Minnesota`) — and the reader abstained in all three configurations, which is the designed
+behaviour rather than a fault. A fourth (`Did John and James study together?`, gold `Yes`) abstained
+despite retrieving the record. The remaining ones are open-ended speculation graded against a single
+golden string: `What career could Andrew pursue with his love for animals?` is gold `Park ranger` and was
+answered `animal shelter worker`, which is defensible and scored wrong. **So 0/18 overstates the weakness
+of that category**, while the abstentions in it are genuine retrieval misses.
+
+Category 1 at 34.6% with full evidence recovery near 12% is the honest headline: multi-hop questions are
+lost in retrieval long before the reader sees them.
+
 ### The judge's failure list was capped at 40, which invalidated two paired comparisons — 2026-11-09
 
 `benchmarks/judge.py` stored at most forty judged-wrong cases for inspection and no per-case verdicts.

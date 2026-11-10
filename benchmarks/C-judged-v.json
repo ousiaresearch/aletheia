@@ -1,0 +1,351 @@
+{
+  "artifact": "benchmarks/confirm-C-plain120-v4.json",
+  "cases": 88,
+  "judged": 88,
+  "unusable_judgements": 0,
+  "correct": 41,
+  "accuracy": 0.4659090909090909,
+  "repeat": 2,
+  "agreement_n": 88,
+  "agreement_rate": 0.9886363636363636,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty, which is explicitly marked as incorrect."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "attended a music festival",
+      "judge_reason": "The system answer says music festival, not car show."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "attended a music festival",
+      "judge_reason": "The system answer says music festival, not car show."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-78",
+      "gold": "why he keeps hustling as a musician",
+      "predicted": "his passion for music",
+      "judge_reason": "The system answer paraphrases the motivation as passion for music, but does not clearly match the reference fact about why he keeps hustling as a musician."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-112",
+      "gold": "satisfying and worth the hard work",
+      "predicted": "He finds it satisfying and appreciates the reactions.",
+      "judge_reason": "The system answer omits that he finds the reactions worth the hard work."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-112",
+      "gold": "satisfying and worth the hard work",
+      "predicted": "He finds it satisfying and appreciates the reactions.",
+      "judge_reason": "The system answer omits the key idea that the reactions make the hard work worthwhile."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-67",
+      "gold": "Tokyo",
+      "predicted": "Japan",
+      "judge_reason": "Japan is a country and does not match the specific reference location Tokyo."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-67",
+      "gold": "Tokyo",
+      "predicted": "Japan",
+      "judge_reason": "Japan is broader than the reference answer Tokyo and does not match the specified location."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-102",
+      "gold": "Miami",
+      "predicted": "Miami beach",
+      "judge_reason": "\"Miami Beach\" is a different named location than the reference answer \"Miami\"."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-102",
+      "gold": "Miami",
+      "predicted": "Miami beach",
+      "judge_reason": "Miami Beach is a different place name from the reference Miami."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-31",
+      "gold": "Their experiences likely lead them to view challenges as opportunities for growth and change. They both have embraced healthier lifestyles, indicating a proactive approach to managing stress and challenges.",
+      "predicted": "They become more motivated to make small, positive lifestyle changes and support each other through challenges.",
+      "judge_reason": "The system answer does not state that they view challenges as opportunities for growth and change."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-31",
+      "gold": "Their experiences likely lead them to view challenges as opportunities for growth and change. They both have embraced healthier lifestyles, indicating a proactive approach to managing stress and challenges.",
+      "predicted": "They become more motivated to make small, positive lifestyle changes and support each other through challenges.",
+      "judge_reason": "The system answer does not convey the reference fact that they view challenges as opportunities for growth and take a proactive approach to stress."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-116",
+      "gold": "a cactus in the desert",
+      "predicted": "watercolor painting",
+      "judge_reason": "The answer does not identify the painting as a cactus in the desert."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-116",
+      "gold": "a cactus in the desert",
+      "predicted": "watercolor painting",
+      "judge_reason": "The system answer does not identify the painting as a cactus in the desert."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "gold": "nature landscapes, portraits, abstract minimalism",
+      "predicted": "nature",
+      "judge_reason": "The system answer omits portraits and abstract minimalism from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "gold": "nature landscapes, portraits, abstract minimalism",
+      "predicted": "nature",
+      "judge_reason": "It omits portraits and abstract minimalism from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-124",
+      "gold": "gaining strength",
+      "predicted": "He shares his own progress and advice.",
+      "judge_reason": "The system answer does not mention gaining strength."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-124",
+      "gold": "gaining strength",
+      "predicted": "He shares his own progress and advice.",
+      "judge_reason": "The system answer does not mention that Evan is gaining strength."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "rainbow flag mural, painting 'Embracing Identity', grandmother's necklace",
+      "judge_reason": "The system answer omits the transgender symbol and adds unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "rainbow flag mural, painting 'Embracing Identity', grandmother's necklace",
+      "judge_reason": "It omits the transgender symbol and adds unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-48",
+      "gold": "bowls, cup",
+      "predicted": "pots, plate, black and white bowl",
+      "judge_reason": "The system answer omits cup and adds unrelated pottery types."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-48",
+      "gold": "bowls, cup",
+      "predicted": "pots, plate, black and white bowl",
+      "judge_reason": "The system answer omits cup and includes different pottery types."
+    },
+    {
+      "question_id": "locomo-conv-42-qa-14",
+      "gold": "Jo",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-42-qa-14",
+      "gold": "Jo",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-42-qa-74",
+      "gold": "\"Eternal Sunshine of the Spotless Mind\" movie, \"A Court of Thorns and Roses\" book, pointers for making living room comfy, starting a cork board for memories, \"Little Women\" movie",
+      "predicted": "Little Women",
+      "judge_reason": "It only gives one recommendation and omits the others in the reference answer."
+    }
+  ],
+  "failures_total": 95,
+  "failures_stored": 40,
+  "failure_cap_note": "`failures` is a capped sample for inspection; `case_verdicts` holds the verdict for every graded question and is what paired comparisons must use.",
+  "case_verdicts": {
+    "locomo-conv-50-qa-134": false,
+    "locomo-conv-50-qa-63": false,
+    "locomo-conv-50-qa-1": false,
+    "locomo-conv-50-qa-126": false,
+    "locomo-conv-50-qa-77": true,
+    "locomo-conv-50-qa-44": true,
+    "locomo-conv-50-qa-28": true,
+    "locomo-conv-50-qa-48": false,
+    "locomo-conv-50-qa-74": true,
+    "locomo-conv-50-qa-78": false,
+    "locomo-conv-50-qa-112": false,
+    "locomo-conv-50-qa-26": false,
+    "locomo-conv-50-qa-60": true,
+    "locomo-conv-50-qa-67": false,
+    "locomo-conv-50-qa-102": false,
+    "locomo-conv-50-qa-144": true,
+    "locomo-conv-49-qa-152": true,
+    "locomo-conv-49-qa-125": true,
+    "locomo-conv-49-qa-70": false,
+    "locomo-conv-49-qa-59": true,
+    "locomo-conv-49-qa-45": false,
+    "locomo-conv-49-qa-31": false,
+    "locomo-conv-49-qa-116": false,
+    "locomo-conv-49-qa-44": false,
+    "locomo-conv-49-qa-124": false,
+    "locomo-conv-26-qa-115": true,
+    "locomo-conv-26-qa-73": false,
+    "locomo-conv-26-qa-56": false,
+    "locomo-conv-26-qa-48": false,
+    "locomo-conv-42-qa-134": true,
+    "locomo-conv-42-qa-18": true,
+    "locomo-conv-42-qa-52": true,
+    "locomo-conv-42-qa-155": true,
+    "locomo-conv-42-qa-168": true,
+    "locomo-conv-42-qa-14": false,
+    "locomo-conv-42-qa-74": false,
+    "locomo-conv-42-qa-167": false,
+    "locomo-conv-41-qa-42": true,
+    "locomo-conv-41-qa-130": true,
+    "locomo-conv-41-qa-20": true,
+    "locomo-conv-41-qa-32": false,
+    "locomo-conv-41-qa-59": false,
+    "locomo-conv-41-qa-57": false,
+    "locomo-conv-41-qa-51": true,
+    "locomo-conv-41-qa-68": false,
+    "locomo-conv-41-qa-26": true,
+    "locomo-conv-41-qa-150": false,
+    "locomo-conv-41-qa-36": true,
+    "locomo-conv-48-qa-160": true,
+    "locomo-conv-48-qa-24": true,
+    "locomo-conv-48-qa-48": false,
+    "locomo-conv-48-qa-133": true,
+    "locomo-conv-48-qa-34": true,
+    "locomo-conv-48-qa-157": true,
+    "locomo-conv-48-qa-117": false,
+    "locomo-conv-48-qa-165": true,
+    "locomo-conv-48-qa-8": false,
+    "locomo-conv-48-qa-139": false,
+    "locomo-conv-48-qa-135": false,
+    "locomo-conv-48-qa-2": true,
+    "locomo-conv-48-qa-85": false,
+    "locomo-conv-47-qa-83": true,
+    "locomo-conv-47-qa-85": true,
+    "locomo-conv-47-qa-33": false,
+    "locomo-conv-47-qa-58": true,
+    "locomo-conv-47-qa-5": false,
+    "locomo-conv-43-qa-125": true,
+    "locomo-conv-43-qa-48": false,
+    "locomo-conv-43-qa-4": false,
+    "locomo-conv-43-qa-154": false,
+    "locomo-conv-43-qa-21": false,
+    "locomo-conv-43-qa-110": true,
+    "locomo-conv-43-qa-155": false,
+    "locomo-conv-43-qa-92": true,
+    "locomo-conv-43-qa-61": false,
+    "locomo-conv-43-qa-174": true,
+    "locomo-conv-44-qa-43": false,
+    "locomo-conv-44-qa-29": true,
+    "locomo-conv-44-qa-77": true,
+    "locomo-conv-44-qa-45": false,
+    "locomo-conv-44-qa-53": false,
+    "locomo-conv-44-qa-76": true,
+    "locomo-conv-44-qa-87": false,
+    "locomo-conv-44-qa-4": false,
+    "locomo-conv-44-qa-21": false,
+    "locomo-conv-44-qa-26": true,
+    "locomo-conv-44-qa-56": true,
+    "locomo-conv-30-qa-80": false
+  },
+  "elapsed_s": 633.4,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}
