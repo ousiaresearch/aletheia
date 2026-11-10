@@ -74,8 +74,45 @@
         "sample": "prefix",
         "seed": null
       },
-      "elapsed_s": 35.9,
-      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval."
+      "elapsed_s": 36.5,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "gold_validation": {
+        "questions_with_gold": 1982,
+        "questions_with_unreachable_gold": 5,
+        "unreachable_ids": [
+          {
+            "question_id": "locomo-conv-42-qa-58",
+            "missing": [
+              "locomo-conv-42-d10-19"
+            ]
+          },
+          {
+            "question_id": "locomo-conv-42-qa-88",
+            "missing": [
+              "locomo-conv-42-d"
+            ]
+          },
+          {
+            "question_id": "locomo-conv-43-qa-18",
+            "missing": [
+              "locomo-conv-43-d-11-26"
+            ]
+          },
+          {
+            "question_id": "locomo-conv-47-qa-38",
+            "missing": [
+              "locomo-conv-47-d4-36"
+            ]
+          },
+          {
+            "question_id": "locomo-conv-50-qa-69",
+            "missing": [
+              "locomo-conv-50-d30-05"
+            ]
+          }
+        ],
+        "gold_ids_total": 2824
+      }
     }
   ]
 }

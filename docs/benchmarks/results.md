@@ -169,6 +169,12 @@ env -u PYTHONPATH .venv/bin/python benchmarks/run.py --dataset locomo
    abstention accuracy is 0.0%. This is the first time the suite has scored the thing Phase 9's
    "abstention assertions" deliverable was for, and the assertion does not pass.
 
+Gold-token validation is now a check rather than a caveat: the runner verifies every cited evidence id
+against the records actually present and reports any it cannot reach. On LoCoMo it finds **5 of 1,982
+questions citing ids no record carries** (`…-d10-19`, `…-d`, `…-d-11-26` and two more), so full
+recovery is impossible for them by construction. That independently reproduces what the harness audit
+found by inspection, and it will now fail loudly if the converter starts dropping ids again.
+
 Gold units are not interchangeable, and the runner labels them instead of emitting one number across
 three datasets:
 

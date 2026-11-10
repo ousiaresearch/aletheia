@@ -144,8 +144,25 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         by_conv.setdefault(conv_id, []).append((records, qa))
 
     cases = []
+    gold_validation = {"questions_with_gold": 0, "questions_with_unreachable_gold": 0,
+                       "unreachable_ids": [], "gold_ids_total": 0}
     for conv_id, items in by_conv.items():
         records = items[0][0]
+        # Gold-token validation: an evidence id that no record carries can never be retrieved, so a
+        # question citing one has an unachievable ceiling. LoCoMo has five such questions (malformed
+        # ids like `...-d` and `...-d-11-26`) and the audit that found them found nothing checking.
+        present = {rec.record_id for rec in records}
+        for _records, qa in items:
+            gold_ids = _gold_ids(qa)
+            if not gold_ids:
+                continue
+            gold_validation["questions_with_gold"] += 1
+            gold_validation["gold_ids_total"] += len(gold_ids)
+            missing = [g for g in gold_ids if g not in present]
+            if missing:
+                gold_validation["questions_with_unreachable_gold"] += 1
+                gold_validation["unreachable_ids"].append(
+                    {"question_id": qa.question_id, "missing": missing[:4]})
         sub = create_substrate(f"run-{dataset}-{conv_id}", records, embedder=embedder)
         ctx = make_ctx()
         try:
@@ -189,8 +206,13 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         finally:
             sub.close()
 
-    return _summarise(dataset, cases, limit=limit, elapsed=time.time() - started,
-                      sample=sample, seed=seed if sample == "random" else None)
+    summary = _summarise(dataset, cases, limit=limit, elapsed=time.time() - started,
+                         sample=sample, seed=seed if sample == "random" else None)
+    summary["gold_validation"] = {
+        **gold_validation,
+        "unreachable_ids": gold_validation["unreachable_ids"][:10],
+    }
+    return summary
 
 
 def _gold_unit(dataset: str) -> str:
@@ -295,6 +317,13 @@ def report(results: list[dict]) -> None:
         if r["abstention_questions"]:
             print(f"  abstention  {r['abstention_correct']}/{r['abstention_questions']} correct "
                   f"({r['abstention_rate']:.1%})")
+        gv = r.get("gold_validation") or {}
+        if gv.get("questions_with_unreachable_gold"):
+            print(f"  gold validation: {gv['questions_with_unreachable_gold']} of "
+                  f"{gv['questions_with_gold']} questions cite evidence ids no record carries "
+                  f"(full recovery impossible for them)")
+            for miss in gv["unreachable_ids"][:3]:
+                print(f"    {miss['question_id']}: missing {miss['missing']}")
         if r["by_category"]:
             print("  by category:")
             for cat, b in r["by_category"].items():

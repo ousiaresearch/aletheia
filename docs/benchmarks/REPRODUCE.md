@@ -94,6 +94,7 @@ PY
 ```
 
 Expected whole-set LoCoMo, lexical, depth 10: **1,538 graded, 990 hits, hit@10 64.4% (CI 61.9–66.7),
-MRR 0.389, coverage 0.574, full recovery 52.2%, abstention 0/444.** The 1,538 is the answerable
+MRR 0.389, coverage 0.574, full recovery 52.2%, abstention 0/444, and gold validation reporting 5 of
+1,982 questions citing evidence ids no record carries.** The 1,538 is the answerable
 remainder after the 444 questions with no gold answer are moved to the abstention column; scoring
 those as retrieval questions gives 64.6% over 1,982 instead, which is higher and less honest.
