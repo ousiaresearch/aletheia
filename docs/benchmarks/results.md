@@ -375,6 +375,46 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### Confirmed at N≈88: the small-slice table was noise, and the answer number is 47% — 2026-11-09
+
+The two configurations that mattered were re-run at N=120 (87 and 90 gradable), judged identically.
+This supersedes most of the table above.
+
+| | plain reader, depth 10 | deep pool + cross-encoder |
+|---|---|---|
+| retrieval hit@10 | 56.3% (49/87) | **65.6%** (59/90) |
+| MRR | 0.292 | **0.445** |
+| coverage | 0.472 | **0.578** |
+| **judged accuracy** | **47.1%** (41/87) | **42.2%** (38/90) |
+| judge repeat agreement | 97.7% | 97.8% |
+
+**Two corrections, both against my own conclusions from an hour earlier.**
+
+1. **The 60% answer numbers were an easy-slice artifact.** On the 40-question seed-2 slice the plain
+   reader judged 60.0%. On 120 questions from the same seed it is **47.1%**. The smaller slice
+   happened to contain proportionally fewer multi-hop questions (9 of 30 against 25 of 87) and more
+   single-hop ones. Every answer-level figure in the table above that came from that slice was
+   therefore optimistic, and the honest current estimate for the pinned reader on LoCoMo is **47%**,
+   not 60%.
+
+2. **"More retrieval machinery dilutes the reader" was noise.** Paired over the 117 questions both
+   configurations attempted, the cross-encoder **gained 3 and lost 3 correct answers — p = 1.0000**.
+   The aggregate 47.1% against 42.2% differs only because the denominators differ (87 against 90).
+   Conversion given retrieved evidence is 81.6% against 78.0%, close enough that at this N it is not a
+   difference. The monotone "conversion falls as configurations get complex" pattern I reported a
+   message earlier does not survive proper measurement, and the mechanism I offered for it — records
+   that read like answers but are the wrong evidence — has no support here.
+
+**What does hold up.** The cross-encoder's retrieval gain is real and consistent: +9.3 points aggregate,
+paired 13 gained against 6 lost (p=0.167 — direction favourable, still short of significance), with MRR
+0.292 → 0.445 and coverage 0.472 → 0.578. It simply does not convert into a measurable answer
+improvement at this sample size, and the paired answer test is a clean 3/3.
+
+So the current honest state of the goal: **retrieval hit@10 56% → 66% with a deep pool and a
+cross-encoder (probably real, not yet significant); answer accuracy ~47% and indistinguishable between
+the two configurations; conversion ~78–82% and stable.** Answer accuracy remains roughly retrieval ×
+conversion, and only retrieval has moved.
+
 ### Six configurations, one underpowered dataset — and what conversion says — 2026-11-09
 
 Every configuration measured on the same 40-question dev slice, with the judge pinned at

@@ -1,0 +1,24 @@
+benchmarks/confirm-A-plain120.json
+  judge openai-compatible:qwen3.8-flash  prompt judge.v1  repeat 2
+  judged 87/87 (0 unusable judgements)
+  judged accuracy 41/87 = 47.1%
+  repeat agreement 97.7% on 87 cases  -> supportable
+  40 judged-wrong examples stored, e.g.:
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted=''
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted=''
+    locomo-conv-50-qa-1: gold='mansion in Japan, luxury car' predicted=''
+
+wrote benchmarks/confirm-A-judged.json
+A 0
+benchmarks/confirm-B-ce120.json
+  judge openai-compatible:qwen3.8-flash  prompt judge.v1  repeat 2
+  judged 90/90 (0 unusable judgements)
+  judged accuracy 38/90 = 42.2%
+  repeat agreement 97.8% on 90 cases  -> supportable
+  40 judged-wrong examples stored, e.g.:
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted='custom-made with an octopus '
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted='custom-made with an octopus '
+    locomo-conv-50-qa-1: gold='mansion in Japan, luxury car' predicted=''
+
+wrote benchmarks/confirm-B-judged.json
+B 0
