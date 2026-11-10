@@ -375,6 +375,32 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The reader model does not matter either — four levers, all flat — 2026-11-09
+
+Same 120 questions, same retrieval, only the reader model changed:
+
+| reader | judged accuracy | paired on 77 shared questions |
+|---|---|---|
+| `qwen3.8-flash` | 46.6% (41/88) | 37/77 = 48.1% |
+| `qwen3.8-max` | 48.1% (38/79) | **37/77 = 48.1%** |
+
+Gained 2, lost 2, **p = 1.000** — identical. Max also timed out on 15 of 120 questions against flash's 2,
+so it is slower and buys nothing.
+
+**Four levers, all measured at N≈88 on identical questions, all flat:**
+
+| lever | effect on judged accuracy |
+|---|---|
+| reranking (deep pool + cross-encoder) | retrieval +9.3 points, answers unchanged |
+| prompt wording (v3 → v4) | 4 gained, 4 lost |
+| evidence volume (10 → 50 items) | 3 gained, 5 lost |
+| reader model (flash → max) | 2 gained, 2 lost |
+
+Answer accuracy has sat between 42% and 48% through every one. The system's answer rate on LoCoMo is
+pinned near 47% by something none of these touch — or the measurement itself is the constraint, which is
+the next thing to rule out: two judge defects were found today, and an earlier independent judge scored
+the same answers 61.9% against flash's 60.0%.
+
 ### A wider reader window does nothing — the ceiling is not evidence volume — 2026-11-09
 
 The depth curve said hit@50 is 78.3% against hit@10's 56.0%, so the records multi-hop questions need
