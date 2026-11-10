@@ -113,6 +113,32 @@ DATASETS = {"locomo": _iter_locomo, "longmem": _iter_longmem}
 GOLD_UNIT = {"locomo": "record", "longmem": "session", "beam": "none"}
 
 
+class _ReadingItem:
+    """An Item plus the conversation metadata a reader needs: who spoke and when.
+
+    The substrate stores both (LoCoMo's converter puts the speaker and the session date in record
+    provenance), and they were simply not being passed on. A reader cannot answer "when did Caroline
+    go to the support group" if the date is sitting one layer below the text it is shown.
+    """
+
+    __slots__ = ("record_id", "text", "speaker", "when")
+
+    def __init__(self, record_id: str, text: str, speaker=None, when=None):
+        self.record_id = record_id
+        self.text = text
+        self.speaker = speaker
+        self.when = when
+
+
+def _reading_items(items_out, meta: dict) -> list:
+    out = []
+    for item in items_out:
+        speaker, when = meta.get(item.record_id, (None, None))
+        out.append(_ReadingItem(item.record_id, getattr(item, "text", "") or "",
+                               speaker=speaker, when=when))
+    return out
+
+
 def _gold_ids(qa) -> list[str] | None:
     return list(qa.evidence_ids) if getattr(qa, "evidence_ids", None) else None
 
@@ -153,6 +179,12 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
         # question citing one has an unachievable ceiling. LoCoMo has five such questions (malformed
         # ids like `...-d` and `...-d-11-26`) and the audit that found them found nothing checking.
         present = {rec.record_id for rec in records}
+        # Speaker and date per record, so the reader sees what the substrate actually holds.
+        reading_meta = {}
+        for rec in records:
+            prov = rec.provenance if isinstance(rec.provenance, dict) else {}
+            if prov.get("speaker") or prov.get("when"):
+                reading_meta[rec.record_id] = (prov.get("speaker"), prov.get("when"))
         for _records, qa in items:
             gold_ids = _gold_ids(qa)
             if not gold_ids:
@@ -191,7 +223,7 @@ def run(dataset: str, *, limit: int = 10, n: int | None = None, sample: str = "p
                     if with_reader:
                         from aletheia.reader import read as read_answer
 
-                        reading = read_answer(qa.question, items_out)
+                        reading = read_answer(qa.question, _reading_items(items_out, reading_meta))
                     cases.append({
                         "question_id": qa.question_id,
                         "reading": None if reading is None else {

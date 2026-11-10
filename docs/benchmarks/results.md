@@ -343,6 +343,37 @@ Two caveats that cut both ways, stated rather than buried:
 `comparable_to_published_answer_scores: false` and `judge: null`. Publishing an unjudged answer number
 beside their judged ones would be the same category error this file spends its length warning about.
 
+### reader.v2 — same questions, same retrieval, better reading
+
+Developed on dev slice `--seed 2` (N=40) and compared against a `reader.v1` baseline taken on the
+identical questions. A held-back slice (`--seed 99`) is untouched until this work stops moving, so the
+reported number is not the one being tuned on.
+
+| Same 40 questions, seed 2 | reader.v1 | reader.v2 | |
+|---|---|---|---|
+| retrieval hit@10 | 60.0% (18/30) | 60.0% (18/30) | unchanged — the date plumbing did not move retrieval |
+| coverage / full recovery | 0.519 / 46.7% | 0.519 / 46.7% | unchanged |
+| questions answered | 22 of 40 | **26 of 40** | 6 newly answered, 2 newly abstained |
+| exact match | 20.0% (CI 9.5–37.3) | **30.0%** (CI 16.7–47.9) | +10 points |
+| token F1 | 0.374 | **0.541** | +0.167 |
+| cited a gold record | 50.0% | 50.0% | unchanged |
+
+Two changes produced it, both capability fixes rather than test-fitting:
+
+1. **Session dates recovered.** LoCoMo ships `session_N_date_time` per session ("1:56 pm on 8 May,
+   2023") and the converter discarded them, so 321 temporal questions were asked of evidence carrying
+   no date. The dates now travel in `provenance["when"]` and `effective_at`, and the reader sees
+   `[3] (Caroline, 1:56 pm on 8 May, 2023) I went to the support group yesterday.` — the same omission
+   as the LongMemEval converter dropping `haystack_dates`.
+2. **The abstention instruction was pushing the reader to decline.** v1 told it not to answer unless
+   the evidence was sufficient, and it abstained on 18 of 40 questions whose evidence had been
+   retrieved. v2 answers when the evidence supports an answer and abstains only when the specific fact
+   is absent.
+
+**Read the intervals, not the point estimates:** 9.5–37.3 against 16.7–47.9 overlap, so at N=40 this
+establishes a direction and a plausible mechanism, not a significant improvement. Abstention is still
+14 of 40 (35%), which is the next reading-side lever.
+
 ### Two defects this run found and fixed
 
 1. **The reader inherited the transport's 30 s timeout**, and two of the first twenty questions died

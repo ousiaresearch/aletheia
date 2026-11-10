@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import json
 import os
+import re
+from datetime import datetime
 from pathlib import Path
 
 from benchmarks.full.common import (
@@ -49,12 +51,59 @@ def _parse_evidence_id(raw: str) -> list[str]:
     return ids if ids else ["rec"]
 
 
+#: LoCoMo writes session times like "1:56 pm on 8 May, 2023". Parsed best-effort: an unparseable date
+#: yields no effective_at rather than a wrong one, and the raw string is always kept in provenance.
+_DATE_FORMATS = ("%I:%M %p on %d %B, %Y", "%d %B, %Y", "%I:%M %p on %d %B %Y")
+_SESSION_NUMBER = re.compile(r"(session_\d+)")
+
+
+def session_dates(conv_data: dict) -> dict[str, str]:
+    """{session_key: raw date string} from the conversation's `session_N_date_time` entries."""
+    dates: dict[str, str] = {}
+    for key, value in (conv_data or {}).items():
+        if isinstance(value, str) and key.endswith("_date_time"):
+            dates[key[: -len("_date_time")]] = value
+    return dates
+
+
+def when_for(session_key: str, dates: dict[str, str]) -> str | None:
+    """Date for a session key, tolerating derived keys like `session_1_observation`."""
+    if not session_key:
+        return None
+    if session_key in dates:
+        return dates[session_key]
+    match = _SESSION_NUMBER.match(session_key)
+    return dates.get(match.group(1)) if match else None
+
+
+def epoch_for(raw: str | None) -> float | None:
+    """Best-effort epoch for a LoCoMo date string; None rather than a wrong time."""
+    if not raw:
+        return None
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.strptime(raw.strip(), fmt).timestamp()
+        except ValueError:
+            continue
+    return None
+
+
 def convert_sample(sample: dict) -> tuple[str, list[Record], list[QAPair]]:
     """Return (conv_id, records, qa_pairs) for one LoCoMo conversation."""
     conv_id = f"locomo-{sample['sample_id']}"
     records: list[Record] = []
     qa_pairs: list[QAPair] = []
     seen_ids: set[str] = set()
+
+    # Session dates are parsed up front because every record below wants its session's date. LoCoMo
+    # ships one per session and this converter used to discard them, which left the 321 temporal
+    # questions being asked of evidence that carried no date at all.
+    _conv_data = json.loads(sample.get("conversation", "{}") or "{}")
+    _dates = session_dates(_conv_data if isinstance(_conv_data, dict) else {})
+
+    def _temporal(session_key: str) -> dict:
+        raw = when_for(session_key, _dates)
+        return {"when": raw} if raw else {}
 
     def _add_record(rec: Record) -> None:
         if rec.record_id in seen_ids:
@@ -91,7 +140,9 @@ def convert_sample(sample: dict) -> tuple[str, list[Record], list[QAPair]]:
                                 payload={"text": text},
                                 epistemic_status="stated",
                                 attribution="document",
-                                provenance={"session": session_key, "speaker": speaker},
+                                effective_at=epoch_for(when_for(session_key, _dates)),
+                                provenance={"session": session_key, "speaker": speaker,
+                                            **_temporal(session_key)},
                             )
                         )
 
@@ -115,7 +166,9 @@ def convert_sample(sample: dict) -> tuple[str, list[Record], list[QAPair]]:
                             payload={"text": text},
                             epistemic_status="stated",
                             attribution="document",
-                            provenance={"session": session_key, "speaker": speaker},
+                            effective_at=epoch_for(when_for(session_key, _dates)),
+                            provenance={"session": session_key, "speaker": speaker,
+                                        **_temporal(session_key)},
                         )
                     )
 
@@ -133,13 +186,14 @@ def convert_sample(sample: dict) -> tuple[str, list[Record], list[QAPair]]:
                     payload={"text": text},
                     epistemic_status="stated",
                     attribution="document",
-                    provenance={"session": session_key},
+                    effective_at=epoch_for(when_for(session_key, _dates)),
+                    provenance={"session": session_key, **_temporal(session_key)},
                 )
             )
 
     # Raw conversation turns -> Source records
     # QA evidence references (e.g. D1:12) map directly to dia_ids here.
-    conv_data = json.loads(sample.get("conversation", "{}") or "{}")
+    conv_data = _conv_data
     if isinstance(conv_data, dict):
         for session_key, turns in conv_data.items():
             if not isinstance(turns, list):
@@ -161,7 +215,9 @@ def convert_sample(sample: dict) -> tuple[str, list[Record], list[QAPair]]:
                         payload={"text": text},
                         epistemic_status="stated",
                         attribution="document",
-                        provenance={"session": session_key, "speaker": speaker, "dia_id": dia_id},
+                        effective_at=epoch_for(when_for(session_key, _dates)),
+                        provenance={"session": session_key, "speaker": speaker, "dia_id": dia_id,
+                                    **_temporal(session_key)},
                     )
                 )
 

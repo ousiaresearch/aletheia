@@ -1,0 +1,763 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 40,
+      "errors": 0,
+      "error_sample": null,
+      "graded": 30,
+      "gold_scored": 30,
+      "hits": 18,
+      "hit_at_k": 0.6,
+      "hit_at_k_ci95": [
+        0.423,
+        0.754
+      ],
+      "mrr": 0.371,
+      "gold_unit": "record",
+      "mean_coverage": 0.519,
+      "full_recovery": 0.467,
+      "answer_in_context": 0.6,
+      "answer_in_context_ci95": [
+        0.423,
+        0.754
+      ],
+      "answer_only_questions": 0,
+      "abstention_questions": 10,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 9,
+          "hits": 6,
+          "full": 3,
+          "hit_at_k": 0.667,
+          "coverage": 0.454,
+          "full_recovery": 0.333
+        },
+        "2": {
+          "n": 5,
+          "hits": 2,
+          "full": 1,
+          "hit_at_k": 0.4,
+          "coverage": 0.3,
+          "full_recovery": 0.2
+        },
+        "3": {
+          "n": 3,
+          "hits": 1,
+          "full": 1,
+          "hit_at_k": 0.333,
+          "coverage": 0.333,
+          "full_recovery": 0.333
+        },
+        "4": {
+          "n": 13,
+          "hits": 9,
+          "full": 9,
+          "hit_at_k": 0.692,
+          "coverage": 0.692,
+          "full_recovery": 0.692
+        }
+      },
+      "selection": {
+        "sample": "random",
+        "seed": 2
+      },
+      "elapsed_s": 427.1,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "reading": {
+        "measured": true,
+        "n": 40,
+        "answered": 22,
+        "abstentions": 18,
+        "graded": 30,
+        "exact_match": 0.2,
+        "exact_match_ci95": [
+          0.095,
+          0.373
+        ],
+        "token_f1": 0.374,
+        "cited_a_gold_record": 0.5,
+        "model": "openai-compatible:qwen3.8-flash",
+        "prompt_version": "reader.v1",
+        "judge": null,
+        "comparable_to_published_answer_scores": false,
+        "note": "Stage 2 \u2014 reading over the evidence this system actually retrieved, so it is end-to-end in practice. Scored by exact match and token F1, NOT an LLM judge; no comparison to Mem0/Zep/MemHQ is licensed from these numbers."
+      },
+      "reading_cases": [
+        {
+          "question_id": "locomo-conv-50-qa-175",
+          "category": "5",
+          "text": "Because it gives it a unique look and goes with his style.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d16-19",
+            "locomo-conv-50-d16-20",
+            "locomo-conv-50-evt-events_session_9-Dave-260"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-159",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_3-Calvin-245",
+            "locomo-conv-50-d3-7",
+            "locomo-conv-50-ss-session_3_summary",
+            "locomo-conv-50-d3-5",
+            "locomo-conv-50-evt-events_session_3-Calvin-244"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-162",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_4-Calvin-247",
+            "locomo-conv-50-d4-24"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-134",
+          "category": "4",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-d25-18",
+            "locomo-conv-50-d25-20"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Paying extra attention to detail",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-63",
+          "category": "1",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-d16-13",
+            "locomo-conv-50-d11-7",
+            "locomo-conv-50-evt-events_session_9-Dave-260",
+            "locomo-conv-50-d16-24"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-1",
+          "category": "1",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_23-Calvin-285",
+            "locomo-conv-50-evt-events_session_2-Calvin-241"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "mansion in Japan, luxury car Ferrari 488 GTB",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-181",
+          "category": "5",
+          "text": "a vintage 1968 Kustom K200-A guitar",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-evt-events_session_16-Evan-267"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-152",
+          "category": "4",
+          "text": "Yoga",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d24-19"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Yoga",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-125",
+          "category": "4",
+          "text": "He changed his diet and started walking regularly.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d15-8",
+            "locomo-conv-49-d5-7",
+            "locomo-conv-49-d15-13"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Changed his diet and started walking regularly",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-70",
+          "category": "2",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-evt-events_session_21-Evan-279",
+            "locomo-conv-49-d21-4",
+            "locomo-conv-49-evt-events_session_19-Evan-273",
+            "locomo-conv-49-d21-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "four months",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-162",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-d3-16",
+            "locomo-conv-49-evt-events_session_3-Sam-236",
+            "locomo-conv-49-d15-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-59",
+          "category": "2",
+          "text": "During Sam and Evan's conversation at 4:07 pm on 14 October, 2023.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-evt-events_session_13-Sam-261",
+            "locomo-conv-49-ss-session_13_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "October 14, 2023",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-175",
+          "category": "5",
+          "text": "None; Evan enjoys art/watercolor painting, not writing.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d11-17",
+            "locomo-conv-49-d11-15",
+            "locomo-conv-49-d11-13",
+            "locomo-conv-49-d11-16",
+            "locomo-conv-49-ss-session_11_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-115",
+          "category": "4",
+          "text": "They represent growth, beauty, and appreciating small moments, and remind her of her wedding.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d8-12",
+            "locomo-conv-26-ss-session_8_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "They remind her to appreciate the small moments and were a part of her wedding decor",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-26-qa-187",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-d16-17",
+            "locomo-conv-26-d16-16",
+            "locomo-conv-26-d16-18"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-173",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-ss-session_9_summary",
+            "locomo-conv-26-d9-12",
+            "locomo-conv-26-d16-6",
+            "locomo-conv-26-d17-21"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-73",
+          "category": "2",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-evt-events_session_18-Melanie-187"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "September 2023",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-56",
+          "category": "1",
+          "text": "A rainbow flag mural, her painting 'Embracing Identity', her grandmother's necklace, and a symbol of togetherness.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d14-15",
+            "locomo-conv-26-d11-12",
+            "locomo-conv-26-d4-3",
+            "locomo-conv-26-d14-21"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Rainbow flag, transgender symbol",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-242",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-42-evt-events_session_17-Joanna-283",
+            "locomo-conv-42-ss-session_7_summary",
+            "locomo-conv-42-d27-8",
+            "locomo-conv-42-d6-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-134",
+          "category": "4",
+          "text": "vegan ice cream recipe",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d16-10",
+            "locomo-conv-42-ss-session_16_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "vegan ice cream recipe",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-18",
+          "category": "2",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-42-d11-6",
+            "locomo-conv-42-evt-events_session_11-Joanna-268"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Whispering Falls waterfall",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-52",
+          "category": "1",
+          "text": "2",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-evt-events_session_25-Joanna-308",
+            "locomo-conv-42-d25-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "two",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-42",
+          "category": "1",
+          "text": "West County",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-evt-events_session_23-John-378",
+            "locomo-conv-41-d23-1"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "West County",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-130",
+          "category": "4",
+          "text": "Weight training",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d25-16",
+            "locomo-conv-41-d25-17"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "weight training",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-20",
+          "category": "2",
+          "text": "last year",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-evt-events_session_11-John-343"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "2022",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-160",
+          "category": "4",
+          "text": "virtual conference",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-evt-events_session_21-Jolene-320"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "virtual conference",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-24",
+          "category": "1",
+          "text": "Tree Pose and Dancer Pose.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d14-15",
+            "locomo-conv-48-d14-3",
+            "locomo-conv-48-evt-events_session_4-Deborah-278"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Warrior II, Dancer Pose (Natarajasana), Tree pose",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-48",
+          "category": "3",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-48-d13-13",
+            "locomo-conv-48-d13-8",
+            "locomo-conv-48-d13-9",
+            "locomo-conv-48-d21-8",
+            "locomo-conv-48-d14-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Alaska",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-133",
+          "category": "4",
+          "text": "Interning at an engineering firm.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-ss-session_14_summary",
+            "locomo-conv-48-ss-session_13_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "interning at a well-known engineering firm",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-47-qa-83",
+          "category": "4",
+          "text": "The technologically advanced megacities and delicious street food.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-47-d6-15"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Technologically advanced megacities and tasty street food",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-85",
+          "category": "4",
+          "text": "Labrador",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-47-d9-12",
+            "locomo-conv-47-d9-10"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Labrador",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-33",
+          "category": "3",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-d17-10",
+            "locomo-conv-47-d17-13"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Yes",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-150",
+          "category": "5",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-evt-events_session_12-James-292",
+            "locomo-conv-47-d21-3",
+            "locomo-conv-47-evt-events_session_5-James-270",
+            "locomo-conv-47-ss-session_5_summary",
+            "locomo-conv-47-ss-session_6_summary",
+            "locomo-conv-47-evt-events_session_20-John-315"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-125",
+          "category": "4",
+          "text": "Turn on the light - happiness hides in the darkest of times",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d15-11"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "\"Turn on the light - happiness hides in the darkest of times.\"",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-48",
+          "category": "1",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-43-ss-session_19_summary",
+            "locomo-conv-43-d19-6"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "around November 16, 2023",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-4",
+          "category": "1",
+          "text": "The Name of the Wind",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-evt-events_session_5-Tim-272",
+            "locomo-conv-43-d5-15",
+            "locomo-conv-43-d22-16"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-154",
+          "category": "4",
+          "text": "He felt the atmosphere was really electric and intense.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d23-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "electric and intense",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-44-qa-43",
+          "category": "3",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d18-20",
+            "locomo-conv-44-d3-7",
+            "locomo-conv-44-d5-3",
+            "locomo-conv-44-d5-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Minnesota",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-115",
+          "category": "4",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d12-5",
+            "locomo-conv-44-ss-session_25_summary",
+            "locomo-conv-44-ss-session_24_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Go hiking",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-29",
+          "category": "1",
+          "text": "Pepper, Pixie, Precious, and Panda",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-d15-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v1",
+          "dropped_citations": 0,
+          "gold_answer": "Pepper, Precious, Panda, and Pixie",
+          "cited_gold": false,
+          "retrieval_hit": true
+        }
+      ],
+      "gold_validation": {
+        "questions_with_gold": 40,
+        "questions_with_unreachable_gold": 0,
+        "unreachable_ids": [],
+        "gold_ids_total": 59
+      }
+    }
+  ]
+}

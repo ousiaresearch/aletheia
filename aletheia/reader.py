@@ -42,7 +42,7 @@ from dataclasses import dataclass, field
 
 #: Bump when the prompt changes. A stage-2 number is only comparable to another stage-2 number taken
 #: with the same prompt version, so this travels with every measurement.
-PROMPT_VERSION = "reader.v1"
+PROMPT_VERSION = "reader.v2"
 
 _SYSTEM = (
     "You answer questions using ONLY the numbered evidence provided. "
@@ -54,9 +54,12 @@ _INSTRUCTIONS = """\
 Answer the question using only the evidence below. Work in this order:
 
 1. For each numbered item that matters, note in one short line what it establishes.
-2. If the evidence cannot answer the question, set "abstain" to true and leave "answer" empty.
-   Partial evidence is not enough when the question asks for a specific fact that is absent.
-3. If it can, give the answer as briefly as the question allows.
+2. Then answer the question if the evidence supports an answer. Most questions are answerable from at
+   least one item: do not abstain because the evidence is imperfect, because several items are
+   irrelevant, or because you would phrase it differently. Abstain ONLY when the specific fact asked
+   for is absent from every item.
+3. Keep the answer as short as the question wants — a name, a date, a number, or a short phrase. Do not
+   explain, hedge, or restate the question inside the answer.
 
 Return JSON with exactly these keys:
 {{"reasoning": "<one line per relevant item>", "answer": "<the answer, or empty>", "abstain": <true|false>, "cited": [<item numbers you used>]}}
@@ -87,10 +90,20 @@ class ReaderAnswer:
 
 
 def _format_evidence(items) -> str:
+    """Numbered evidence lines, carrying speaker and date when the caller supplies them.
+
+    LoCoMo ships a date and a speaker for every session and every turn, and a reader asked "when did
+    this happen" cannot answer from text that omits them. Record ids are deliberately not shown —
+    they are internal — but a conversation's own metadata is what a person reading the evidence would
+    see.
+    """
     lines = []
     for number, item in enumerate(items, start=1):
         text = (getattr(item, "text", "") or "").strip().replace("\n", " ")
-        lines.append(f"[{number}] {text}")
+        speaker = getattr(item, "speaker", None)
+        when = getattr(item, "when", None)
+        attrs = ", ".join(str(a) for a in (speaker, when) if a)
+        lines.append(f"[{number}] ({attrs}) {text}" if attrs else f"[{number}] {text}")
     return "\n".join(lines)
 
 
