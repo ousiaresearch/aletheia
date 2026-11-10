@@ -42,7 +42,7 @@ from dataclasses import dataclass, field
 
 #: Bump when the prompt changes. A stage-2 number is only comparable to another stage-2 number taken
 #: with the same prompt version, so this travels with every measurement.
-PROMPT_VERSION = "reader.v2"
+PROMPT_VERSION = "reader.v4"
 
 _SYSTEM = (
     "You answer questions using ONLY the numbered evidence provided. "
@@ -60,6 +60,21 @@ Answer the question using only the evidence below. Work in this order:
    for is absent from every item.
 3. Keep the answer as short as the question wants — a name, a date, a number, or a short phrase. Do not
    explain, hedge, or restate the question inside the answer.
+4. If the evidence supports SEVERAL things the question asks about — a list of items, several people,
+   more than one date — give all of them, separated by commas. One item out of three is an incomplete
+   answer even when that one item is correct.
+5. Express every time absolutely. Each evidence item shows the date of its *session* in parentheses;
+   use it to resolve relative wording ("yesterday", "last year", "last season", "a few months ago")
+   into the actual date. "last season" is not an answer when the session is dated November 2023.
+6. Do NOT answer with the session timestamp itself. The parenthesised date is when the conversation
+   happened, not necessarily the date being discussed. If the question asks when something occurred,
+   answer with the date the text describes, adjusted by rule 5 — not with the session stamp. Measured
+   failure this rule exists for: a gold answer of 3 October 2023 answered as "2:44 pm on 4 October,
+   2023", and 21 August 2023 answered as "11:06 am on 22 August, 2023".
+7. Answer the specific thing asked, from the item that actually states it. If several items are about
+   different topics, take the one that addresses the question rather than the most vivid or most
+   recently mentioned. Measured failure: a question about stress relievers answered "painting", and a
+   question about a desert painting answered "watercolor painting".
 
 Return JSON with exactly these keys:
 {{"reasoning": "<one line per relevant item>", "answer": "<the answer, or empty>", "abstain": <true|false>, "cited": [<item numbers you used>]}}

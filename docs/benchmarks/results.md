@@ -375,6 +375,39 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The judge's failure list was capped at 40, which invalidated two paired comparisons — 2026-11-09
+
+`benchmarks/judge.py` stored at most forty judged-wrong cases for inspection and no per-case verdicts.
+Aggregate accuracy was always correct, because it is computed over all graded cases — but **any analysis
+that reads `failures` as "the set of wrong answers" is wrong past forty**, and every question after the
+cap looks correct.
+
+Two conclusions in this file were derived that way and are hereby withdrawn:
+
+- "Paired over the 117 questions both configurations attempted, the cross-encoder gained 3 and lost 3 —
+  p = 1.0000." At N=87 with accuracy 47.1% the true failure count is 46, and at N=90 with 42.2% it is 52;
+  both exceed the cap. The gain/loss counts of 3 were an artefact of comparing two 40-item truncated
+  samples, not a measurement.
+- "v3 -> v4 paired: gained 3, lost 4, p=1.000." Same defect, same invalidity.
+
+The failure *taxonomy* reported earlier (ten "wrong but overlapping", eight "no overlap", the date-echo
+examples) was drawn from the same truncated sample. Individual examples remain real — the `October 3`
+and `21 August` answers are verbatim from the artifacts — but the proportions are not counts of the
+whole set.
+
+**Fix.** The judge now records a verdict for every graded question in `case_verdicts`, keeps
+`failures_total` and `failures_stored` separately, and a test asserts the per-case map exists. The
+capped `failures` list stays for inspection only, and the printed summary says when it is a sample.
+
+**Consequence.** The paired comparisons have to be recomputed from re-judged artifacts that carry
+`case_verdicts`; until that finishes, the only answer-level claims this file can support are the
+aggregate accuracies themselves (47.1%, 42.2%, 44.3%) with their judge agreement rates — not any
+statement about which questions changed verdict.
+
+This is the second self-inflicted measurement defect found today, after the swallowed retrieval
+exceptions. Both were found by noticing that a number was too clean to be true: a p-value of exactly
+1.0000 across a hundred questions with a fifteen-point aggregate gap is not a result, it is a bug.
+
 ### Confirmed at N≈88: the small-slice table was noise, and the answer number is 47% — 2026-11-09
 
 The two configurations that mattered were re-run at N=120 (87 and 90 gradable), judged identically.

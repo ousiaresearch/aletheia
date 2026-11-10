@@ -152,6 +152,21 @@ def test_prompt_numbers_every_item_and_asks_for_reasoning(fake_llm):
     assert "ONLY the numbered evidence" in prompt
 
 
+def test_prompt_asks_for_complete_lists_and_absolute_dates(fake_llm):
+    """Both instructions answer a measured failure: partial answers ("a mansion in Japan" for a
+    three-part gold) and relative dates ("last season" where the gold is "around November 16, 2023").
+    Between them they account for most of the answers the judge marked wrong."""
+    set_reply, state = fake_llm
+    set_reply({"answer": "2022", "abstain": False, "cited": [1]})
+    reader.read("When did Melanie paint a sunrise?", ITEMS)
+    prompt = state["prompt"]
+    assert "SEVERAL" in prompt and "comma" in prompt
+    assert "absolutely" in prompt and "last season" in prompt
+    assert "session timestamp" in prompt or "session stamp" in prompt
+    assert "rather than the most vivid" in prompt
+    assert reader.PROMPT_VERSION == "reader.v4"
+
+
 def test_reader_module_cannot_reach_the_substrate():
     """Structural, not conventional: the reading stage has no write path, so its output can never
     become a record and design invariant 6 (composite artifacts are never injectable) holds."""

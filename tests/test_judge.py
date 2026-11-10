@@ -92,3 +92,17 @@ def test_an_empty_prediction_is_presented_as_empty_not_blank(fake_judge):
     set_reply({"verdict": "INCORRECT", "reason": "no answer"})
     judge.judge_one("q", "gold", "")
     assert "(empty)" in state["prompt"]
+
+def test_report_stores_a_verdict_for_every_graded_case():
+    """`failures` is capped at 40 for inspection; per-case analysis needs all of them.
+
+    A capped failure list makes questions past the cap look correct, which silently
+    invalidated two paired comparisons before this was fixed.
+    """
+    import inspect
+    from benchmarks import judge
+
+    source = inspect.getsource(judge)
+    assert "case_verdicts" in source
+    assert "failures_total" in source
+    assert "verdict_by_qid" in source

@@ -129,7 +129,9 @@ def run(artifact: str, *, repeat: int = 2, sample: int | None = None, seed: int 
 
     started = time.time()
     verdicts: list[list[bool]] = []
+    verdict_by_qid: dict[str, bool] = {}
     failures: list[dict] = []
+    failures_total = 0
     unusable = 0
     for case in cases:
         per_case = []
@@ -141,12 +143,15 @@ def run(artifact: str, *, repeat: int = 2, sample: int | None = None, seed: int 
                 unusable += 1
                 continue
             per_case.append(result["correct"])
+            if not result["correct"]:
+                failures_total += 1
             if not result["correct"] and len(failures) < 40:
                 failures.append({"question_id": case.get("question_id"),
                                  "gold": case.get("gold_answer"),
                                  "predicted": case.get("text"),
                                  "judge_reason": result["reason"]})
         if per_case:
+            verdict_by_qid[str(case.get("question_id"))] = all(per_case)
             verdicts.append(per_case)
 
     judged = [v[0] for v in verdicts]
@@ -167,6 +172,11 @@ def run(artifact: str, *, repeat: int = 2, sample: int | None = None, seed: int 
         "judge_prompt_version": JUDGE_PROMPT_VERSION,
         "supportable": bool(agree_rate is not None and agree_rate >= 0.9),
         "failures": failures,
+        "failures_total": failures_total,
+        "failures_stored": len(failures),
+        "failure_cap_note": ("`failures` is a capped sample for inspection; `case_verdicts` holds the "
+                             "verdict for every graded question and is what paired comparisons must use."),
+        "case_verdicts": verdict_by_qid,
         "elapsed_s": round(time.time() - started, 1),
         "note": ("A judged number is published only with its judge model, prompt version and repeat "
                  "agreement. Below 90% agreement the judge cannot support a one-point claim."),
@@ -196,7 +206,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  repeat agreement {report['agreement_rate']:.1%} on {report['agreement_n']} cases"
               f"  -> {'supportable' if report['supportable'] else 'NOT supportable (<90%)'}")
     if report["failures"]:
-        print(f"  {len(report['failures'])} judged-wrong examples stored, e.g.:")
+        stored = report["failures_stored"]
+        total = report["failures_total"]
+        shown = f"{stored} of {total}" if stored < total else f"{total}"
+        print(f"  {shown} judged-wrong examples stored"
+              f"{' (capped sample, not the full set)' if stored < total else ''}, e.g.:")
         for failure in report["failures"][:3]:
             print(f"    {failure['question_id']}: gold={str(failure['gold'])[:28]!r} "
                   f"predicted={str(failure['predicted'])[:28]!r}")
