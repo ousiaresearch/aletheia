@@ -1,0 +1,443 @@
+{
+  "artifact": "benchmarks/facts-G-50pool.json",
+  "cases": 85,
+  "judged": 85,
+  "unusable_judgements": 0,
+  "correct": 33,
+  "accuracy": 0.38823529411764707,
+  "repeat": 2,
+  "agreement_n": 85,
+  "agreement_rate": 0.9411764705882353,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-44",
+      "gold": "October 3, 2023",
+      "predicted": "4 October, 2023",
+      "judge_reason": "The system answer gives October 4, 2023 instead of October 3, 2023."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-44",
+      "gold": "October 3, 2023",
+      "predicted": "4 October, 2023",
+      "judge_reason": "The system answer gives 4 October 2023, but the reference answer is October 3, 2023."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-28",
+      "gold": "take long drives in his car, embrace nature, fixing cars",
+      "predicted": "fixing cars, long drives",
+      "judge_reason": "The system answer omits 'embrace nature,' so it does not fully match the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-28",
+      "gold": "take long drives in his car, embrace nature, fixing cars",
+      "predicted": "fixing cars, long drives",
+      "judge_reason": "The system answer omits the reference fact that Calvin embraces nature."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-78",
+      "gold": "why he keeps hustling as a musician",
+      "predicted": "his passion for music",
+      "judge_reason": "The system answer paraphrases the reason as passion for music, which is not explicitly equivalent to why he keeps hustling as a musician."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-78",
+      "gold": "why he keeps hustling as a musician",
+      "predicted": "his passion for music",
+      "judge_reason": "The system answer does not convey the specific fact that the necklace reminds him why he keeps hustling as a musician."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-112",
+      "gold": "satisfying and worth the hard work",
+      "predicted": "satisfied and appreciates the reactions",
+      "judge_reason": "It omits that the reactions make the hard work worthwhile."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-112",
+      "gold": "satisfying and worth the hard work",
+      "predicted": "satisfied and appreciates the reactions",
+      "judge_reason": "It omits that the reactions make the hard work worthwhile."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-60",
+      "gold": "gold chain, custom-made guitar with an octopus on it",
+      "predicted": "gold chain with diamond pendant, custom guitar with octopus design",
+      "judge_reason": "The system answer adds a diamond pendant, which is not in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-67",
+      "gold": "Tokyo",
+      "predicted": "his Japanese house",
+      "judge_reason": "The system answer says Japan, not the required Tokyo."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-67",
+      "gold": "Tokyo",
+      "predicted": "his Japanese house",
+      "judge_reason": "The system answer says a Japanese house, which does not specify Tokyo."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-102",
+      "gold": "Miami",
+      "predicted": "Miami beach",
+      "judge_reason": "Miami Beach is a different location than Miami."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-102",
+      "gold": "Miami",
+      "predicted": "Miami beach",
+      "judge_reason": "Miami Beach is a different location than the reference answer Miami."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "gold": "nature landscapes, portraits, abstract minimalism",
+      "predicted": "nature",
+      "judge_reason": "The system answer omits portraits and abstract minimalism from the reference list."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "gold": "nature landscapes, portraits, abstract minimalism",
+      "predicted": "nature",
+      "judge_reason": "The answer only mentions nature and omits portraits and abstract minimalism."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-82",
+      "gold": "Unhealthy snacks, sweets, yoga, places with beautiful views",
+      "predicted": "painting",
+      "judge_reason": "Painting is not listed among Sam's stress relievers in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-82",
+      "gold": "Unhealthy snacks, sweets, yoga, places with beautiful views",
+      "predicted": "painting",
+      "judge_reason": "Painting is not listed as a stress reliever for Sam in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-124",
+      "gold": "gaining strength",
+      "predicted": "He started lifting weights around October 2022 and mentioned seeing gains from his workouts.",
+      "judge_reason": "The system answer says 'seeing gains' but does not clearly state that Evan is gaining strength, and it adds an unsupported date."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "The system answer omits that the flowers were part of her wedding decor."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "It omits the key fact that the flowers were part of her wedding decor."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "a necklace, the painting 'Embracing Identity', and a rainbow flag mural",
+      "judge_reason": "It omits the transgender symbol and includes unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "a necklace, the painting 'Embracing Identity', and a rainbow flag mural",
+      "judge_reason": "The system answer omits the transgender symbol and includes unrelated items."
+    }
+  ],
+  "failures_total": 105,
+  "failures_stored": 40,
+  "failure_cap_note": "`failures` is a capped sample for inspection; `case_verdicts` holds the verdict for every graded question and is what paired comparisons must use.",
+  "case_verdicts": {
+    "locomo-conv-50-qa-134": false,
+    "locomo-conv-50-qa-63": false,
+    "locomo-conv-50-qa-1": false,
+    "locomo-conv-50-qa-126": false,
+    "locomo-conv-50-qa-77": true,
+    "locomo-conv-50-qa-44": false,
+    "locomo-conv-50-qa-28": false,
+    "locomo-conv-50-qa-48": false,
+    "locomo-conv-50-qa-74": true,
+    "locomo-conv-50-qa-78": false,
+    "locomo-conv-50-qa-112": false,
+    "locomo-conv-50-qa-26": false,
+    "locomo-conv-50-qa-60": false,
+    "locomo-conv-50-qa-67": false,
+    "locomo-conv-50-qa-102": false,
+    "locomo-conv-50-qa-144": true,
+    "locomo-conv-49-qa-152": true,
+    "locomo-conv-49-qa-125": true,
+    "locomo-conv-49-qa-70": false,
+    "locomo-conv-49-qa-59": true,
+    "locomo-conv-49-qa-45": false,
+    "locomo-conv-49-qa-31": true,
+    "locomo-conv-49-qa-44": false,
+    "locomo-conv-49-qa-82": false,
+    "locomo-conv-49-qa-124": true,
+    "locomo-conv-26-qa-115": false,
+    "locomo-conv-26-qa-73": false,
+    "locomo-conv-26-qa-56": false,
+    "locomo-conv-26-qa-48": false,
+    "locomo-conv-42-qa-134": true,
+    "locomo-conv-42-qa-18": true,
+    "locomo-conv-42-qa-52": true,
+    "locomo-conv-42-qa-155": true,
+    "locomo-conv-42-qa-168": true,
+    "locomo-conv-42-qa-14": false,
+    "locomo-conv-42-qa-167": false,
+    "locomo-conv-41-qa-42": true,
+    "locomo-conv-41-qa-130": true,
+    "locomo-conv-41-qa-20": true,
+    "locomo-conv-41-qa-32": false,
+    "locomo-conv-41-qa-59": false,
+    "locomo-conv-41-qa-57": false,
+    "locomo-conv-41-qa-51": false,
+    "locomo-conv-41-qa-68": false,
+    "locomo-conv-41-qa-26": true,
+    "locomo-conv-41-qa-150": false,
+    "locomo-conv-41-qa-36": false,
+    "locomo-conv-48-qa-160": true,
+    "locomo-conv-48-qa-24": false,
+    "locomo-conv-48-qa-48": false,
+    "locomo-conv-48-qa-133": false,
+    "locomo-conv-48-qa-34": true,
+    "locomo-conv-48-qa-157": true,
+    "locomo-conv-48-qa-165": true,
+    "locomo-conv-48-qa-8": false,
+    "locomo-conv-48-qa-139": false,
+    "locomo-conv-48-qa-135": true,
+    "locomo-conv-48-qa-2": true,
+    "locomo-conv-48-qa-85": false,
+    "locomo-conv-47-qa-83": true,
+    "locomo-conv-47-qa-85": true,
+    "locomo-conv-47-qa-33": false,
+    "locomo-conv-47-qa-58": true,
+    "locomo-conv-47-qa-5": false,
+    "locomo-conv-43-qa-125": true,
+    "locomo-conv-43-qa-48": false,
+    "locomo-conv-43-qa-154": true,
+    "locomo-conv-43-qa-21": false,
+    "locomo-conv-43-qa-110": true,
+    "locomo-conv-43-qa-155": false,
+    "locomo-conv-43-qa-92": true,
+    "locomo-conv-43-qa-61": false,
+    "locomo-conv-43-qa-174": false,
+    "locomo-conv-44-qa-43": false,
+    "locomo-conv-44-qa-29": true,
+    "locomo-conv-44-qa-77": true,
+    "locomo-conv-44-qa-45": false,
+    "locomo-conv-44-qa-53": false,
+    "locomo-conv-44-qa-76": false,
+    "locomo-conv-44-qa-87": false,
+    "locomo-conv-44-qa-4": false,
+    "locomo-conv-44-qa-21": false,
+    "locomo-conv-44-qa-26": false,
+    "locomo-conv-44-qa-56": true,
+    "locomo-conv-30-qa-80": false
+  },
+  "case_verdicts_unanimous": {
+    "locomo-conv-50-qa-134": false,
+    "locomo-conv-50-qa-63": false,
+    "locomo-conv-50-qa-1": false,
+    "locomo-conv-50-qa-126": false,
+    "locomo-conv-50-qa-77": true,
+    "locomo-conv-50-qa-44": false,
+    "locomo-conv-50-qa-28": false,
+    "locomo-conv-50-qa-48": false,
+    "locomo-conv-50-qa-74": true,
+    "locomo-conv-50-qa-78": false,
+    "locomo-conv-50-qa-112": false,
+    "locomo-conv-50-qa-26": false,
+    "locomo-conv-50-qa-60": false,
+    "locomo-conv-50-qa-67": false,
+    "locomo-conv-50-qa-102": false,
+    "locomo-conv-50-qa-144": true,
+    "locomo-conv-49-qa-152": true,
+    "locomo-conv-49-qa-125": true,
+    "locomo-conv-49-qa-70": false,
+    "locomo-conv-49-qa-59": true,
+    "locomo-conv-49-qa-45": false,
+    "locomo-conv-49-qa-31": true,
+    "locomo-conv-49-qa-44": false,
+    "locomo-conv-49-qa-82": false,
+    "locomo-conv-49-qa-124": false,
+    "locomo-conv-26-qa-115": false,
+    "locomo-conv-26-qa-73": false,
+    "locomo-conv-26-qa-56": false,
+    "locomo-conv-26-qa-48": false,
+    "locomo-conv-42-qa-134": true,
+    "locomo-conv-42-qa-18": true,
+    "locomo-conv-42-qa-52": true,
+    "locomo-conv-42-qa-155": true,
+    "locomo-conv-42-qa-168": true,
+    "locomo-conv-42-qa-14": false,
+    "locomo-conv-42-qa-167": false,
+    "locomo-conv-41-qa-42": true,
+    "locomo-conv-41-qa-130": true,
+    "locomo-conv-41-qa-20": true,
+    "locomo-conv-41-qa-32": false,
+    "locomo-conv-41-qa-59": false,
+    "locomo-conv-41-qa-57": false,
+    "locomo-conv-41-qa-51": false,
+    "locomo-conv-41-qa-68": false,
+    "locomo-conv-41-qa-26": true,
+    "locomo-conv-41-qa-150": false,
+    "locomo-conv-41-qa-36": false,
+    "locomo-conv-48-qa-160": true,
+    "locomo-conv-48-qa-24": false,
+    "locomo-conv-48-qa-48": false,
+    "locomo-conv-48-qa-133": false,
+    "locomo-conv-48-qa-34": true,
+    "locomo-conv-48-qa-157": true,
+    "locomo-conv-48-qa-165": true,
+    "locomo-conv-48-qa-8": false,
+    "locomo-conv-48-qa-139": false,
+    "locomo-conv-48-qa-135": false,
+    "locomo-conv-48-qa-2": false,
+    "locomo-conv-48-qa-85": false,
+    "locomo-conv-47-qa-83": true,
+    "locomo-conv-47-qa-85": true,
+    "locomo-conv-47-qa-33": false,
+    "locomo-conv-47-qa-58": true,
+    "locomo-conv-47-qa-5": false,
+    "locomo-conv-43-qa-125": true,
+    "locomo-conv-43-qa-48": false,
+    "locomo-conv-43-qa-154": true,
+    "locomo-conv-43-qa-21": false,
+    "locomo-conv-43-qa-110": true,
+    "locomo-conv-43-qa-155": false,
+    "locomo-conv-43-qa-92": true,
+    "locomo-conv-43-qa-61": false,
+    "locomo-conv-43-qa-174": false,
+    "locomo-conv-44-qa-43": false,
+    "locomo-conv-44-qa-29": true,
+    "locomo-conv-44-qa-77": true,
+    "locomo-conv-44-qa-45": false,
+    "locomo-conv-44-qa-53": false,
+    "locomo-conv-44-qa-76": false,
+    "locomo-conv-44-qa-87": false,
+    "locomo-conv-44-qa-4": false,
+    "locomo-conv-44-qa-21": false,
+    "locomo-conv-44-qa-26": false,
+    "locomo-conv-44-qa-56": true,
+    "locomo-conv-30-qa-80": false
+  },
+  "repeat_disagreement_qids": [
+    "locomo-conv-50-qa-60",
+    "locomo-conv-49-qa-124",
+    "locomo-conv-48-qa-133",
+    "locomo-conv-48-qa-135",
+    "locomo-conv-48-qa-2"
+  ],
+  "verdict_rule": "case_verdicts uses the first repeat, matching `accuracy`; case_verdicts_unanimous requires every repeat to agree",
+  "elapsed_s": 700.7,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

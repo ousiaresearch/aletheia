@@ -1,0 +1,2111 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 120,
+      "errors": 5,
+      "error_sample": "TimeoutError: The read operation timed out",
+      "graded": 85,
+      "gold_scored": 85,
+      "hits": 53,
+      "hit_at_k": 0.6235294117647059,
+      "hit_at_k_ci95": [
+        0.517,
+        0.719
+      ],
+      "mrr": 0.294,
+      "gold_unit": "record",
+      "mean_coverage": 0.503,
+      "full_recovery": 0.424,
+      "answer_in_context": 0.6235294117647059,
+      "answer_in_context_ci95": [
+        0.517,
+        0.719
+      ],
+      "answer_only_questions": 0,
+      "expansion_questions": 0,
+      "hop_questions": 0,
+      "hop_rounds_mean": 0.0,
+      "hop_failures": 0,
+      "abstention_questions": 30,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 25,
+          "hits": 18,
+          "full": 4,
+          "hit_at_k": 0.72,
+          "coverage": 0.387,
+          "full_recovery": 0.16
+        },
+        "2": {
+          "n": 17,
+          "hits": 9,
+          "full": 8,
+          "hit_at_k": 0.529,
+          "coverage": 0.5,
+          "full_recovery": 0.471
+        },
+        "3": {
+          "n": 6,
+          "hits": 2,
+          "full": 0,
+          "hit_at_k": 0.333,
+          "coverage": 0.097,
+          "full_recovery": 0.0
+        },
+        "4": {
+          "n": 37,
+          "hits": 24,
+          "full": 24,
+          "hit_at_k": 0.649,
+          "coverage": 0.649,
+          "full_recovery": 0.649
+        }
+      },
+      "selection": {
+        "sample": "random",
+        "seed": 2
+      },
+      "elapsed_s": 2433.5,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "hop_mode": false,
+      "cross_encoder": false,
+      "recall_depth": 50,
+      "reader_items": 10,
+      "facts_cache": "benchmarks/facts-cache/facts.jsonl",
+      "claims_ingested": 14054,
+      "claims_resolved": 1514,
+      "reader_item_chars": null,
+      "reading": {
+        "measured": true,
+        "n": 115,
+        "answered": 72,
+        "abstentions": 43,
+        "graded": 85,
+        "exact_match": 0.1411764705882353,
+        "exact_match_ci95": [
+          0.083,
+          0.231
+        ],
+        "token_f1": 0.374,
+        "cited_a_gold_record": 0.5529411764705883,
+        "model": "openai-compatible:qwen3.8-flash",
+        "prompt_version": "reader.v4",
+        "judge": null,
+        "comparable_to_published_answer_scores": false,
+        "note": "Stage 2 \u2014 reading over the evidence this system actually retrieved, so it is end-to-end in practice. Scored by exact match and token F1, NOT an LLM judge; no comparison to Mem0/Zep/MemHQ is licensed from these numbers."
+      },
+      "reading_cases": [
+        {
+          "question_id": "locomo-conv-50-qa-175",
+          "category": "5",
+          "question": "Why did Dave get his guitar customized with a shiny finish?",
+          "text": "It gives it a unique look and goes with his style.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d16-19",
+            "locomo-conv-50-d16-20"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-159",
+          "category": "5",
+          "question": "What advice did Calvin receive from the chef at the music festival?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-d3-7",
+            "locomo-conv-50-evt-events_session_3-Calvin-245",
+            "locomo-conv-50-d3-5",
+            "locomo-conv-50-d3-3",
+            "locomo-conv-50-evt-events_session_3-Calvin-244"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-162",
+          "category": "5",
+          "question": "What did Dave receive as a gift from another artist?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_4-Calvin-247"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-134",
+          "category": "4",
+          "question": "What is the toughest part of car restoration according to Dave?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-d25-18"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Paying extra attention to detail",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-63",
+          "category": "1",
+          "question": "What style of guitars does Calvin own?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-d16-13",
+            "locomo-conv-50-d16-24"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-1",
+          "category": "1",
+          "question": "What items did Calvin buy in March 2023?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_23-Calvin-285",
+            "locomo-conv-50-evt-events_session_2-Calvin-241"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "mansion in Japan, luxury car Ferrari 488 GTB",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-126",
+          "category": "4",
+          "question": "Which part of Tokyo is described as Tokyo's Times Square by Calvin?",
+          "text": "",
+          "abstained": true,
+          "cited": [],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Shibuya Crossing",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-77",
+          "category": "4",
+          "question": "What did Calvin receive as a gift from another artist?",
+          "text": "gold chain with diamond pendant",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-evt-events_session_4-Calvin-247"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "a gold necklace with a diamond pendant",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-44",
+          "category": "2",
+          "question": "When did Calvin met with local artists in Boston?",
+          "text": "4 October, 2023",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-evt-events_session_21-Calvin-281",
+            "locomo-conv-50-d21-1"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "October 3, 2023",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-28",
+          "category": "1",
+          "question": "What does Calvin do to relax?",
+          "text": "fixing cars, long drives",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d7-5",
+            "locomo-conv-50-d5-8"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "take long drives in his car, embrace nature, fixing cars",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-48",
+          "category": "2",
+          "question": "What was Dave doing in the first weekend of October 2023?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_17-Calvin-274",
+            "locomo-conv-50-d8-6",
+            "locomo-conv-50-evt-events_session_8-Dave-257",
+            "locomo-conv-50-d3-12",
+            "locomo-conv-50-d2-8",
+            "locomo-conv-50-d8-4",
+            "locomo-conv-50-evt-events_session_8-Dave-258",
+            "locomo-conv-50-d6-9",
+            "locomo-conv-50-ss-session_26_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "attending a car show",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-74",
+          "category": "4",
+          "question": "What advice did Calvin receive from the producer at the music festival?",
+          "text": "Stay true to himself and sound unique",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d3-7",
+            "locomo-conv-50-evt-events_session_3-Calvin-245"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "to stay true to himself and sound unique",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-78",
+          "category": "4",
+          "question": "What was the necklace Calvin received meant to remind him of?",
+          "text": "his passion for music",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d4-24"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "why he keeps hustling as a musician",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-187",
+          "category": "5",
+          "question": "Who headlined the music festival that Calvin attended in October?",
+          "text": "",
+          "abstained": true,
+          "cited": [],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-173",
+          "category": "5",
+          "question": "Where did Dave start shooting a video for his new album?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_16-Calvin-273",
+            "locomo-conv-50-d16-6",
+            "locomo-conv-50-ss-session_16_summary",
+            "locomo-conv-50-d16-8"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-112",
+          "category": "4",
+          "question": "How does Dave feel about the reactions of people when they see the finished restoration project?",
+          "text": "satisfied and appreciates the reactions",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-ss-session_19_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "satisfying and worth the hard work",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-50-qa-26",
+          "category": "2",
+          "question": "When did Calvin record a podcast with his friends?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-50-evt-events_session_15-Calvin-271",
+            "locomo-conv-50-d15-12",
+            "locomo-conv-50-ss-session_15_summary",
+            "locomo-conv-50-d15-13"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "21 August, 2023",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-60",
+          "category": "1",
+          "question": "What gifts has Calvin received from his artist friends?",
+          "text": "gold chain with diamond pendant, custom guitar with octopus design",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-evt-events_session_4-Calvin-247",
+            "locomo-conv-50-d16-14"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "gold chain, custom-made guitar with an octopus on it",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-67",
+          "category": "2",
+          "question": "Where was Calvin located in the last week of October 2023?",
+          "text": "his Japanese house",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d28-1"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Tokyo",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-102",
+          "category": "4",
+          "question": "Where did Calvin start shooting a video for his new album?",
+          "text": "Miami beach",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-evt-events_session_16-Calvin-273",
+            "locomo-conv-50-d16-6",
+            "locomo-conv-50-d16-8",
+            "locomo-conv-50-ss-session_16_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Miami",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-50-qa-144",
+          "category": "4",
+          "question": "What is Dave's way to share his passion with others?",
+          "text": "Starting a blog on car mods",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-50-d28-8",
+            "locomo-conv-50-evt-events_session_28-Dave-296",
+            "locomo-conv-50-ss-session_28_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Through a blog on car mods",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-181",
+          "category": "5",
+          "question": "What gift did Sam receive from a close friend?",
+          "text": "a vintage 1968 Kustom K200-A guitar",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d16-10",
+            "locomo-conv-49-evt-events_session_16-Evan-267"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-152",
+          "category": "4",
+          "question": "What activity helped Evan with stress and flexibility?",
+          "text": "Yoga",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d18-7",
+            "locomo-conv-49-d18-8",
+            "locomo-conv-49-d24-19"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Yoga",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-125",
+          "category": "4",
+          "question": "How did Evan start his transformation journey two years ago?",
+          "text": "He changed his diet and started walking regularly.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d15-8"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Changed his diet and started walking regularly",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-70",
+          "category": "2",
+          "question": "How long did Evan and his partner date before getting married?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-evt-events_session_21-Evan-279",
+            "locomo-conv-49-d21-4"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "four months",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-162",
+          "category": "5",
+          "question": "What frustrating issue did Evan face at the supermarket?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-d3-16"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-59",
+          "category": "2",
+          "question": "When did Sam and his friend decide to try kayaking?",
+          "text": "14 October, 2023",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-evt-events_session_13-Sam-261",
+            "locomo-conv-49-d13-14",
+            "locomo-conv-49-d13-10"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "October 14, 2023",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-175",
+          "category": "5",
+          "question": "What kind of writing does Evan enjoy as a form of expression?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-d11-15",
+            "locomo-conv-49-d11-17",
+            "locomo-conv-49-d11-13",
+            "locomo-conv-49-d11-16",
+            "locomo-conv-49-ss-session_11_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-45",
+          "category": "2",
+          "question": "Which places in Canada was Evan visiting in July 2023?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-49-d6-1"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Banff, Rocky Mountains",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-31",
+          "category": "3",
+          "question": "How might Evan and Sam's experiences with health and lifestyle changes influence their approach to stress and challenges?",
+          "text": "They approach stress and challenges by making positive lifestyle changes, staying motivated through setbacks, appreciating small victories, and using relaxing activities like painting.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-evt-events_session_3-Evan-234",
+            "locomo-conv-49-d2-7",
+            "locomo-conv-49-d6-12",
+            "locomo-conv-49-d8-18",
+            "locomo-conv-49-evt-events_session_8-Sam-249",
+            "locomo-conv-49-evt-events_session_20-Sam-277",
+            "locomo-conv-49-d4-7",
+            "locomo-conv-49-d6-2",
+            "locomo-conv-49-d4-4",
+            "locomo-conv-49-d8-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Their experiences likely lead them to view challenges as opportunities for growth and change. They both have embraced healthier lifestyles, indicating a proactive approach to managing stress and challenges.",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-173",
+          "category": "5",
+          "question": "What sports activity has Sam been doing to stay active while dealing with the knee injury?",
+          "text": "swimming",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d11-3",
+            "locomo-conv-49-evt-events_session_11-Evan-255",
+            "locomo-conv-49-d9-6",
+            "locomo-conv-49-d9-7"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-44",
+          "category": "1",
+          "question": "What kind of subjects does Evan enjoy painting?",
+          "text": "nature",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d8-19"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "nature landscapes, portraits, abstract minimalism",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-49-qa-82",
+          "category": "1",
+          "question": "What is a stress reliever for Sam?",
+          "text": "painting",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d2-10"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Unhealthy snacks, sweets, yoga, places with beautiful views",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-49-qa-124",
+          "category": "4",
+          "question": "What does Evan mention about his progress at the gym to Sam?",
+          "text": "He started lifting weights around October 2022 and mentioned seeing gains from his workouts.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-49-d12-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "gaining strength",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-115",
+          "category": "4",
+          "question": "Why are flowers important to Melanie?",
+          "text": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d8-12"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "They remind her to appreciate the small moments and were a part of her wedding decor",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-26-qa-187",
+          "category": "5",
+          "question": "What precautionary sign did Caroline see at the caf\u00e9?",
+          "text": "a serious-looking sign",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d16-17",
+            "locomo-conv-26-d16-18",
+            "locomo-conv-26-d16-16"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-173",
+          "category": "5",
+          "question": "What inspired Caroline's sculpture for the art show?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-d9-12",
+            "locomo-conv-26-d16-6",
+            "locomo-conv-26-d11-10",
+            "locomo-conv-26-d14-27"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-73",
+          "category": "2",
+          "question": "When did Melanie get hurt?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-26-evt-events_session_18-Melanie-187"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "September 2023",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-26-qa-56",
+          "category": "1",
+          "question": "What symbols are important to Caroline?",
+          "text": "a necklace, the painting 'Embracing Identity', and a rainbow flag mural",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d4-3",
+            "locomo-conv-26-d11-12",
+            "locomo-conv-26-d14-15"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Rainbow flag, transgender symbol",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-26-qa-48",
+          "category": "1",
+          "question": "What types of pottery have Melanie and her kids made?",
+          "text": "bowl, plate, pots",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-26-d5-8",
+            "locomo-conv-26-d14-4",
+            "locomo-conv-26-d8-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "bowls, cup",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-242",
+          "category": "5",
+          "question": "What does Nate do while he writes?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-42-d6-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-134",
+          "category": "4",
+          "question": "What recipe Nate offer to share with Joanna?",
+          "text": "vegan ice cream recipe",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d16-10"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "vegan ice cream recipe",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-18",
+          "category": "2",
+          "question": "Which outdoor spot did Joanna visit in May?",
+          "text": "Whispering Falls",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d11-6",
+            "locomo-conv-42-d11-5",
+            "locomo-conv-42-evt-events_session_11-Joanna-268"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Whispering Falls waterfall",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-52",
+          "category": "1",
+          "question": "How many of Joanna's writing have made it to the big screen?",
+          "text": "2",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-evt-events_session_15-Joanna-279",
+            "locomo-conv-42-evt-events_session_25-Joanna-308",
+            "locomo-conv-42-d15-1",
+            "locomo-conv-42-d25-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "two",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-248",
+          "category": "5",
+          "question": "What did Nate find in old notebooks last week that prompted him to reflect on her progress as a writer?",
+          "text": "her early writings",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d26-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-155",
+          "category": "4",
+          "question": "What is Nate's favorite dish from the cooking show he hosted?",
+          "text": "coconut milk ice cream",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d21-6"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Coconut milk ice cream",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-168",
+          "category": "4",
+          "question": "What helps Joanna stay focused and brings her joy?",
+          "text": "Tilly",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d24-8"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "stuffed animal dog named Tilly",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-42-qa-239",
+          "category": "5",
+          "question": "How did Nate describe the classic movie he watched?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-42-evt-events_session_23-Joanna-301",
+            "locomo-conv-42-evt-events_session_23-Nate-304",
+            "locomo-conv-42-d1-17",
+            "locomo-conv-42-d23-18"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-227",
+          "category": "5",
+          "question": "What kind of impact does Joanna hope to have with her painting?",
+          "text": "",
+          "abstained": true,
+          "cited": [],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-244",
+          "category": "5",
+          "question": "What does Joanna rely on for cheer and joy?",
+          "text": "Nate's support in her creative journey",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d12-19"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-14",
+          "category": "3",
+          "question": "What nickname does Nate use for Joanna?",
+          "text": "",
+          "abstained": true,
+          "cited": [],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Jo",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-221",
+          "category": "5",
+          "question": "What did Joanna make and share with her vegan diet group?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-42-evt-events_session_16-Nate-281",
+            "locomo-conv-42-d16-8",
+            "locomo-conv-42-evt-events_session_19-Joanna-288",
+            "locomo-conv-42-d16-10",
+            "locomo-conv-42-d20-12"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-42-qa-167",
+          "category": "4",
+          "question": "What does Joanna recommend to make a living room comfy like hers?",
+          "text": "fluffy couch, weighted blanket",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-42-d23-25",
+            "locomo-conv-42-d23-26"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "couch for multiple people, fluffy blanket, lights that can be dimmed",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-42",
+          "category": "1",
+          "question": "What area was hit by a flood?",
+          "text": "West County",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-evt-events_session_23-John-378",
+            "locomo-conv-41-d23-1"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "West County",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-130",
+          "category": "4",
+          "question": "Which activity has John done apart from yoga at the studio?",
+          "text": "weight training classes",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d25-17"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "weight training",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-20",
+          "category": "2",
+          "question": "When did John take a road trip to the Pacific Northwest?",
+          "text": "2022",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d11-5",
+            "locomo-conv-41-evt-events_session_11-John-343",
+            "locomo-conv-41-d1-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "2022",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-32",
+          "category": "1",
+          "question": "What outdoor activities has John done with his colleagues?",
+          "text": "mountaineering expedition",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-evt-events_session_18-John-366"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Hiking, mountaineering",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-41-qa-59",
+          "category": "2",
+          "question": "When did John go on a camping trip with Max?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-41-d30-6",
+            "locomo-conv-41-d18-12"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "The summer of 2022",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-179",
+          "category": "5",
+          "question": "How did the drought impact the homes in John's old area?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-41-d23-1",
+            "locomo-conv-41-evt-events_session_23-John-378",
+            "locomo-conv-41-d23-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-41-qa-168",
+          "category": "5",
+          "question": "What did John do to feel closer to a community and his faith?",
+          "text": "yoga",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d10-7"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-41-qa-57",
+          "category": "1",
+          "question": "What causes has John done events for?",
+          "text": "helping veterans, victims of domestic abuse",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d29-10",
+            "locomo-conv-41-d29-12"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Toy drive, Community food drive, veterans, domestic violence",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-51",
+          "category": "2",
+          "question": "When did Maria start volunteering at the homeless shelter?",
+          "text": "around 3 August 2022",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d27-2"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Around August 2022",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-68",
+          "category": "4",
+          "question": "What type of workout class did Maria start doing in December 2023?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-41-ss-session_25_summary",
+            "locomo-conv-41-d7-1",
+            "locomo-conv-41-d1-4",
+            "locomo-conv-41-d10-1",
+            "locomo-conv-41-evt-events_session_10-John-341"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "aerial yoga",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-41-qa-26",
+          "category": "1",
+          "question": "What has Maria done to feel closer to her faith?",
+          "text": "Bought a cross necklace and joined a nearby church",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-evt-events_session_11-Maria-346",
+            "locomo-conv-41-evt-events_session_14-Maria-356",
+            "locomo-conv-41-d14-10"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Join a local church, buy a cross necklace",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-150",
+          "category": "4",
+          "question": "What activities does John's family enjoy doing together?",
+          "text": "making and enjoying pizzas, hiking, picnics, board games, playground climbing, sliding, playing games, and workouts",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d2-24",
+            "locomo-conv-41-d31-19",
+            "locomo-conv-41-d2-16",
+            "locomo-conv-41-evt-events_session_13-John-350"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "going for hikes, hanging out at the park, having picnics, playing board games, having movie nights",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-41-qa-36",
+          "category": "1",
+          "question": "What music events has John attended?",
+          "text": "a live music event",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-41-d20-4",
+            "locomo-conv-41-evt-events_session_20-John-371"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Live music event, violin concert",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-160",
+          "category": "4",
+          "question": "What kind of event did Jolene present at recently?",
+          "text": "virtual conference",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-evt-events_session_21-Jolene-320"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "virtual conference",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-24",
+          "category": "1",
+          "question": "What new yoga poses did Deborah try?",
+          "text": "Dancer Pose (Natarajasana), Tree Pose",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d14-3",
+            "locomo-conv-48-d14-15"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Warrior II, Dancer Pose (Natarajasana), Tree pose",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-48",
+          "category": "3",
+          "question": "Which US state did Jolene visit during her internship?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-48-d13-13",
+            "locomo-conv-48-d13-12",
+            "locomo-conv-48-d13-8",
+            "locomo-conv-48-d13-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Alaska",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-133",
+          "category": "4",
+          "question": "What is Jolene currently doing in June 2023?",
+          "text": "a busy internship",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-ss-session_14_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "interning at a well-known engineering firm",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-34",
+          "category": "2",
+          "question": "Which year did Jolene and her partner start dating?",
+          "text": "2020",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d7-7"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "2020",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-157",
+          "category": "4",
+          "question": "How long has Jolene been doing yoga?",
+          "text": "3 years",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d20-21",
+            "locomo-conv-48-d13-17"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "3 years",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-215",
+          "category": "5",
+          "question": "How did Deborah come to have her pet, Susie?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-48-d28-26",
+            "locomo-conv-48-ss-session_16_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-197",
+          "category": "5",
+          "question": "Where did Jolene meet her new friend Anna?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-48-evt-events_session_3-Deborah-276",
+            "locomo-conv-48-d3-5",
+            "locomo-conv-48-d3-4",
+            "locomo-conv-48-d7-8",
+            "locomo-conv-48-evt-events_session_10-Deborah-293",
+            "locomo-conv-48-evt-events_session_15-Deborah-305"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-165",
+          "category": "4",
+          "question": "What type of classes did Jolene and her partner check out during their trip to Rio de Janeiro on 30 August, 2023?",
+          "text": "yoga classes",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-evt-events_session_23-Jolene-328",
+            "locomo-conv-48-d23-1",
+            "locomo-conv-48-ss-session_23_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Yoga classes",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-8",
+          "category": "1",
+          "question": "What helped Deborah find peace when grieving deaths of her loved ones?",
+          "text": "visiting her old home, a spot by the water near it, and roses and dahlias in her garden",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d2-13",
+            "locomo-conv-48-d4-34",
+            "locomo-conv-48-d6-4"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "yoga, old photos, the roses and dahlias in a flower garden, nature",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-139",
+          "category": "4",
+          "question": "Why did Jolene decide to get a snake as a pet?",
+          "text": "She finds it calming and a great connection with nature.",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d15-17",
+            "locomo-conv-48-d15-18"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "fascinated by reptiles and it felt like the perfect pet",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-135",
+          "category": "4",
+          "question": "How does Jolene feel when spending time with Seraphim?",
+          "text": "comfort and cheer",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d14-6"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "comforted",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-48-qa-2",
+          "category": "2",
+          "question": "When did Deborah`s mother pass away?",
+          "text": "a few years before 23 January 2023",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d2-13",
+            "locomo-conv-48-d1-3"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "a few years before 2023",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-48-qa-85",
+          "category": "1",
+          "question": "Which community activities have Deborah and Anna participated in?",
+          "text": "yoga and community gardening",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-48-d3-12",
+            "locomo-conv-48-evt-events_session_29-Deborah-338",
+            "locomo-conv-48-d3-8",
+            "locomo-conv-48-d4-16"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "yoga, running",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-83",
+          "category": "4",
+          "question": "What impresses John about Japan?",
+          "text": "technologically advanced megacities and delicious street food",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-47-d6-15"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Technologically advanced megacities and tasty street food",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-85",
+          "category": "4",
+          "question": "What breed is Daisy, one of James' dogs?",
+          "text": "Labrador",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-47-d9-12",
+            "locomo-conv-47-d9-10"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Labrador",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-33",
+          "category": "3",
+          "question": "Did John and James study together?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-d17-10",
+            "locomo-conv-47-d30-10",
+            "locomo-conv-47-d30-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Yes",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-47-qa-150",
+          "category": "5",
+          "question": "What did John adopt in April 2022?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-d5-1",
+            "locomo-conv-47-evt-events_session_20-John-315",
+            "locomo-conv-47-evt-events_session_3-John-265"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-47-qa-58",
+          "category": "2",
+          "question": "When did James try Cyberpunk 2077 game?",
+          "text": "20 October 2022",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-47-d28-27"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "October 20, 2022",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-47-qa-184",
+          "category": "5",
+          "question": "What decision did John and Samantha make on 31 October, 2022?",
+          "text": "rented an apartment near McGee's bar",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-47-d29-10",
+            "locomo-conv-47-ss-session_29_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-47-qa-5",
+          "category": "1",
+          "question": "What are John and James' favorite games?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-47-d1-22",
+            "locomo-conv-47-d19-6",
+            "locomo-conv-47-ss-session_1_summary",
+            "locomo-conv-47-d4-24"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "John's favorite game is CS:GO, and James's is Apex Legends.",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-125",
+          "category": "4",
+          "question": "What J.K. Rowling quote does Tim resonate with?",
+          "text": "Turn on the light - happiness hides in the darkest of times",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d15-11"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "\"Turn on the light - happiness hides in the darkest of times.\"",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-48",
+          "category": "1",
+          "question": "When did John get an ankle injury in 2023?",
+          "text": "the 2022-2023 season",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d19-6"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "around November 16, 2023",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-154",
+          "category": "4",
+          "question": "How did John feel about the atmosphere during the big game against the rival team?",
+          "text": "Really electric, with extra intensity",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d23-3",
+            "locomo-conv-43-d23-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "electric and intense",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-195",
+          "category": "5",
+          "question": "What new activity has John started learning in August 2023?",
+          "text": "",
+          "abstained": true,
+          "cited": [],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-21",
+          "category": "1",
+          "question": "Which US cities does John mention visiting to Tim?",
+          "text": "New York City",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d29-12",
+            "locomo-conv-43-evt-events_session_9-John-284",
+            "locomo-conv-43-d9-7",
+            "locomo-conv-43-ss-session_9_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Seattle, Chicago, New York",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-110",
+          "category": "4",
+          "question": "What book recommendation did Tim give to John for the trip?",
+          "text": "The Name of the Wind by Patrick Rothfuss",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-evt-events_session_11-Tim-290",
+            "locomo-conv-43-d11-24"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "A fantasy novel by Patrick Rothfuss",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-155",
+          "category": "4",
+          "question": "How did John feel after being able to jog without pain?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-43-d24-14",
+            "locomo-conv-43-evt-events_session_24-John-321",
+            "locomo-conv-43-d24-15"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "It was a huge success.",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-92",
+          "category": "4",
+          "question": "What did John's teammates give him when they met on Aug 15th?",
+          "text": "a signed basketball",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-d7-8",
+            "locomo-conv-43-evt-events_session_7-John-278",
+            "locomo-conv-43-d7-11"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "a basketball with autographs on it",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-61",
+          "category": "1",
+          "question": "What books has John read?",
+          "text": "Dune by Frank Herbert",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-evt-events_session_22-John-316"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "inpsiring book on dreaming big, The Alchemist, fantasy series, non-fiction books on personal development, Dune",
+          "cited_gold": false,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-43-qa-187",
+          "category": "5",
+          "question": "Which two mystery novels does Tim particularly enjoy writing about?",
+          "text": "",
+          "abstained": true,
+          "cited": [],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-174",
+          "category": "4",
+          "question": "What charity event did John organize recently in 2024?",
+          "text": "benefit basketball tournament",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-43-evt-events_session_28-John-332",
+            "locomo-conv-43-d28-13"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "benefit basketball game",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-178",
+          "category": "5",
+          "question": "Which team did Tim sign with on 21 May, 2023?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-43-d1-4",
+            "locomo-conv-43-d1-3",
+            "locomo-conv-43-ss-session_1_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-43-qa-239",
+          "category": "5",
+          "question": "Which city in Ireland will John be staying in during his semester abroad?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-43-d28-3",
+            "locomo-conv-43-ss-session_28_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-43",
+          "category": "3",
+          "question": "Which US state do Audrey and Andrew potentially live in?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d3-7",
+            "locomo-conv-44-d5-3",
+            "locomo-conv-44-d2-9",
+            "locomo-conv-44-evt-events_session_9-Audrey-282",
+            "locomo-conv-44-d18-20",
+            "locomo-conv-44-d1-9"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Minnesota",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-29",
+          "category": "1",
+          "question": "What are the names of Audrey's dogs?",
+          "text": "Pepper, Pixie, Precious, Panda",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-d15-5",
+            "locomo-conv-44-d1-7"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Pepper, Precious, Panda, and Pixie",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-44-qa-77",
+          "category": "4",
+          "question": "What did Audrey set up in the backyard for their dogs on June 26, 2023?",
+          "text": "a doggy play area with agility stuff and toys",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-d9-5",
+            "locomo-conv-44-ss-session_9_summary"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "a doggy play area with agility stuff and toys",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-44-qa-148",
+          "category": "5",
+          "question": "Why does Andrew make jewelry out of recycled objects?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d22-5",
+            "locomo-conv-44-d22-6",
+            "locomo-conv-44-d22-4",
+            "locomo-conv-44-d22-8"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-45",
+          "category": "2",
+          "question": "How many pets will Andrew have, as of December 2023?",
+          "text": "1",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-d11-6",
+            "locomo-conv-44-d20-3",
+            "locomo-conv-44-d20-2",
+            "locomo-conv-44-d5-20"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "three",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-53",
+          "category": "3",
+          "question": "What is a career that Andrew could potentially pursue with his love for animals and nature?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d1-14",
+            "locomo-conv-44-evt-events_session_13-Andrew-295",
+            "locomo-conv-44-d2-18",
+            "locomo-conv-44-d14-9",
+            "locomo-conv-44-d20-3",
+            "locomo-conv-44-d21-7"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Park ranger or a similar position working for the National Park Services.",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-44-qa-147",
+          "category": "5",
+          "question": "What type of jewelry does Andrew make?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d22-5",
+            "locomo-conv-44-evt-events_session_22-Audrey-315",
+            "locomo-conv-44-d22-8"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": true,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-76",
+          "category": "4",
+          "question": "How long does Audrey typically walk her dogs for?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-evt-events_session_11-Audrey-287",
+            "locomo-conv-44-d8-13"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "about an hour",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-87",
+          "category": "4",
+          "question": "How long did the trail hike that Audrey went on with her pups take?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d14-7",
+            "locomo-conv-44-evt-events_session_11-Audrey-287",
+            "locomo-conv-44-d14-6",
+            "locomo-conv-44-d7-3",
+            "locomo-conv-44-d11-30"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Two hours",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-4",
+          "category": "2",
+          "question": "When did Audrey make muffins for herself?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d12-7",
+            "locomo-conv-44-d3-17",
+            "locomo-conv-44-d3-16"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "The week of April 3rd to 9th",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-21",
+          "category": "1",
+          "question": "What are the classes that Audrey took for her dogs to?",
+          "text": "agility classes",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-d14-2",
+            "locomo-conv-44-evt-events_session_14-Audrey-296"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Positive reinforcement training class for bonding, dog training course, agility class",
+          "cited_gold": true,
+          "retrieval_hit": true
+        },
+        {
+          "question_id": "locomo-conv-44-qa-26",
+          "category": "1",
+          "question": "What is the biggest stressor in Andrew's life besides not being able to hike frequently?",
+          "text": "work-life balance",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-evt-events_session_18-Andrew-306",
+            "locomo-conv-44-d21-5"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "work",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-56",
+          "category": "1",
+          "question": "Has Andrew moved into a new apartment for his dogs?",
+          "text": "No",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-44-evt-events_session_9-Audrey-282",
+            "locomo-conv-44-evt-events_session_7-Andrew-278",
+            "locomo-conv-44-evt-events_session_18-Andrew-307",
+            "locomo-conv-44-evt-events_session_5-Andrew-273",
+            "locomo-conv-44-evt-events_session_2-Andrew-268",
+            "locomo-conv-44-d2-13",
+            "locomo-conv-44-evt-events_session_6-Andrew-276"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "No",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-44-qa-142",
+          "category": "5",
+          "question": "How did Andrew calm down his dog after the leash incident?",
+          "text": "",
+          "abstained": true,
+          "cited": [
+            "locomo-conv-44-d19-2",
+            "locomo-conv-44-d10-18"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "",
+          "cited_gold": false,
+          "retrieval_hit": false
+        },
+        {
+          "question_id": "locomo-conv-30-qa-80",
+          "category": "4",
+          "question": "What plans does Jon have after receiving advice at the networking event?",
+          "text": "updating his business plan and pitch to investors",
+          "abstained": false,
+          "cited": [
+            "locomo-conv-30-d18-10",
+            "locomo-conv-30-d18-9",
+            "locomo-conv-30-d18-6"
+          ],
+          "model": "openai-compatible:qwen3.8-flash",
+          "prompt_version": "reader.v4",
+          "dropped_citations": 0,
+          "gold_answer": "Sprucing up his business plan, tweaking his pitch to investors, and working on an online platform.",
+          "cited_gold": true,
+          "retrieval_hit": true
+        }
+      ],
+      "gold_validation": {
+        "questions_with_gold": 120,
+        "questions_with_unreachable_gold": 0,
+        "unreachable_ids": [],
+        "gold_ids_total": 195
+      }
+    }
+  ]
+}

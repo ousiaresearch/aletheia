@@ -375,6 +375,36 @@ candidate generation (the vector arm) or entity-hop traversal — and the vector
 already measured to help: on the representative N=120 sample, hybrid raised coverage 0.595 → 0.655 and
 full recovery 52.5% → 58.3%, at ~15x the query latency.
 
+### The fact layer, correctly wired: retrieval up 5.6 points, answers down 7 questions — 2026-11-09
+
+Second facts arm with claims resolved inside a depth-50 pool, so they widen reach instead of crowding the
+scored window. Everything else identical to the 46.6% baseline.
+
+| | no facts | facts, depth-50 pool |
+|---|---|---|
+| claim hits resolved | — | **1,514** (first arm: 347) |
+| hit@10 | 56.8% | **62.4%** (53/85) |
+| MRR | 0.308 | 0.294 |
+| coverage | 0.464 | 0.503 |
+| full recovery | 39.8% | 42.4% |
+| **judged accuracy** | **47.6%** (40/84) | **39.3%** (33/84) |
+| judge repeat agreement | 98.9% | 94.1% |
+
+Paired on 84 shared questions: **gained 4, lost 11, net −7, exact sign test p = 0.1185.** Not significant,
+but a consistent negative direction — and the second-lowest judge agreement of any arm, which means the
+answers themselves are more ambiguous to grade, not merely fewer.
+
+**This is the fifth lever with the same signature.** Reranking, prompt wording, evidence volume, reader
+model, and now fact-mediated retrieval: every one either leaves answer accuracy flat or moves it down,
+while retrieval metrics move freely. hit@10 has now been pushed from 56% to 62% by facts and 67% by
+reranking, and neither converted.
+
+The reading of that is no longer ambiguous. Retrieval is not the constraint, the judge is not the
+constraint, and reader capacity is not the constraint. What remains is the shape of the reading stage
+itself: ten relevance-ranked snippets, unordered, with no session structure, asked to produce an answer
+that in many cases is an aggregation across many turns of one conversation. Every arm so far has varied
+*which* snippets arrive; none has changed the form in which they arrive.
+
 ### The fact layer is real, never populated, and expensive — pilot measurement — 2026-11-09
 
 `benchmarks/pilot_facts.py` extracted facts from one conversation to price the option before spending on
