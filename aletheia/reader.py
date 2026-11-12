@@ -1,0 +1,208 @@
+"""The reading stage: turn retrieved evidence into a cited answer, or decline.
+
+Decision record — 2026-11-09, `docs/design/parity-measurement-spec.md` §4 Option A: Aletheia ships a
+reference reader. It exists so this project can publish an answer-level number that sits in the same
+table as Mem0, Zep and MemHQ, and it is built as a first-class module because the operator intends it
+may be promoted from measurement into the product rather than staying a benchmark fixture.
+
+Three rules make that promotion safe, and they are structural rather than by convention:
+
+1. **The reader never touches the substrate.** It takes a query and the items already retrieved and
+   returns an answer plus the ids it actually used. There is no import of ``substrate``, no write
+   path, and no way for its output to become a record. Design invariant 6 — composite artifacts are
+   never injectable — holds because the artifact has nowhere to go. Invariant 10 — recall is not
+   re-ingested — holds for the same reason.
+2. **A citation must name evidence it was given.** Every id in the answer is validated against the
+   input set and dropped if it was not there, so a model that invents a plausible id cannot make it
+   look retrieved. An answer whose citations are all dropped is reported as uncited, not repaired.
+3. **No configured reader means no answer.** ``read`` returns ``None`` rather than falling back to
+   anything local: a silent fallback would produce a number for a stage that did not run, which is the
+   exact class of defect this repository has spent the week removing.
+
+Why a JSON prompt: the LongMemEval authors measured the reading stage separately from recall and found
+a structured prompt with Chain-of-Note style reasoning lifts reading accuracy by up to ten absolute
+points across three models *even when recall is perfect* (arXiv:2410.10813). That is the finding this
+module is built on — the prompt asks for the evidence it used and the reasoning before the answer,
+which is also what makes its citations checkable.
+
+Usage, measurement only:
+
+    from aletheia.reader import read
+    answer = read("When did Caroline go to the support group?", items)
+    if answer is None:
+        ...  # no reader configured: report the stage as unmeasured, never as zero
+    else:
+        answer.text, answer.cited, answer.abstained
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+
+#: Bump when the prompt changes. A stage-2 number is only comparable to another stage-2 number taken
+#: with the same prompt version, so this travels with every measurement.
+PROMPT_VERSION = "reader.v4"
+
+_SYSTEM = (
+    "You answer questions using ONLY the numbered evidence provided. "
+    "If the evidence does not contain the answer, say so instead of guessing. "
+    "Respond with a single JSON object and nothing else."
+)
+
+_INSTRUCTIONS = """\
+Answer the question using only the evidence below. Work in this order:
+
+1. For each numbered item that matters, note in one short line what it establishes.
+2. Then answer the question if the evidence supports an answer. Most questions are answerable from at
+   least one item: do not abstain because the evidence is imperfect, because several items are
+   irrelevant, or because you would phrase it differently. Abstain ONLY when the specific fact asked
+   for is absent from every item.
+3. Keep the answer as short as the question wants — a name, a date, a number, or a short phrase. Do not
+   explain, hedge, or restate the question inside the answer.
+4. If the evidence supports SEVERAL things the question asks about — a list of items, several people,
+   more than one date — give all of them, separated by commas. One item out of three is an incomplete
+   answer even when that one item is correct.
+5. Express every time absolutely. Each evidence item shows the date of its *session* in parentheses;
+   use it to resolve relative wording ("yesterday", "last year", "last season", "a few months ago")
+   into the actual date. "last season" is not an answer when the session is dated November 2023.
+6. Do NOT answer with the session timestamp itself. The parenthesised date is when the conversation
+   happened, not necessarily the date being discussed. If the question asks when something occurred,
+   answer with the date the text describes, adjusted by rule 5 — not with the session stamp. Measured
+   failure this rule exists for: a gold answer of 3 October 2023 answered as "2:44 pm on 4 October,
+   2023", and 21 August 2023 answered as "11:06 am on 22 August, 2023".
+7. Answer the specific thing asked, from the item that actually states it. If several items are about
+   different topics, take the one that addresses the question rather than the most vivid or most
+   recently mentioned. Measured failure: a question about stress relievers answered "painting", and a
+   question about a desert painting answered "watercolor painting".
+
+Return JSON with exactly these keys:
+{{"reasoning": "<one line per relevant item>", "answer": "<the answer, or empty>", "abstain": <true|false>, "cited": [<item numbers you used>]}}
+
+Question: {question}
+
+Evidence:
+{evidence}
+"""
+
+
+@dataclass(frozen=True)
+class ReaderAnswer:
+    """One reading of one question against fixed evidence.
+
+    ``cited`` holds record ids, not item numbers, and only ids that were in the input set. ``text`` is
+    empty when the reader abstained. ``prompt_version`` and ``model`` travel with the answer because a
+    reading measurement without them is not reproducible.
+    """
+
+    text: str
+    cited: list[str] = field(default_factory=list)
+    abstained: bool = False
+    reasoning: str = ""
+    model: str = ""
+    prompt_version: str = PROMPT_VERSION
+    dropped_citations: int = 0
+
+
+def _format_evidence(items) -> str:
+    """Numbered evidence lines, carrying speaker and date when the caller supplies them.
+
+    LoCoMo ships a date and a speaker for every session and every turn, and a reader asked "when did
+    this happen" cannot answer from text that omits them. Record ids are deliberately not shown —
+    they are internal — but a conversation's own metadata is what a person reading the evidence would
+    see.
+    """
+    lines = []
+    for number, item in enumerate(items, start=1):
+        text = (getattr(item, "text", "") or "").strip().replace("\n", " ")
+        speaker = getattr(item, "speaker", None)
+        when = getattr(item, "when", None)
+        attrs = ", ".join(str(a) for a in (speaker, when) if a)
+        lines.append(f"[{number}] ({attrs}) {text}" if attrs else f"[{number}] {text}")
+    return "\n".join(lines)
+
+
+def build_prompt(question: str, items) -> str:
+    return _SYSTEM + "\n\n" + _INSTRUCTIONS.format(question=question.strip(),
+                                                   evidence=_format_evidence(items))
+
+
+def _parse(raw: str) -> dict | None:
+    text = (raw or "").strip()
+    if text.startswith("```"):
+        text = text.strip("`")
+        text = text.split("\n", 1)[1] if "\n" in text else text
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+    try:
+        parsed = json.loads(text[start:end + 1])
+    except (ValueError, TypeError):
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def read(question: str, items, *, max_tokens: int = 400, api_key: str | None = None,
+         timeout: float = 90.0) -> ReaderAnswer | None:
+    """Read one answer from ``items``. Returns ``None`` when no reader is configured.
+
+    ``None`` means the stage did not run. Callers must report it as unmeasured; substituting zero
+    would be reporting the absence of a measurement as a measurement of absence.
+    """
+    from aletheia import llm_client
+
+    if not items:
+        # Nothing retrieved: the reader has no evidence to read, which is an abstention, not an error.
+        return ReaderAnswer(text="", abstained=True, model=_model_id())
+    config = llm_client.get_config(api_key)
+    if config is None:
+        return None
+
+    prompt = build_prompt(question, items)
+    # 90 s, not the transport's 30 s default: a ten-item evidence prompt with per-item reasoning is a
+    # long generation, and a 30 s ceiling turned two of twenty LoCoMo questions into timeout errors
+    # that then read as a reader failure. Infrastructure timeouts are counted as errors by the
+    # harness, but they should be rare enough to mean something when they appear.
+    raw = llm_client.complete_text(prompt, max_tokens=max_tokens, temperature=0.0,
+                                   api_key=api_key, timeout=timeout)
+
+    by_number = {str(n): getattr(item, "record_id", "") for n, item in enumerate(items, start=1)}
+    parsed = _parse(raw or "")
+    model = f"{config.provider}:{config.model}"
+    if parsed is None:
+        # An unparseable response is not an answer. Report it as abstained with the raw text dropped,
+        # rather than passing model prose off as a reading result.
+        return ReaderAnswer(text="", abstained=True, model=model,
+                            reasoning="unparseable response")
+
+    abstained = bool(parsed.get("abstain")) or not str(parsed.get("answer") or "").strip()
+    cited, dropped = [], 0
+    for entry in parsed.get("cited") or []:
+        record_id = by_number.get(str(entry).strip().strip("[]"))
+        if record_id:
+            if record_id not in cited:
+                cited.append(record_id)
+        else:
+            dropped += 1
+    return ReaderAnswer(
+        text="" if abstained else str(parsed.get("answer") or "").strip(),
+        cited=cited,
+        abstained=abstained,
+        reasoning=str(parsed.get("reasoning") or "")[:2000],
+        model=model,
+        dropped_citations=dropped,
+    )
+
+
+def _model_id() -> str:
+    from aletheia import llm_client
+
+    config = llm_client.get_config()
+    return f"{config.provider}:{config.model}" if config else ""
+
+
+def configured() -> bool:
+    """Whether a reader is available at all. Measurement code must branch on this."""
+    from aletheia import llm_client
+
+    return llm_client.is_configured()

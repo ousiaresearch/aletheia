@@ -1,0 +1,174 @@
+{
+  "artifact": "benchmarks/dev-s2-pool-ce-reader.json",
+  "cases": 28,
+  "judged": 28,
+  "unusable_judgements": 0,
+  "correct": 15,
+  "accuracy": 0.5357142857142857,
+  "repeat": 2,
+  "agreement_n": 28,
+  "agreement_rate": 1.0,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "custom-made with an octopus design",
+      "judge_reason": "The system answer omits the shiny purple guitar and the yellow color from the reference."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "custom-made with an octopus design",
+      "judge_reason": "The answer omits the shiny purple guitar and the yellow detail from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "The system answer omits the key fact that flowers were part of Melanie's wedding decor."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "The system answer omits the reference fact that the flowers were part of her wedding decor."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "13 October, 2023",
+      "judge_reason": "The system answer gives October 2023 instead of September 2023."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "13 October, 2023",
+      "judge_reason": "The system answer gives October 2023 instead of September 2023."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "A necklace, a rainbow flag mural, and paintings",
+      "judge_reason": "The system answer omits the transgender symbol and adds unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "A necklace, a rainbow flag mural, and paintings",
+      "judge_reason": "The system answer omits the transgender symbol and adds unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-130",
+      "gold": "weight training",
+      "predicted": "kickboxing and circuit training",
+      "judge_reason": "The system answer names different activities than the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-130",
+      "gold": "weight training",
+      "predicted": "kickboxing and circuit training",
+      "judge_reason": "The system answer names different activities than the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-24",
+      "gold": "Warrior II, Dancer Pose (Natarajasana), Tree pose",
+      "predicted": "Dancer Pose (Natarajasana), Tree Pose",
+      "judge_reason": "The system answer omits Warrior II from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-24",
+      "gold": "Warrior II, Dancer Pose (Natarajasana), Tree pose",
+      "predicted": "Dancer Pose (Natarajasana), Tree Pose",
+      "judge_reason": "The system answer omits Warrior II from the reference list."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-154",
+      "gold": "electric and intense",
+      "predicted": "He felt it was really electric.",
+      "judge_reason": "The system answer omits the required detail that the atmosphere was intense."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-154",
+      "gold": "electric and intense",
+      "predicted": "He felt it was really electric.",
+      "judge_reason": "The answer says it was electric but omits the reference's additional detail that it was intense."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-115",
+      "gold": "Go hiking",
+      "predicted": "take their pets to a dog-friendly trail by the lake at a nearby national park",
+      "judge_reason": "The system answer does not explicitly state that they planned to go hiking."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-115",
+      "gold": "Go hiking",
+      "predicted": "take their pets to a dog-friendly trail by the lake at a nearby national park",
+      "judge_reason": "The system answer describes taking pets to a trail, not explicitly going hiking."
+    }
+  ],
+  "elapsed_s": 173.4,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

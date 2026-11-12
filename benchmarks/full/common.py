@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 import time
 from dataclasses import dataclass, field
@@ -86,19 +87,33 @@ def create_substrate(conv_id: str, records: list[Record], engine: ScopeEngine | 
     except Exception:
         pass
     if embedder is not None:
+        # A batch method when the embedder has one, per-record otherwise. This used to call
+        # `embed_documents` unconditionally inside a bare `except: pass`, and the alpha embedder has
+        # no such method — so every full-benchmark "hybrid" run embedded nothing, wrote no vectors,
+        # and looked like a hybrid result. Failures are counted and reported now, because a benchmark
+        # that silently degrades to lexical is worse than one that stops.
+        texts = [
+            rec.payload.get("text", "") if isinstance(rec.payload, dict) else str(rec.payload)
+            for rec in records
+        ]
+        vectors: list = []
         try:
-            texts = [
-                rec.payload.get("text", "") if isinstance(rec.payload, dict) else str(rec.payload)
-                for rec in records
-            ]
-            vectors = embedder.embed_documents(texts)
-            for rec, vector in zip(records, vectors):
-                try:
-                    sub.vector_put(rec.record_id, rec.scope, vector, ctx, model_id=embedder.model_id)
-                except Exception:
-                    pass
-        except Exception:
-            pass
+            batch = getattr(embedder, "embed_documents", None)
+            vectors = list(batch(texts)) if callable(batch) else [embedder.embed_document(t) for t in texts]
+        except Exception as exc:
+            print(f"[benchmark] embedding failed entirely ({exc.__class__.__name__}: {exc}); "
+                  "retrieval will be lexical despite the requested mode", file=sys.stderr)
+            vectors = []
+        written = failed = 0
+        for rec, vector in zip(records, vectors):
+            try:
+                sub.vector_put(rec.record_id, rec.scope, vector, ctx, model_id=embedder.model_id)
+                written += 1
+            except Exception:
+                failed += 1
+        if vectors and (failed or written != len(records)):
+            print(f"[benchmark] vector index incomplete: {written} written, {failed} failed, "
+                  f"{len(records)} records", file=sys.stderr)
     try:
         sub.rebuild_fts("benchmark", ctx)
     except Exception:

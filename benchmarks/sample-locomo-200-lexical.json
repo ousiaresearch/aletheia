@@ -1,0 +1,1471 @@
+{
+  "dataset": "locomo",
+  "mode": "lexical",
+  "by_category": {
+    "2": {
+      "n": 38,
+      "hits": 29,
+      "in_context": 0,
+      "hit_rate": 0.763,
+      "mrr": 0.545,
+      "answer_in_context_rate": 0.0
+    },
+    "3": {
+      "n": 11,
+      "hits": 4,
+      "in_context": 0,
+      "hit_rate": 0.364,
+      "mrr": 0.295,
+      "answer_in_context_rate": 0.0
+    },
+    "1": {
+      "n": 32,
+      "hits": 17,
+      "in_context": 4,
+      "hit_rate": 0.531,
+      "mrr": 0.264,
+      "answer_in_context_rate": 0.125
+    },
+    "4": {
+      "n": 70,
+      "hits": 44,
+      "in_context": 17,
+      "hit_rate": 0.629,
+      "mrr": 0.482,
+      "answer_in_context_rate": 0.243
+    },
+    "5": {
+      "n": 47,
+      "hits": 30,
+      "in_context": 46,
+      "hit_rate": 0.638,
+      "mrr": 0.481,
+      "answer_in_context_rate": 0.979
+    }
+  },
+  "rows": [
+    {
+      "question_id": "locomo-conv-26-qa-0",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-1",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-2",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-3",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-4",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-5",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-6",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-7",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-8",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-9",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-10",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-11",
+      "category": "1",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-12",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-13",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-14",
+      "category": "3",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-15",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-16",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-17",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-18",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.2,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-19",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-20",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-21",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-22",
+      "category": "3",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-23",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-24",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-25",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-26",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-27",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-28",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-29",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-30",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-31",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-32",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-33",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.1429,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-34",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-35",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-36",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-37",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-38",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-39",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-40",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-41",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-42",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-43",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-44",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-45",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-46",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-47",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-48",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-49",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-50",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-51",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-52",
+      "category": "1",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-53",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-54",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-55",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.1667,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "category": "1",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-57",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-58",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-59",
+      "category": "3",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-60",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-61",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-62",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-63",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-64",
+      "category": "3",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-65",
+      "category": "1",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-66",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-67",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-68",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.1429,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-69",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-70",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-71",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-72",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-74",
+      "category": "2",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-75",
+      "category": "1",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-76",
+      "category": "1",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-77",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-78",
+      "category": "1",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-79",
+      "category": "2",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-80",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-81",
+      "category": "3",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-82",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-83",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-84",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-85",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-86",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-87",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-88",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-89",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-90",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-91",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-92",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-93",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-94",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-95",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.1,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-96",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-97",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-98",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-99",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-100",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-101",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-102",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-103",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-104",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-105",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-106",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-107",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-108",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-109",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-110",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-111",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-112",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-113",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-114",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-116",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-117",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-118",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-119",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-120",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-121",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-122",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-123",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-124",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-125",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-126",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-127",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-128",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.1429,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-129",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.1429,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-130",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-131",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-132",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-133",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-134",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.125,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-135",
+      "category": "4",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-136",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-137",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-138",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-139",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-140",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-141",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-142",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-143",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-144",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-145",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-146",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-147",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-148",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-149",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-150",
+      "category": "4",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-151",
+      "category": "4",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-152",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.25,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-153",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-154",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-155",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-156",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-157",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-158",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-159",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-160",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-161",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-162",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.1,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-163",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-164",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-165",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-166",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-167",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": false
+    },
+    {
+      "question_id": "locomo-conv-26-qa-168",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-169",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-170",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-171",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.5,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-172",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-173",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-174",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-175",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-176",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-177",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-178",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-179",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-180",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-181",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-182",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-183",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.125,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-184",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.125,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-185",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-186",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-187",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-188",
+      "category": "5",
+      "hit": true,
+      "mrr": 0.3333,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-189",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-190",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-191",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-192",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-193",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-194",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-195",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-196",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-197",
+      "category": "5",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-26-qa-198",
+      "category": "5",
+      "hit": false,
+      "mrr": 0.0,
+      "answer_in_context": true
+    },
+    {
+      "question_id": "locomo-conv-30-qa-0",
+      "category": "2",
+      "hit": true,
+      "mrr": 1.0,
+      "answer_in_context": false
+    }
+  ],
+  "cross_encoder": false,
+  "questions": 200,
+  "graded": 200,
+  "gold_graded": 198,
+  "evidence_hits": 124,
+  "hit_at_10": 0.6262626262626263,
+  "hit_at_10_ci95": [
+    0.557,
+    0.691
+  ],
+  "answer_in_context": 67,
+  "answer_in_context_rate": 0.335,
+  "answer_in_context_ci95": [
+    0.273,
+    0.403
+  ],
+  "mrr": 0.448,
+  "abstentions": 0,
+  "abstention_correct": 0,
+  "latency_p50_ms": 10.5,
+  "latency_p95_ms": 12.0,
+  "elapsed_s": 87.2,
+  "note": "A slice, not a score: rates carry their N and a 95% Wilson interval. Deterministic sample (first N in file order), lexical unless --mode hybrid."
+}

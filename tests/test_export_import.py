@@ -1,6 +1,6 @@
 import json
 import pytest
-from aletheia.substrate import Substrate, Record
+from aletheia.substrate import SCHEMA_VERSION, Substrate, Record
 from aletheia.scope import ScopeContext, ScopeEngine
 
 KNOWN = {"s"}
@@ -25,7 +25,7 @@ def test_export_scope_returns_portable_dict(tmp_path):
                           source_ids=["src-1-s"], payload={"text": "v1"}, effective_at=100.0),
                     ctx, validate_schema=True, overwrite=False)
         data = sub.export_scope("s", ctx)
-        assert data["schema_version"] == 7
+        assert data["schema_version"] == SCHEMA_VERSION
         assert data["scope"] == "s"
         assert len(data["records"]) == 2  # Source + Observation
         texts = {r["payload"]["text"] for r in data["records"]}

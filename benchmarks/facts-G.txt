@@ -1,0 +1,35 @@
+
+locomo  lexical  k=10  120 questions, 5 errors
+----------------------------------------------
+  hit@10 (gold evidence)  53/85 = 62.4%  95% CI 51.7%-71.9%
+  MRR 0.294
+  mean coverage 0.503   full recovery 42.4%   (gold unit: record)
+  answer-in-context (proxy)  62.4%  95% CI 51.7%-71.9%  over 85 graded
+  retrieved at depth 50, scored at 10
+  facts: 14054 claims ingested, 1514 claim hits resolved to their source record
+  abstention  0/30 correct (0.0%)
+
+  reading (stage 2, openai-compatible:qwen3.8-flash, reader.v4)
+    answered 72/115, abstained 43
+    exact match 14.1% (95% CI 8.3%-23.1%)  token F1 0.374
+    cited a gold record 55.3%
+    no LLM judge: not comparable to published answer-level scores
+  by category:
+    1                        n=25    hit@10 72.0%  coverage 0.387  full 16.0%
+    2                        n=17    hit@10 52.9%  coverage 0.500  full 47.1%
+    3                        n=6     hit@10 33.3%  coverage 0.097  full 0.0%
+    4                        n=37    hit@10 64.9%  coverage 0.649  full 64.9%
+  elapsed 2433.5s
+
+wrote benchmarks/facts-G-50pool.json
+benchmarks/facts-G-50pool.json
+  judge openai-compatible:qwen3.8-flash  prompt judge.v1  repeat 2
+  judged 85/85 (0 unusable judgements)
+  judged accuracy 33/85 = 38.8%
+  repeat agreement 94.1% on 85 cases  -> supportable
+  40 of 105 judged-wrong examples stored (capped sample, not the full set), e.g.:
+    locomo-conv-50-qa-134: gold='Paying extra attention to de' predicted=''
+    locomo-conv-50-qa-134: gold='Paying extra attention to de' predicted=''
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted=''
+
+wrote benchmarks/G-judged-v.json

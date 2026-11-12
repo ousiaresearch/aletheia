@@ -1,0 +1,27 @@
+{
+  "dataset": "longmem",
+  "mode": "lexical",
+  "cross_encoder": false,
+  "questions": 500,
+  "graded": 500,
+  "exact": 221,
+  "exact_rate": 0.442,
+  "exact_ci95": [
+    0.399,
+    0.486
+  ],
+  "substring": 221,
+  "substring_rate": 0.442,
+  "substring_ci95": [
+    0.399,
+    0.486
+  ],
+  "f1": 0.007,
+  "mrr": 0.0,
+  "abstentions": 0,
+  "abstention_correct": 0,
+  "latency_p50_ms": 15.7,
+  "latency_p95_ms": 18.0,
+  "elapsed_s": 345.5,
+  "note": "A slice, not a score: rates carry their N and a 95% Wilson interval. Deterministic sample (first N in file order), lexical unless --mode hybrid."
+}

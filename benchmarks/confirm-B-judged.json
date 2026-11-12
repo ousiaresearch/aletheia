@@ -1,0 +1,258 @@
+{
+  "artifact": "benchmarks/confirm-B-ce120.json",
+  "cases": 90,
+  "judged": 90,
+  "unusable_judgements": 0,
+  "correct": 38,
+  "accuracy": 0.4222222222222222,
+  "repeat": 2,
+  "agreement_n": 90,
+  "agreement_rate": 0.9777777777777777,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "custom-made with an octopus design",
+      "judge_reason": "The system answer omits the shiny purple guitar from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "custom-made with an octopus design",
+      "judge_reason": "The system answer omits the shiny purple guitar mentioned in the reference."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-126",
+      "gold": "Shibuya Crossing",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-44",
+      "gold": "October 3, 2023",
+      "predicted": "4 October, 2023",
+      "judge_reason": "The system answer gives a different date than the reference."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-44",
+      "gold": "October 3, 2023",
+      "predicted": "4 October, 2023",
+      "judge_reason": "The system answer gives October 4, 2023 instead of the reference date October 3, 2023."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "restoring an old Ford Mustang found in a junkyard",
+      "judge_reason": "The system answer describes restoring a Mustang, not attending a car show."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-48",
+      "gold": "attending a car show",
+      "predicted": "restoring an old Ford Mustang found in a junkyard",
+      "judge_reason": "The system answer describes restoring a car instead of attending a car show."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-78",
+      "gold": "why he keeps hustling as a musician",
+      "predicted": "why he keeps pushing forward",
+      "judge_reason": "The system answer omits the specific reference to hustling as a musician."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-78",
+      "gold": "why he keeps hustling as a musician",
+      "predicted": "why he keeps pushing forward",
+      "judge_reason": "The system answer omits the key musician/hustling context and is too vague to match the reference fact."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-112",
+      "gold": "satisfying and worth the hard work",
+      "predicted": "He enjoys seeing the relief",
+      "judge_reason": "The system answer mentions enjoying relief, which does not match the reference answer's fact that the reactions are satisfying and worth the hard work."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-112",
+      "gold": "satisfying and worth the hard work",
+      "predicted": "He enjoys seeing the relief",
+      "judge_reason": "The system answer describes enjoying relief rather than the restoration being satisfying and worth the hard work."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "11:06 am on 22 August, 2023",
+      "judge_reason": "The system answer gives 22 August 2023 instead of the reference date 21 August 2023."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-26",
+      "gold": "21 August, 2023",
+      "predicted": "11:06 am on 22 August, 2023",
+      "judge_reason": "The system gives 22 August 2023, which does not match the reference date of 21 August 2023."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-67",
+      "gold": "Tokyo",
+      "predicted": "Japan",
+      "judge_reason": "Japan is broader than the reference answer Tokyo and does not match the required location name."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-67",
+      "gold": "Tokyo",
+      "predicted": "Japan",
+      "judge_reason": "Japan is a country, not the specific location Tokyo given in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-102",
+      "gold": "Miami",
+      "predicted": "Miami beach",
+      "judge_reason": "Miami Beach is a different location than Miami."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-102",
+      "gold": "Miami",
+      "predicted": "Miami beach",
+      "judge_reason": "\"Miami beach\" is not the same named location as the reference answer \"Miami\"."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "gold": "Banff, Rocky Mountains",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-31",
+      "gold": "Their experiences likely lead them to view challenges as opportunities for growth and change. They both have embraced healthier lifestyles, indicating a proactive approach to managing stress and challenges.",
+      "predicted": "They may approach stress and challenges by supporting each other, making healthier lifestyle changes, and using activities like kayaking and yoga to manage stress.",
+      "judge_reason": "The system answer omits the key reference idea that they view challenges as opportunities for growth and change."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-31",
+      "gold": "Their experiences likely lead them to view challenges as opportunities for growth and change. They both have embraced healthier lifestyles, indicating a proactive approach to managing stress and challenges.",
+      "predicted": "They may approach stress and challenges by supporting each other, making healthier lifestyle changes, and using activities like kayaking and yoga to manage stress.",
+      "judge_reason": "The system answer omits the key idea that they view challenges as opportunities for growth and change."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-116",
+      "gold": "a cactus in the desert",
+      "predicted": "watercolor painting",
+      "judge_reason": "The system answer only specifies a medium, not the cactus in the desert described by the reference."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-116",
+      "gold": "a cactus in the desert",
+      "predicted": "watercolor painting",
+      "judge_reason": "The answer identifies a medium rather than the specific painting described in the reference."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "gold": "nature landscapes, portraits, abstract minimalism",
+      "predicted": "landscapes and nature",
+      "judge_reason": "It omits portraits and abstract minimalism from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "gold": "nature landscapes, portraits, abstract minimalism",
+      "predicted": "landscapes and nature",
+      "judge_reason": "The system answer omits portraits and abstract minimalism from the reference subjects."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-82",
+      "gold": "Unhealthy snacks, sweets, yoga, places with beautiful views",
+      "predicted": "candy and soda",
+      "judge_reason": "The answer omits key stress relievers and includes soda, which is not stated in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-124",
+      "gold": "gaining strength",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-124",
+      "gold": "gaining strength",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "It omits the wedding decor detail from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "It omits the wedding decor detail from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "13 October 2023",
+      "judge_reason": "The system answer gives October 2023 instead of September 2023."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "13 October 2023",
+      "judge_reason": "The system answer gives October 2023, which does not match the reference date of September 2023."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "necklace, rainbow flag mural, painting 'Embracing Identity'",
+      "judge_reason": "The system answer omits the transgender symbol and includes unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "necklace, rainbow flag mural, painting 'Embracing Identity'",
+      "judge_reason": "The answer omits the transgender symbol and adds unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-48",
+      "gold": "bowls, cup",
+      "predicted": "black and white bowl, plate, pots",
+      "judge_reason": "The system answer omits 'cup' and adds 'plate' and 'pots', so it does not match the reference types."
+    }
+  ],
+  "elapsed_s": 748.0,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

@@ -57,8 +57,21 @@ except Exception:  # stand-alone (the package's own suite, the CLI): same shape,
 
 
 from aletheia.adapters import default_text_embedder
+from aletheia.merge import scope_counts
 from aletheia.paths import migrate_legacy_config, migrate_legacy_store
+from aletheia.profile_identity import (
+    as_bool as _as_bool,
+    default_store_path,
+    effective_read_grants,
+    effective_write_grants,
+    load_policy,
+    parse_scopes,
+    policy_entry,
+    profile_name,
+    profile_scope,
+)
 from aletheia.ingest import Ingestor
+from aletheia.retrieval import IndexIncompleteError
 from aletheia.retrieval import recall as aletheia_recall
 from aletheia.reranking import CrossEncoderReranker
 from aletheia.scope import ScopeContext, ScopeEngine
@@ -78,6 +91,24 @@ MEDIA_GLOBS = (
 )
 
 SCOPE_RE = re.compile(r"[^a-z0-9._-]+")
+
+
+def _package_version() -> str:
+    """The version actually imported, for the ready line and identity signature."""
+    try:
+        import aletheia
+
+        return str(getattr(aletheia, "__version__", "unknown"))
+    except Exception:  # a version lookup must never break initialization
+        return "unknown"
+
+
+# The pre-2.1 scope was derived from the home directory's basename. Kept only to find records that
+# still carry it, so the first open can rename them instead of orphaning them.
+def _legacy_scope_name(hermes_home: str) -> str:
+    profile = Path(hermes_home).name if hermes_home else "default"
+    cleaned = SCOPE_RE.sub("-", profile.strip().lower()).strip("-")
+    return f"profile-{cleaned or 'default'}"
 
 
 def _has_snapshot(globs) -> bool:
@@ -101,20 +132,20 @@ def _preflight_reranker() -> None:
         raise ValueError("invalid reranker readiness score")
 
 
-def _scope_name(hermes_home: str) -> str:
-    """One scope per profile, so a multiplexed gateway cannot read another profile's records."""
-    profile = Path(hermes_home).name if hermes_home else "default"
-    cleaned = SCOPE_RE.sub("-", profile.strip().lower()).strip("-")
-    return f"profile-{cleaned or 'default'}"
-
-
 class AletheiaMemoryProvider(MemoryProvider):
     """Aletheia — Aletheia as Hermes's external memory provider (``memory.provider: aletheia``)."""
 
     def __init__(self) -> None:
         self._substrate: Optional[Substrate] = None
         self._engine: Optional[ScopeEngine] = None
-        self._ctx: Optional[ScopeContext] = None
+        # Two contexts, one authority each: writes never ride on a read grant.
+        self._ctx: Optional[ScopeContext] = None          # write context
+        self._ctx_read: Optional[ScopeContext] = None     # read context (own scope + read grants)
+        self._profile = ""
+        self._read_scopes: tuple[str, ...] = ()
+        self._write_scopes: tuple[str, ...] = ()
+        self._legacy_scope = ""
+        self._index_degraded = ""
         self._embedder: Any = None
         self._reranker_checked = False
         self._requirement_errors: dict[str, str] = {}
@@ -149,7 +180,11 @@ class AletheiaMemoryProvider(MemoryProvider):
         return PROVIDER_NAME
 
     def identity_signature(self) -> dict[str, Any]:
-        return {"provider": PROVIDER_NAME, "scope": self._scope or "(unbound)",
+        return {"provider": PROVIDER_NAME, "version": _package_version(),
+                "profile": self._profile or "(unbound)", "scope": self._scope or "(unbound)",
+                "read_scopes": list(self._read_scopes), "write_scopes": list(self._write_scopes),
+                "legacy_scope": self._legacy_scope or None,
+                "index_degraded": self._index_degraded or None,
                 "store": str(self._db_path or "")}
 
     # ------------------------------------------------------------- readiness
@@ -205,13 +240,48 @@ class AletheiaMemoryProvider(MemoryProvider):
         hermes_home = str(kwargs.get("hermes_home") or os.environ.get("HERMES_HOME") or Path.home() / ".hermes")
         self._session_id = session_id or ""
         self._primary = str(kwargs.get("agent_context") or "primary") in ("primary", "")
+        # Hermes supplies the profile's own name on the multiplexed gateway. It is the identity;
+        # the path is only a fallback, because a path basename is not a profile.
+        identity = kwargs.get("agent_identity")
+        self._profile = profile_name(hermes_home, identity)
         config = self._load_config(Path(hermes_home))
-        self._db_path = Path(config.get("db_path") or Path(hermes_home) / "aletheia" / "aletheia.sqlite3").expanduser()
+        # One host-level store; profiles are scopes inside it. `db_path` stays honoured as the
+        # older name for `store_path` so existing provider-config.json files keep working.
+        store = config.get("store_path") or config.get("db_path") or default_store_path(hermes_home)
+        self._db_path = Path(store).expanduser()
         # 2.0.0 renamed the product: carry the store and its settings over once, before anything opens
         # an empty database beside the old one.
         migrate_legacy_store(self._db_path)
-        self._scope = str(config.get("scope") or _scope_name(hermes_home))
-        self._db_path.parent.mkdir(parents=True, exist_ok=True)
+        # Identity is derived, never configured. A config-supplied scope would let a profile name
+        # itself another profile and read or delete its memory; the derived value is the only one
+        # the write context may carry.
+        derived = profile_scope(hermes_home, identity)
+        configured = str(config.get("scope") or "").strip()
+        if configured and configured != derived:
+            logger.warning(
+                "aletheia: ignoring configured scope %r; identity is derived from the profile (%s). "
+                "A scope is not a configuration knob.", configured, derived)
+        self._scope = derived
+
+        # Cross-profile grants are host policy, not profile config: a file the profile owns cannot
+        # be the authority for reading another profile's memory.
+        policy = load_policy(hermes_home)
+        if policy.get("error"):
+            logger.warning("aletheia: %s — no cross-profile grants honoured", policy["error"])
+        entry = policy_entry(policy, self._profile)
+        self._read_scopes = effective_read_grants(self._scope, config, entry, policy)
+        self._write_scopes = effective_write_grants(self._scope, entry, policy)
+        requested = set(parse_scopes(config.get("read_scopes")))
+        ignored = requested - set(self._read_scopes)
+        if ignored:
+            logger.warning("aletheia: read_scopes %s not granted by %s; ignored",
+                           sorted(ignored), policy.get("path"))
+        self._db_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        try:  # an existing directory keeps its old mode; make it private
+            if self._db_path.parent.stat().st_uid == os.getuid():
+                os.chmod(self._db_path.parent, 0o700)
+        except OSError:
+            pass
 
         if self._missing_requirements():
             self._error = self.unavailable_reason()
@@ -219,16 +289,38 @@ class AletheiaMemoryProvider(MemoryProvider):
             return
         embedder = self._embedder
 
-        engine = ScopeEngine(known_scopes={self._scope})
-        ctx = ScopeContext(granted_scopes=frozenset({self._scope}), user_authored=True,
-                           actor=f"hermes:{Path(hermes_home).name or 'default'}")
+        engine = ScopeEngine(known_scopes=set(self._read_scopes) | set(self._write_scopes))
+        ctx = ScopeContext(granted_scopes=frozenset(self._write_scopes), user_authored=True,
+                           actor=f"hermes:{self._profile}")
+        ctx_read = ScopeContext(granted_scopes=frozenset(self._read_scopes), user_authored=False,
+                                actor=f"hermes:{self._profile}",
+                                authorization_source="config:read_scopes"
+                                if len(self._read_scopes) > 1 else None)
         self._substrate = Substrate(self._db_path, engine)
-        self._engine, self._ctx, self._embedder = engine, ctx, embedder
+        # A shared store holds scopes this instance was never configured for. Register them so a
+        # grant for one is not defeated by the engine's unknown-scope rule. Knowing a scope exists
+        # confers no access: reads and writes still need a grant.
+        for scope in self._substrate.distinct_scopes():
+            engine.register_scope(scope)
+
+        # A store written before the identity change still holds records under a scope named after a
+        # directory. Renaming it here would move another profile's records if two homes normalise to
+        # the same name, so the provider only reports it; the operator runs the rename.
+        legacy = _legacy_scope_name(hermes_home)
+        if legacy != self._scope and legacy in self._substrate.distinct_scopes():
+            self._legacy_scope = legacy
+            logger.warning(
+                "aletheia: this store still holds %d record(s) under the pre-2.1 scope %r. "
+                "Run: aletheia --db %s rename-scope --from %s --to %s",
+                scope_counts(self._db_path).get(legacy, 0), legacy, self._db_path,
+                legacy, self._scope)
+        self._engine, self._ctx, self._ctx_read, self._embedder = engine, ctx, ctx_read, embedder
         self._ready, self._closing = True, False
         # One line per instance: which store, which scope, and whether this instance is allowed to
         # write turns. A provider that activates but never writes is otherwise invisible in the log.
-        logger.info("aletheia: ready — scope=%s store=%s primary=%s session=%s",
-                    self._scope, self._db_path, self._primary, self._session_id or "(none)")
+        logger.info("aletheia: ready — version=%s profile=%s scope=%s read=%s store=%s primary=%s session=%s",
+                    _package_version(), self._profile, self._scope, list(self._read_scopes),
+                    self._db_path, self._primary, self._session_id or "(none)")
         # Repair vectors written by an older model without blocking the first turn.
         spawn_context_thread(self._reembed_missing, name="aletheia-reembed").start()
 
@@ -325,9 +417,7 @@ class AletheiaMemoryProvider(MemoryProvider):
 
     def _recall_worker(self, query: str, key: str) -> None:
         try:
-            items, receipt = aletheia_recall(self._substrate, query, self._ctx, self._scope,
-                                         limit=DEFAULT_LIMIT, mode="hybrid",
-                                         embedder=self._embedder, use_cross_encoder=True)
+            items, receipt = self._recall(self._substrate, query, self._ctx_read, DEFAULT_LIMIT)
             block = self._format_block(items, receipt)
             status = RecallStatus(provider_label=PROVIDER_LABEL, count=len(items),
                                   glyph=PROVIDER_GLYPH)
@@ -521,31 +611,75 @@ class AletheiaMemoryProvider(MemoryProvider):
             return tool_error(f"aletheia: {exc}")
 
     def _binding(self):
-        """The bound substrate and scope context, or the reason there is none."""
+        """The bound substrate and WRITE context, or the reason there is none."""
         if not self._ready or self._substrate is None or self._ctx is None:
             raise RuntimeError(self._error or self.unavailable_reason() or "Aletheia is not initialised")
         return self._substrate, self._ctx
 
-    def _tool_recall(self, args) -> str:
+    def _binding_read(self):
+        """The bound substrate and READ context (own scope plus configured read grants)."""
+        if not self._ready or self._substrate is None or self._ctx_read is None:
+            raise RuntimeError(self._error or self.unavailable_reason() or "Aletheia is not initialised")
+        return self._substrate, self._ctx_read
+
+    def _binding_tool(self):
+        """Write context for a model-invoked tool: same scopes, but no user authority.
+
+        ``_ctx`` attests a user-authored turn for the turn mirror. A tool call is the agent's own
+        voice, and the rules that reserve an action for the user (deleting an active rule) must not
+        be satisfiable by the model calling a tool.
+        """
         sub, ctx = self._binding()
+        tool_ctx = ScopeContext(granted_scopes=ctx.granted_scopes, user_authored=False,
+                                actor=ctx.actor, authorization_source="tool:aletheia")
+        return sub, tool_ctx
+
+    def _recall_scope_hint(self) -> Optional[str]:
+        """Narrow recall to the write scope only when no other scope was granted.
+
+        ``recall`` treats a hint as an exact filter; passing the profile's own scope while holding
+        read grants would make the grants decorative.
+        """
+        return self._scope if len(self._read_scopes) <= 1 else None
+
+    def _recall(self, sub, query: str, ctx, limit: int):
+        """Hybrid recall, degrading to lexical when an index is incomplete — visibly.
+
+        Swallowing ``IndexIncompleteError`` turns a half-migrated store into a profile that simply
+        remembers nothing, with no signal anywhere. Lexical results are worse than hybrid ones, but
+        they are real, and the degradation is recorded in the status and the log.
+        """
+        try:
+            return aletheia_recall(sub, query, ctx, self._recall_scope_hint(), limit=limit,
+                                   mode="hybrid", embedder=self._embedder, use_cross_encoder=True)
+        except IndexIncompleteError as exc:
+            self._index_degraded = str(exc)[:200]
+            logger.warning("aletheia: index incomplete for scope %s (%s); serving lexical recall "
+                           "until it is repaired (run `aletheia reembed`/`rebuild-fts`)",
+                           self._scope, exc)
+            return aletheia_recall(sub, query, ctx, self._recall_scope_hint(), limit=limit,
+                                   mode="lexical", use_cross_encoder=False)
+
+    def _tool_recall(self, args) -> str:
+        sub, ctx = self._binding_read()
         query = str(args.get("query") or "").strip()
         if not query:
             return tool_error("query is required")
         limit = max(1, min(MAX_LIMIT, int(args.get("limit") or DEFAULT_LIMIT)))
-        items, receipt = aletheia_recall(sub, query, ctx, self._scope, limit=limit, mode="hybrid",
-                                     embedder=self._embedder, use_cross_encoder=True)
+        items, receipt = self._recall(sub, query, ctx, limit)
         self._last_receipt = {"mode": receipt.mode, "scope_consulted": list(receipt.scope_consulted),
                               "selected": list(receipt.selected), "tier": receipt.tier}
         return json.dumps({
             "mode": receipt.mode,
             "scope": self._scope,
+            "read_scopes": list(self._read_scopes),
             "receipt": self._last_receipt,
             "items": [{"record_id": i.record_id, "text": i.text, "tier": i.tier,
                        "derived": getattr(i, "derived", False)} for i in items],
         }, ensure_ascii=False)
 
     def _tool_ingest(self, args) -> str:
-        sub, ctx = self._binding()
+        sub, ctx = self._binding_tool()
         text = str(args.get("text") or "").strip()
         if not text:
             return tool_error("text is required")
@@ -558,7 +692,7 @@ class AletheiaMemoryProvider(MemoryProvider):
         return json.dumps({"status": "ingested", "record_id": record_id, "scope": self._scope})
 
     def _tool_forget(self, args) -> str:
-        sub, ctx = self._binding()
+        sub, ctx = self._binding_tool()
         record_id = str(args.get("record_id") or "").strip()
         if not record_id:
             return tool_error("record_id is required")
@@ -574,6 +708,8 @@ class AletheiaMemoryProvider(MemoryProvider):
         return {"provider": PROVIDER_NAME, "scope": self._scope,
                 "ready": self._ready, "media": self._media_present,
                 "primary": self._primary,
+                "legacy_scope": self._legacy_scope or None,
+                "index_degraded": self._index_degraded or None,
                 "turn_writes": {**turns, "skipped_because": skipped_because,
                                 "last_error": last_error},
                 "last_recall": None if status is None else {"label": status.provider_label,
@@ -583,16 +719,28 @@ class AletheiaMemoryProvider(MemoryProvider):
 
     def get_config_schema(self) -> list[dict[str, Any]]:
         return [
-            {"key": "db_path", "description": "Store path (default: <profile>/aletheia/aletheia.sqlite3)",
+            {"key": "store_path", "description": "Store path (default: <hermes_root>/aletheia/aletheia.sqlite3, shared by every profile as a scope)",
              "default": ""},
-            {"key": "scope", "description": "Scope name for this profile (default: derived from the profile)",
+            {"key": "scope", "description": "Write scope for this profile (default: profile:<name>)",
              "default": ""},
+            {"key": "read_scopes", "description": "Extra scopes this profile may read (comma separated), e.g. profile:isildur, shared",
+             "default": ""},
+            {"key": "shared", "description": "Opt in to the shared cross-profile scope for reads (true/false)",
+             "default": "false"},
+            {"key": "shared_write", "description": "Also allow writes to the shared scope (requires shared=true)",
+             "default": "false"},
         ]
 
     def save_config(self, values: dict[str, Any], hermes_home: str) -> None:
         target = Path(hermes_home) / "aletheia" / "provider-config.json"
         target.parent.mkdir(parents=True, exist_ok=True)
-        payload = {k: str(values.get(k) or "").strip() for k in ("db_path", "scope")}
+        payload: dict[str, Any] = {
+            "store_path": str(values.get("store_path") or values.get("db_path") or "").strip(),
+            "scope": str(values.get("scope") or "").strip(),
+            "read_scopes": list(parse_scopes(values.get("read_scopes"))),
+            "shared": _as_bool(values.get("shared")),
+            "shared_write": _as_bool(values.get("shared_write")),
+        }
         tmp = target.with_suffix(".tmp")
         tmp.write_text(json.dumps(payload, indent=2))
         os.chmod(tmp, 0o600)

@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "dataset": "locomo",
+      "mode": "lexical",
+      "k": 10,
+      "questions": 40,
+      "errors": 1,
+      "error_sample": "TimeoutError: The read operation timed out",
+      "graded": 29,
+      "gold_scored": 29,
+      "hits": 20,
+      "hit_at_k": 0.6896551724137931,
+      "hit_at_k_ci95": [
+        0.508,
+        0.827
+      ],
+      "mrr": 0.362,
+      "gold_unit": "record",
+      "mean_coverage": 0.632,
+      "full_recovery": 0.586,
+      "answer_in_context": 0.6896551724137931,
+      "answer_in_context_ci95": [
+        0.508,
+        0.827
+      ],
+      "answer_only_questions": 0,
+      "expansion_questions": 0,
+      "hop_questions": 24,
+      "abstention_questions": 10,
+      "abstention_correct": 0,
+      "abstention_rate": 0.0,
+      "by_category": {
+        "1": {
+          "n": 9,
+          "hits": 7,
+          "full": 4,
+          "hit_at_k": 0.778,
+          "coverage": 0.593,
+          "full_recovery": 0.444
+        },
+        "2": {
+          "n": 4,
+          "hits": 3,
+          "full": 3,
+          "hit_at_k": 0.75,
+          "coverage": 0.75,
+          "full_recovery": 0.75
+        },
+        "3": {
+          "n": 3,
+          "hits": 0,
+          "full": 0,
+          "hit_at_k": 0.0,
+          "coverage": 0.0,
+          "full_recovery": 0.0
+        },
+        "4": {
+          "n": 13,
+          "hits": 10,
+          "full": 10,
+          "hit_at_k": 0.769,
+          "coverage": 0.769,
+          "full_recovery": 0.769
+        }
+      },
+      "selection": {
+        "sample": "random",
+        "seed": 2
+      },
+      "elapsed_s": 280.3,
+      "note": "hit_at_k is scored against gold evidence ids and is retrieval quality. answer_in_context is whether the gold answer string appears in the context and is a proxy; where a dataset carries no evidence ids it is the only measure available, and it is labelled as such rather than reported as retrieval.",
+      "gold_validation": {
+        "questions_with_gold": 40,
+        "questions_with_unreachable_gold": 0,
+        "unreachable_ids": [],
+        "gold_ids_total": 59
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+
+config   N     hit@10   95% CI         MRR     p50ms  coverage  full-recovery  vs lexical (lost/gained)
+lexical  1982  0.646    62.5%-66.7%   0.394   21.6   0.591     54.8%          —
+
+N is questions carrying gold record ids. Elapsed 57s across 1986 questions in 10 conversation(s).
+wrote benchmarks/locomo-full-lexical-coverage.json

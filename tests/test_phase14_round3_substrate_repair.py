@@ -16,7 +16,7 @@ import pytest
 from aletheia.knowledge import KnowledgeRefusal
 from aletheia.procedural import deprecate_rule, promote_rule, reject_rule
 from aletheia.scope import ScopeContext, ScopeEngine
-from aletheia.substrate import (SCHEMA_VERSION, Record, SchemaViolation, ScopeViolation,
+from aletheia.substrate import (_IMPORTABLE_SCHEMA_VERSIONS, SCHEMA_VERSION, Record, SchemaViolation, ScopeViolation,
                             Substrate)
 
 
@@ -356,7 +356,12 @@ def _head_store(tmp_path, active_ok=True):
 
 
 def test_schema_version_bumped():
-    assert SCHEMA_VERSION == 7
+    # A deliberate tripwire: bumping the version means a migration was added, and this test is here
+    # to make that a decision someone looks at rather than a number that moves silently.
+    # 8 adds `relations`, 9 adds `communities` (phase 12 / W2.1), 10 adds retention windows
+    # (W2.6). The migration path itself is exercised below, from a v6 store, and must land on
+    # SCHEMA_VERSION.
+    assert SCHEMA_VERSION == 10
 
 
 def test_head_store_migrates_failing_closed_with_reapproval(tmp_path):
@@ -364,7 +369,7 @@ def test_head_store_migrates_failing_closed_with_reapproval(tmp_path):
     c = ScopeContext(granted_scopes=frozenset({'a'}), user_authored=True)
     s = Substrate(path, ScopeEngine(known_scopes={'a'}))
     try:
-        assert s._conn.execute('PRAGMA user_version').fetchone()[0] == 7
+        assert s._conn.execute('PRAGMA user_version').fetchone()[0] == SCHEMA_VERSION
         # The formerly active rule is not silently stranded: it is visibly back to proposed.
         act = s.get('ract', c)
         assert act.payload['status'] == 'proposed'
@@ -423,7 +428,9 @@ def test_schema6_export_still_imports_but_not_unknown_versions(env):
     data = bundle(rec('x'))
     data['schema_version'] = 6
     assert s.import_scope(data, c) == 1
-    data['schema_version'] = 8
+    # A version this build does not know is refused; 8 is importable now that it exists, so the
+    # example has to be one the table does not list.
+    data['schema_version'] = max(_IMPORTABLE_SCHEMA_VERSIONS) + 1
     with pytest.raises(ValueError):
         s.import_scope(data, c)
 

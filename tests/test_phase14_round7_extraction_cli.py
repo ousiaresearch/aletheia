@@ -62,7 +62,10 @@ def test_extract_facts_ungranted_caller_gets_nothing_and_sends_nothing(tmp_path,
 def test_consolidate_scope_ungranted_caller_gets_nothing(tmp_path):
     sub, ctx_a, root = _store(tmp_path)
     try:
-        assert extraction.consolidate_scope(sub, ctx_a, 'b') in ({}, {'claims_reviewed': 0, 'duplicate_count': 0, 'kept': 0})
+        ungranted = extraction.consolidate_scope(sub, ctx_a, 'b')
+        assert ungranted.get('claims_reviewed', 0) == 0, 'an ungranted scope reports nothing'
+        assert ungranted.get('duplicate_count', 0) == 0
+        assert ungranted.get('edges_written', 0) == 0
         assert extraction.consolidate_scope(sub, root, 'b')['claims_reviewed'] == 2
     finally:
         sub.close()

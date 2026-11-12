@@ -1,0 +1,12 @@
+W1109 18:57:52.997000 62320 .venv/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+100 QA pairs across 10 conversation(s); limit=10; configs=lexical, vector, hybrid-noRerank, hybrid+rerank
+[locomo-conv-26] built 463 records with vectors in 13s, 10 QA pairs
+[locomo-conv-30] built 417 records with vectors in 12s, 10 QA pairs
+[locomo-conv-41] built 789 records with vectors in 48s, 10 QA pairs
+[locomo-conv-42] built 736 records with vectors in 73s, 10 QA pairs
+[locomo-conv-43] built 785 records with vectors in 64s, 10 QA pairs
+[locomo-conv-44] built 770 records with vectors in 31s, 10 QA pairs
+[locomo-conv-47] built 813 records with vectors in 74s, 10 QA pairs
+[locomo-conv-48] built 784 records with vectors in 64s, 10 QA pairs
+[locomo-conv-49] built 603 records with vectors in 91s, 10 QA pairs
+[locomo-conv-50] built 662 records with vectors in 57s, 10 QA pairs

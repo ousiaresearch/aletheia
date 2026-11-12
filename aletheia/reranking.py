@@ -18,7 +18,17 @@ class CrossEncoderReranker:
 
     def _load(self):
         if self._model is None:
-            from sentence_transformers import CrossEncoder
+            try:
+                from sentence_transformers import CrossEncoder
+            except ImportError as exc:
+                # sentence-transformers is a declared dependency on darwin/arm64, where the provider
+                # requires the reranker. Off that platform it is not installed, and a bare
+                # ModuleNotFoundError raised from inside a recall transaction names nothing.
+                raise RuntimeError(
+                    "the cross-encoder reranker needs sentence-transformers, which the provider "
+                    "declaration installs on darwin/arm64 only; install "
+                    "'ousia-aletheia[local-recall]' to use use_cross_encoder here"
+                ) from exc
             self._model = CrossEncoder(self.model_name, local_files_only=True)
 
     def rerank(self, query: str, items: Sequence, top_k: int = 10) -> list:

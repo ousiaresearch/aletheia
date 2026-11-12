@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ousia-aletheia"
-version = "2.0.1"
+version = "2.1.0"
 description = "Evidence-bound scoped memory substrate for people and their agents"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
@@ -28,16 +28,37 @@ dependencies = [
   "sqlite-vec>=0.1.9,<0.2",
   "pypdf>=6.21.2,<7",
   "python-docx>=1.2,<2",
+  # The provider's own runtime requirements live here, not in an extra. Hermes installs a plugin
+  # from its declaration — `[project.dependencies]` when the plugin ships a `pyproject.toml`,
+  # falling back to `plugin.yaml`'s `python_dependencies` only when it does not — so a requirement
+  # sitting in `[project.optional-dependencies]` is never installed when an environment is rebuilt.
+  # The provider then fails closed at startup with no embedder and memory goes silently dark.
+  # `plugin.yaml` mirrors these three pins for readers that only have the manifest;
+  # `tests/test_runtime_deps.py` holds the two together and `scripts/check_runtime_deps.py` fails
+  # on an environment that lacks them, or on a marker that keeps them from installing.
+  "sentence-transformers>=3.0,<6; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "mlx>=0.32.4,<0.33; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "mlx-embeddings==0.1.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  # Requirement parsing in aletheia/runtime_deps.py: the checker reads the declaration above and
+  # evaluates its markers, which is a solved problem (PEP 508) with a known implementation.
+  "packaging>=23",
 ]
 
 [project.optional-dependencies]
+# Kept for compatibility only, and NOT the provider's requirement declaration: the three pins above
+# are what an environment is built from. These groups stay so that an existing
+# `pip install 'ousia-aletheia[local-embedding,local-recall]'` keeps resolving. They are not exact
+# aliases and are not checked against the core list — `local-recall` pins sentence-transformers
+# without the upper bound and torch, which core does not pin at all. Treat the core list as
+# authoritative; anything that reads these as the source of truth is reading the wrong field.
 local-embedding = [
   "mlx>=0.32.4,<0.33; sys_platform == 'darwin' and platform_machine == 'arm64'",
   "mlx-embeddings==0.1.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
 ]
 local-recall = [
-  "sentence-transformers>=3.0",
-  "torch>=2.0",
+  # The route to the reranker off Apple Silicon, where the core declaration does not install it.
+  # Pinned the same way as the core requirement; torch comes in through it rather than separately.
+  "sentence-transformers>=3.0,<6",
 ]
 server = [
   "fastapi>=0.111",

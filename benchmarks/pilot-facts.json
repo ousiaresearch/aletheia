@@ -1,0 +1,347 @@
+{
+  "conversation": "locomo-conv-26",
+  "records_in_conversation": 463,
+  "records_extracted": 20,
+  "claims_total": 51,
+  "claims_per_record": 2.55,
+  "records_with_no_claims": 7,
+  "empty_rate": 0.35,
+  "seconds_per_record": 21.77,
+  "projected_seconds_all_records": 10080,
+  "projected_minutes_ten_conversations": 1632.8,
+  "samples": [
+    {
+      "record_id": "locomo-conv-26-d1-3",
+      "text": "Caroline attended an LGBTQ support group recently and found the transgender stories inspiring.",
+      "n_facts": 0,
+      "facts": []
+    },
+    {
+      "record_id": "locomo-conv-26-d1-7",
+      "text": "The support group has made Caroline feel accepted and given her courage to embrace herself.",
+      "n_facts": 0,
+      "facts": []
+    },
+    {
+      "record_id": "locomo-conv-26-d1-9",
+      "text": "Caroline is planning to continue her education and explore career options in counseling or mental health to support those with similar issues.",
+      "n_facts": 5,
+      "facts": [
+        {
+          "subject": "Caroline",
+          "predicate": "is planning to continue",
+          "object": "her education",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "is planning to explore",
+          "object": "career options",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "is considering career options in",
+          "object": "counseling",
+          "fact_type": "relation",
+          "confidence": 0.95
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "is considering career options in",
+          "object": "mental health",
+          "fact_type": "relation",
+          "confidence": 0.95
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "plans to support",
+          "object": "people with similar issues",
+          "fact_type": "event",
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d1-2",
+      "text": "Melanie is currently managing kids and work and finds it overwhelming.",
+      "n_facts": 5,
+      "facts": [
+        {
+          "subject": "Melanie",
+          "predicate": "manages",
+          "object": "kids",
+          "fact_type": "event",
+          "confidence": 0.95
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "manages",
+          "object": "work",
+          "fact_type": "event",
+          "confidence": 0.95
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "has",
+          "object": "kids",
+          "fact_type": "relation",
+          "confidence": 0.75
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "finds overwhelming",
+          "object": "managing kids and work",
+          "fact_type": "attribute",
+          "confidence": 0.95
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "has temporal status",
+          "object": "currently",
+          "fact_type": "temporal",
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d1-14",
+      "text": "Melanie painted a lake sunrise last year which holds special meaning to her.",
+      "n_facts": 3,
+      "facts": [
+        {
+          "subject": "Melanie",
+          "predicate": "painted",
+          "object": "a lake sunrise",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Melanie's painting of a lake sunrise",
+          "predicate": "was created in",
+          "object": "last year",
+          "fact_type": "temporal",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Melanie's painting of a lake sunrise",
+          "predicate": "holds special meaning for",
+          "object": "Melanie",
+          "fact_type": "relation",
+          "confidence": 1.0
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d1-16",
+      "text": "Painting is a fun way for Melanie to express her feelings and get creative, helping her relax after a long day.",
+      "n_facts": 5,
+      "facts": [
+        {
+          "subject": "Melanie",
+          "predicate": "finds",
+          "object": "painting fun",
+          "fact_type": "attribute",
+          "confidence": 0.98
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "expresses feelings through",
+          "object": "painting",
+          "fact_type": "event",
+          "confidence": 0.98
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "gets creative through",
+          "object": "painting",
+          "fact_type": "event",
+          "confidence": 0.98
+        },
+        {
+          "subject": "Painting",
+          "predicate": "helps",
+          "object": "Melanie relax",
+          "fact_type": "relation",
+          "confidence": 0.98
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "relaxes after",
+          "object": "a long day",
+          "fact_type": "temporal",
+          "confidence": 0.85
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d1-18",
+      "text": "Melanie is going swimming with the kids after the conversation.",
+      "n_facts": 3,
+      "facts": [
+        {
+          "subject": "Melanie",
+          "predicate": "is going swimming",
+          "object": "with the kids",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "the kids",
+          "predicate": "are going swimming",
+          "object": "with Melanie",
+          "fact_type": "event",
+          "confidence": 0.85
+        },
+        {
+          "subject": "Melanie's swimming",
+          "predicate": "occurs after",
+          "object": "the conversation",
+          "fact_type": "temporal",
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d2-1",
+      "text": "Melanie ran a charity race for mental health last Saturday.",
+      "n_facts": 3,
+      "facts": [
+        {
+          "subject": "Melanie",
+          "predicate": "ran",
+          "object": "charity race",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "charity race",
+          "predicate": "supported",
+          "object": "mental health",
+          "fact_type": "relation",
+          "confidence": 1.0
+        },
+        {
+          "subject": "charity race",
+          "predicate": "took place on",
+          "object": "last Saturday",
+          "fact_type": "temporal",
+          "confidence": 1.0
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d2-3",
+      "text": "Melanie is realizing the importance of self-care and its impact on her family.",
+      "n_facts": 4,
+      "facts": [
+        {
+          "subject": "Melanie",
+          "predicate": "realizes",
+          "object": "importance of self-care",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "realizes",
+          "object": "impact of self-care on Melanie's family",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "self-care",
+          "predicate": "impacts",
+          "object": "Melanie's family",
+          "fact_type": "relation",
+          "confidence": 0.8
+        },
+        {
+          "subject": "Melanie",
+          "predicate": "has",
+          "object": "family",
+          "fact_type": "relation",
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d2-5",
+      "text": "Melanie carves out me-time each day for activities like running, reading, or playing the violin.",
+      "n_facts": 0,
+      "facts": []
+    },
+    {
+      "record_id": "locomo-conv-26-d2-7",
+      "text": "Melanie's kids are excited about summer break and they are considering going camping next month.",
+      "n_facts": 4,
+      "facts": [
+        {
+          "subject": "Melanie's kids",
+          "predicate": "are children of",
+          "object": "Melanie",
+          "fact_type": "relation",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Melanie's kids",
+          "predicate": "are excited about",
+          "object": "summer break",
+          "fact_type": "attribute",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Melanie's kids",
+          "predicate": "are considering",
+          "object": "going camping",
+          "fact_type": "event",
+          "confidence": 1.0
+        },
+        {
+          "subject": "Melanie's kids' potential camping trip",
+          "predicate": "is considered for",
+          "object": "next month",
+          "fact_type": "temporal",
+          "confidence": 0.95
+        }
+      ]
+    },
+    {
+      "record_id": "locomo-conv-26-d2-8",
+      "text": "Caroline is researching adoption agencies with the dream of having a family and providing a loving home to kids in need.",
+      "n_facts": 4,
+      "facts": [
+        {
+          "subject": "Caroline",
+          "predicate": "is researching",
+          "object": "adoption agencies",
+          "fact_type": "event",
+          "confidence": 0.98
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "dreams of",
+          "object": "having a family",
+          "fact_type": "attribute",
+          "confidence": 0.96
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "dreams of",
+          "object": "providing a loving home to kids in need",
+          "fact_type": "attribute",
+          "confidence": 0.95
+        },
+        {
+          "subject": "Caroline",
+          "predicate": "is considering",
+          "object": "adoption",
+          "fact_type": "attribute",
+          "confidence": 0.9
+        }
+      ]
+    }
+  ]
+}

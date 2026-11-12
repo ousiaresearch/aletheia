@@ -124,21 +124,22 @@ def test_readiness_is_true_when_both_models_and_runtimes_are_present(monkeypatch
 
 
 def test_initialize_binds_paths_to_the_profile_it_is_given(tmp_path, monkeypatch):
-    """Storage and scope come from ``hermes_home``, never from the ambient environment."""
+    """Identity comes from the profile, and profiles share one host store as scopes."""
     monkeypatch.setattr(provider_mod, "default_text_embedder", lambda: StubEmbedder())
     monkeypatch.setattr(provider_mod, "spawn_context_thread",
                         lambda target, **kw: SimpleNamespace(start=lambda: None))
     monkeypatch.setattr(provider_mod.Substrate, "reembed_missing", lambda *a, **k: {})
 
-    one, two = tmp_path / "alpha", tmp_path / "beta"
+    root = tmp_path / ".hermes"
+    one, two = root / "profiles" / "alpha", root / "profiles" / "beta"
     p1, p2 = AletheiaMemoryProvider(), AletheiaMemoryProvider()
-    p1.initialize("s1", hermes_home=str(one))
-    p2.initialize("s2", hermes_home=str(two))
+    p1.initialize("s1", hermes_home=str(one), agent_identity="alpha")
+    p2.initialize("s2", hermes_home=str(two), agent_identity="beta")
     try:
-        assert p1._db_path == one / "aletheia" / "aletheia.sqlite3"
-        assert p2._db_path == two / "aletheia" / "aletheia.sqlite3"
-        assert p1._db_path != p2._db_path
-        assert p1._scope == "profile-alpha" and p2._scope == "profile-beta"
+        # One store for the host; the profiles are scopes inside it, not separate files.
+        assert p1._db_path == p2._db_path == root / "aletheia" / "aletheia.sqlite3"
+        assert p1._scope == "profile:alpha" and p2._scope == "profile:beta"
+        assert p1._substrate is not p2._substrate, "each profile gets its own connection"
         assert p1._db_path.is_file(), "substrate should create the store"
     finally:
         p1.shutdown()
@@ -212,7 +213,12 @@ def test_save_config_is_profile_scoped_and_private(tmp_path):
     provider = AletheiaMemoryProvider()
     provider.save_config({"db_path": str(tmp_path / "x.db"), "scope": "work"}, str(tmp_path))
     path = tmp_path / "aletheia" / "provider-config.json"
-    assert json.loads(path.read_text()) == {"db_path": str(tmp_path / "x.db"), "scope": "work"}
+    saved = json.loads(path.read_text())
+    # `db_path` is the pre-2.1 name for `store_path`; both were accepted, one is written.
+    assert saved["store_path"] == str(tmp_path / "x.db")
+    assert saved["scope"] == "work"
+    assert saved["read_scopes"] == []
+    assert saved["shared"] is False and saved["shared_write"] is False
     assert (path.stat().st_mode & 0o777) == 0o600
 
 

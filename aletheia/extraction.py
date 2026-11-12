@@ -237,40 +237,29 @@ def write_claims(sub: Substrate, ctx: ScopeContext, claims: list[Record], embedd
     return written
 
 
-def consolidate_scope(sub: Substrate, ctx: ScopeContext, scope: str, similarity_threshold: float = 0.95) -> dict[str, int]:
-    """Report duplicate/similar Claims in a scope.
-    
-    Aletheia design: Corrections require user attribution, so automated
-    consolidation reports duplicates but cannot auto-supersede.
-    Returns {claims_reviewed, duplicate_count, kept}.
-    Fail-closed: returns empty dict on any error.
+def consolidate_scope(sub: Substrate, ctx: ScopeContext, scope: str, similarity_threshold: float = 0.95,
+                      *, mark: bool = False, dry_run: bool = False, embedder=None) -> dict:
+    """Report near-duplicate Claims in a scope, and optionally mark them with ``duplicate_of`` edges.
+
+    Delegates to :mod:`aletheia.consolidation`, which owns the clustering and the threshold. Two
+    things stay true here: nothing is deleted, and nothing is superseded — a Correction needs user
+    attribution, so an agent may mark a duplicate and may not rewrite what somebody asserted.
+
+    Fail-closed: an error returns an empty report rather than a partial one.
     """
+    from aletheia.consolidation import mark_duplicates
+
     if ctx is None:
         return {}
     try:
-        readable, _ = sub.query(ctx, record_type="Claim", scope=scope)
-        claims = [r for r in readable if isinstance(r.payload, dict)]
+        report = mark_duplicates(sub, ctx, scope, threshold=similarity_threshold,
+                                 record_type="Claim", dry_run=not mark, embedder=embedder)
     except Exception:
         return {}
-    
-    if not claims:
-        return {"claims_reviewed": 0, "duplicate_count": 0, "kept": 0}
-    
-    # Simple dedup by normalized text (production would use embeddings)
-    seen: dict[str, Record] = {}
-    duplicate_count = 0
-    kept = 0
-    
-    for claim in claims:
-        text = claim.payload.get("text", "").lower().strip()
-        if not text:
-            continue
-        
-        if text in seen:
-            # Report as duplicate; actual supersession requires user Correction
-            duplicate_count += 1
-        else:
-            seen[text] = claim
-            kept += 1
-    
-    return {"claims_reviewed": len(claims), "duplicate_count": duplicate_count, "kept": kept}
+    return {
+        "claims_reviewed": report["records_scanned"],
+        "duplicate_count": report["duplicates"],
+        "kept": report["groups"],
+        "edges_written": report["edges_written"],
+        "dry_run": report["dry_run"],
+    }

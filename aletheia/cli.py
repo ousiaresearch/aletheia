@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sqlite3
 import sys
 from contextlib import closing
@@ -18,8 +19,15 @@ from aletheia.adapters import default_text_embedder
 from aletheia.ingest import Ingestor, Rejection
 from aletheia.retrieval import recall
 from aletheia.paths import migrate_legacy_cli_store
+from aletheia.merge import merge_store, scope_counts, upgrade_scope
 from aletheia.scope import ScopeContext, ScopeEngine
 from aletheia.substrate import SCHEMA_VERSION, Substrate, SubstrateError
+
+_SCOPE_RE = re.compile(r"^(?:profile:[a-z0-9_-]+|project:[a-z0-9_-]+|shared)$")
+
+
+def _valid_scope(scope: object) -> bool:
+    return bool(_SCOPE_RE.match(str(scope or "").strip()))
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -55,12 +63,64 @@ def _parser() -> argparse.ArgumentParser:
               "ALETHEIA_LLM_PROVIDER/MODEL and a provider API key"),
     )
     
-    consolidate = commands.add_parser("consolidate", help="deduplicate Claims in a scope")
+    consolidate = commands.add_parser("consolidate", help="find near-duplicate Claims in a scope")
     consolidate.add_argument("--scope", required=True)
+    consolidate.add_argument("--threshold", type=float, default=0.9,
+                             help="similarity at or above which two records are the same claim")
+    consolidate.add_argument("--mark", action="store_true",
+                             help="write duplicate_of edges (default: report only)")
+    consolidate.add_argument("--dry-run", action="store_true",
+                             help="report what --mark would do without writing it")
 
     link_entities = commands.add_parser("link-entities", help="extract entity links from records")
     link_entities.add_argument("--scope", required=True)
     link_entities.add_argument("--limit", type=int, default=100, help="max records to scan")
+
+    relate = commands.add_parser("relate", help="draw relations between records that cite each other")
+    relate.add_argument("--scope", required=True)
+    relate.add_argument("--limit", type=int, default=100, help="max records to scan")
+
+    importer = commands.add_parser("import", help="ingest files or a directory into one scope")
+    importer.add_argument("--scope", required=True)
+    importer.add_argument("--path", action="append", required=True,
+                          help="file or directory (repeatable)")
+    importer.add_argument("--recursive", action="store_true", help="walk directories recursively")
+    importer.add_argument("--limit", type=int, default=100, help="max files to ingest")
+    importer.add_argument("--dry-run", action="store_true", help="report what would be ingested")
+    importer.add_argument("--author", default="", help="attribution recorded on the document")
+
+    fetcher = commands.add_parser("fetch", help="ingest one http(s) page the operator names")
+    fetcher.add_argument("--scope", required=True)
+    fetcher.add_argument("--url", required=True)
+    fetcher.add_argument("--allow-egress", action="store_true",
+                         help="REQUIRED: this command reaches the network; nothing else does")
+
+    redact = commands.add_parser(
+        "redact", help="report shaped secrets already stored in a scope (records are not rewritten)")
+    redact.add_argument("--scope", required=True)
+    redact.add_argument("--limit", type=int, default=500, help="max records to scan")
+
+    retention = commands.add_parser("retention", help="set, apply or sweep a scope's retention window")
+    retention.add_argument("--scope", required=True)
+    retention.add_argument("--set-days", type=float, default=None,
+                           help="store a window for this scope (days after creation)")
+    retention.add_argument("--apply", action="store_true", help="mark records under the stored window")
+    retention.add_argument("--sweep", action="store_true", help="delete records whose window closed")
+    retention.add_argument("--confirm", action="store_true",
+                           help="REQUIRED with --sweep: actually delete (without it, a sweep reports)")
+    retention.add_argument("--overwrite", action="store_true",
+                           help="with --apply: move existing marks to the current window")
+
+    representation = commands.add_parser(
+        "representation", help="assemble a cited card of what one scope holds (nothing is stored)")
+    representation.add_argument("--scope", required=True)
+    representation.add_argument("--limit", type=int, default=20, help="max lines per group")
+
+    graph = commands.add_parser("graph", help="rebuild or inspect one scope's relation graph")
+    graph.add_argument("--scope", required=True)
+    graph.add_argument("--rebuild-communities", action="store_true",
+                       help="recompute the community projection for this scope")
+    graph.add_argument("--record-id", default=None, help="list this record's neighbours")
 
     temporal = commands.add_parser("temporal", help="query records valid at a given timestamp")
     temporal.add_argument("--scope", required=True)
@@ -79,6 +139,19 @@ def _parser() -> argparse.ArgumentParser:
     reembed = commands.add_parser("reembed", help="embed records in a scope that lack vectors (repairs hybrid recall)")
     reembed.add_argument("--scope", required=True)
     reembed.add_argument("--limit", type=int, default=None, help="max records to embed this run")
+
+    rename = commands.add_parser("rename-scope",
+                                 help="rename a scope in place across records, journal and receipts")
+    rename.add_argument("--from", dest="old_scope", required=True, help="the scope currently stored")
+    rename.add_argument("--to", dest="new_scope", required=True, help="the scope name to use")
+
+    merge = commands.add_parser("merge-store",
+                                help="copy one scope from another store into this store under a new scope")
+    merge.add_argument("--from-db", required=True, help="the store to copy from (never modified)")
+    merge.add_argument("--from-scope", required=True, help="the scope to copy")
+    merge.add_argument("--to-scope", required=True, help="the scope to create in this store")
+    merge.add_argument("--no-embed", action="store_true",
+                       help="skip vector repair; run `aletheia reembed --scope ...` afterwards")
     return parser
 
 
@@ -252,7 +325,8 @@ def _run_consolidate(args) -> int:
     engine, ctx = _context(args.scope)
     sub = Substrate(db_path, engine)
     try:
-        result = consolidate_scope(sub, ctx, args.scope)
+        result = consolidate_scope(sub, ctx, args.scope, similarity_threshold=args.threshold,
+                                   mark=args.mark, dry_run=args.dry_run)
         print(json.dumps({
             "status": "consolidated",
             "scope": args.scope,
@@ -277,6 +351,189 @@ def _run_link_entities(args) -> int:
             "scope": args.scope,
             **result,
         }))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_relate(args) -> int:
+    from aletheia.graph import extract_relations
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        result = extract_relations(sub, ctx, args.scope, limit=args.limit)
+        print(json.dumps({"status": "related", "scope": args.scope, **result}))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_import(args) -> int:
+    from aletheia.connectors import import_paths
+    from aletheia.ingest import Ingestor
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        report = import_paths(Ingestor(sub), ctx, args.scope, args.path, author=args.author,
+                              recursive=args.recursive, limit=args.limit, dry_run=args.dry_run)
+        print(json.dumps({"status": "import", "scope": args.scope, **report.summary()}, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_fetch(args) -> int:
+    from aletheia.connectors import fetch_page, ingest_fetched
+    from aletheia.ingest import Ingestor
+    if not args.allow_egress:
+        print(json.dumps({"status": "refused",
+                          "reason": "fetching reaches the network; pass --allow-egress to confirm"}))
+        return 1
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        try:
+            page = fetch_page(args.url)
+        except (ValueError, OSError) as exc:
+            print(json.dumps({"status": "refused", "url": args.url, "reason": str(exc)}))
+            return 1
+        record_id = ingest_fetched(Ingestor(sub), ctx, args.scope, page)
+        print(json.dumps({"status": "fetched", "scope": args.scope, "url": args.url,
+                          "final_url": page.final_url, "bytes": page.size,
+                          "record_id": record_id}, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_redact(args) -> int:
+    """Report what a redaction pass would have removed from records already stored.
+
+    It reports rather than rewrites: a record is immutable, and rewriting history to remove a secret
+    would leave the raw value in the journal, the WAL and every backup anyway. The honest answer to
+    "this record contains a phone number" is that it was stored before the hook existed, and the
+    erasure path — not a find-and-replace — is how it goes away.
+    """
+    from aletheia.redaction import scan
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        readable, _ = sub.query(ctx, scope=args.scope)
+        totals: dict[str, int] = {}
+        affected: list[str] = []
+        for record in readable[: args.limit]:
+            payload = record.payload if isinstance(record.payload, dict) else {}
+            findings = scan(str(payload.get("text") or ""))
+            if not findings:
+                continue
+            affected.append(record.record_id)
+            for kind, count in findings.items():
+                totals[kind] = totals.get(kind, 0) + count
+        print(json.dumps({
+            "status": "redact",
+            "scope": args.scope,
+            "records_scanned": len(readable[: args.limit]),
+            "records_affected": len(affected),
+            "findings": totals,
+            "record_ids": affected[:20],
+            "note": ("records are not rewritten; these predate the ingestion hook. "
+                     "Use the erasure path to remove them."),
+        }, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_retention(args) -> int:
+    from aletheia.retention import apply_policy, expired_record_ids, get_policy, set_policy, sweep
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        report: dict = {"status": "retention", "scope": args.scope}
+        if args.set_days is not None:
+            if not set_policy(sub, ctx, args.scope, args.set_days):
+                print(json.dumps({"status": "refused", "scope": args.scope,
+                                  "reason": "scope not granted"}))
+                return 1
+            report["policy_days"] = args.set_days
+        policy = get_policy(sub, ctx, args.scope)
+        report["policy"] = None if policy is None else policy.days
+        if args.apply:
+            if policy is None:
+                print(json.dumps({"status": "refused", "scope": args.scope,
+                                  "reason": "no retention window set"}))
+                return 1
+            report.update(apply_policy(sub, ctx, args.scope, overwrite=args.overwrite))
+        if args.sweep:
+            report.update(sweep(sub, ctx, args.scope, dry_run=not args.confirm))
+        else:
+            report["expired"] = len(expired_record_ids(sub, args.scope))
+        print(json.dumps(report, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_representation(args) -> int:
+    from aletheia.representation import build_card
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        card = build_card(sub, ctx, args.scope, limit=args.limit)
+        print(json.dumps({"status": "representation", **card.as_dict()}, sort_keys=True))
+        return 0
+    finally:
+        sub.close()
+
+
+def _run_graph(args) -> int:
+    from aletheia.graph import community_of, neighbours, relations_from, rebuild_communities
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    engine, ctx = _context(args.scope)
+    sub = Substrate(db_path, engine)
+    try:
+        if args.rebuild_communities:
+            result = rebuild_communities(sub, ctx, args.scope)
+            print(json.dumps({"status": "communities", "scope": args.scope, **result}))
+            return 0
+        if args.record_id:
+            edges = relations_from(sub, ctx, args.record_id)
+            print(json.dumps({
+                "status": "graph",
+                "scope": args.scope,
+                "record_id": args.record_id,
+                "community": community_of(sub, ctx, args.record_id),
+                "neighbours": neighbours(sub, ctx, args.record_id, hops=2),
+                "relations": [{"predicate": e.predicate, "object": e.object,
+                               "confidence": e.confidence} for e in edges],
+            }))
+            return 0
+        print(json.dumps({"status": "graph", "scope": args.scope,
+                          "relations": sub._conn.execute(
+                              "SELECT COUNT(*) FROM relations WHERE scope = ?", (args.scope,)).fetchone()[0],
+                          "communities": sub._conn.execute(
+                              "SELECT COUNT(DISTINCT label) FROM communities WHERE scope = ?",
+                              (args.scope,)).fetchone()[0]}))
         return 0
     finally:
         sub.close()
@@ -387,6 +644,47 @@ def _run_reembed(args) -> int:
         sub.close()
 
 
+def _run_rename_scope(args) -> int:
+    db_path = Path(args.db).expanduser()
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Aletheia database not found: {db_path}")
+    for scope in (args.old_scope, args.new_scope):
+        if not _valid_scope(scope):
+            raise ValueError(f"not a scope name: {scope!r}")
+    before = scope_counts(db_path)
+    result = upgrade_scope(db_path, args.old_scope, args.new_scope)
+    refused = result.get("refused") or ""
+    status = "refused" if refused else ("renamed" if result.get("changed") else "noop")
+    print(json.dumps({"status": status, "from": args.old_scope, "to": args.new_scope,
+                      "changed": result.get("changed", {}), "vectors": result.get("vectors", {}),
+                      "refused": refused, "before": before, "after": scope_counts(db_path)}))
+    return 1 if refused else (0 if result.get("changed") else 3)
+
+
+def _run_merge_store(args) -> int:
+    db_path = Path(args.db).expanduser()
+    source = Path(args.from_db).expanduser()
+    if not source.is_file():
+        raise FileNotFoundError(f"Aletheia source database not found: {source}")
+    embedder = None if args.no_embed else default_text_embedder()
+    result = merge_store(source, db_path, args.from_scope, args.to_scope, embedder=embedder)
+    if result.get("error"):
+        status = "error"
+    elif result.get("refusal") and not result.get("imported"):
+        status = "refused"
+    elif result.get("imported"):
+        status = "merged"
+    elif result.get("already_present"):
+        status = "already-present"
+    else:
+        status = "nothing-imported"
+    print(json.dumps({"status": status, **result}, ensure_ascii=False))
+    # A migration that moved nothing is a failure even when nothing raised: a typo'd scope, a
+    # refused bundle and an empty source must not share an exit code with success.
+    failed = bool(result.get("error")) or status in ("refused", "nothing-imported")
+    return 1 if failed else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
@@ -406,6 +704,20 @@ def main(argv: list[str] | None = None) -> int:
             return _run_consolidate(args)
         if args.command == "link-entities":
             return _run_link_entities(args)
+        if args.command == "relate":
+            return _run_relate(args)
+        if args.command == "graph":
+            return _run_graph(args)
+        if args.command == "representation":
+            return _run_representation(args)
+        if args.command == "retention":
+            return _run_retention(args)
+        if args.command == "redact":
+            return _run_redact(args)
+        if args.command == "import":
+            return _run_import(args)
+        if args.command == "fetch":
+            return _run_fetch(args)
         if args.command == "temporal":
             return _run_temporal(args)
         if args.command == "propose-rule":
@@ -414,6 +726,10 @@ def main(argv: list[str] | None = None) -> int:
             return _run_active_rules(args)
         if args.command == "reembed":
             return _run_reembed(args)
+        if args.command == "rename-scope":
+            return _run_rename_scope(args)
+        if args.command == "merge-store":
+            return _run_merge_store(args)
         return _run_recall(args)
     except (OSError, RuntimeError, ValueError, ImportError, sqlite3.Error, SubstrateError) as exc:
         print(f"aletheia: {exc}", file=sys.stderr)

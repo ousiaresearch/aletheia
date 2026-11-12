@@ -2,6 +2,267 @@
 
 All notable changes to Aletheia are documented here.
 
+## [Unreleased]
+
+### Added
+- **`aletheia/graph.py` — typed relations, scoped and time-bounded (phase 12 / W2.1).** A
+  `relations` table (schema version 8) stores subject → predicate → object where both endpoints are
+  `record_id` values, so an edge is authorised the same way a record is. `entity_links` answers
+  "which record mentions this string"; this answers "which records are related, and how".
+  - Writing requires the scope to be granted and readable *and* both endpoints to exist in it, so a
+    cross-scope edge is not expressible: declaring the edge in `shared` does not join an `alpha`
+    record to a `beta` one.
+  - A predicate must come from the closed `PREDICATES` set; confidence is bounded 0–1; a window
+    whose `valid_to` precedes `valid_from` is refused at construction.
+  - Reading is filtered by the edge's scope at every hop, and each far endpoint must be readable in
+    its own scope — an edge is not a permission. Measured: a caller granted only `alpha` cannot walk
+    `alpha → shared → beta`.
+  - `neighbours()` is bounded breadth-first: shortest distance, hop and node limits, closed windows
+    invisible without being deleted.
+  - `expand_candidates()` reaches neighbours of the top matches in a stable order (seed, then
+    distance, then id) and recall uses it as a **context** layer: graph-reached records never
+    displace a matching record, are capped at ten, and are marked `neighbor` like adjacency
+    context. The receipt names the layer `graph_expand`, so "why is this here" has an answer.
+  - `extract_relations()` is rule-based and deliberately small: a candidate predicate comes from a
+    fixed pattern list and an edge is drawn only for a **citation the substrate can verify** — a
+    record id present in the citing record's text. Nothing is inferred from a word alone, and every
+    edge names its `source_ids`.
+  - **Communities** are a projection, not authority: `rebuild_communities()` runs label propagation
+    inside one scope, visiting nodes in sorted order and breaking ties toward the smaller label, so
+    two runs over the same edges produce the same partition — a partition nobody can reproduce is
+    not auditable. Only that scope's edges are read and only its records are labelled; the rebuild
+    replaces the previous projection; membership is derived state that can be thrown away.
+  - Schema version 9 adds `communities` (8 added `relations`). Migration from v6 or v7 lands on 9 and
+    both tables are rebuilt from records rather than trusted from an export bundle
+    (`_IMPORTABLE_SCHEMA_VERSIONS` lists 6–9, and a future version is still refused).
+  - Operator surface: `aletheia relate --scope <s>` draws relations from verified citations,
+    `aletheia graph --scope <s> --rebuild-communities` recomputes the projection, and
+    `aletheia graph --scope <s> --record-id <id>` shows that record's community, neighbours and
+    relations. Without these the graph would be a table nothing fills.
+- **`aletheia/representation.py` — a cited card of what a scope holds (phase 12 / W2.2).** The plan
+  asked for a stored `Representation` record type. This deliberately stores nothing: a snapshot goes
+  stale without anything failing, cannot cite the records it was built from once they change, and
+  reading it is indistinguishable from reading an asserted fact. The card is a projection assembled
+  on demand from one scope — architecture rule 4 applied literally — with every line carrying the
+  `record_id` and `source_ids` it came from (`Card.record_ids()` returns the set a caller can check
+  it against).
+  - Contents are rule-based and boring: stated `Commitment` / `Decision` lines with their status,
+    `Claim`s above a confidence floor, relation counts by predicate, community sizes, and the most
+    recent record ids. Nothing infers a personality, a mood or a preference — that would be
+    interpretation dressed as data, and the first reader of a wrong interpretation would be a model
+    that then acted on it.
+  - A record superseded by a `Correction` is history, not a fact: excluded from the card and counted
+    under `counts.superseded`, so a corrected claim never appears twice as equally current.
+  - An ungranted scope yields an empty card, and building twice stores nothing (asserted by
+    comparing the record count before and after).
+  - `aletheia representation --scope <s> [--limit N]` prints the card as JSON.
+- **`aletheia/consolidation.py` — near-duplicates found and marked, never deleted (phase 12 / W2.3).**
+  `consolidate_scope` used to report exact-text duplicates in a comment that admitted "production
+  would use embeddings". This replaces it with clustering that is lexical by default and
+  embedding-based when an embedder is passed, and it *marks* what it finds with a `duplicate_of`
+  edge instead of counting it.
+  - Nothing is deleted, and nothing is superseded automatically: a `Correction` requires user
+    attribution, so an agent may mark a duplicate but may not rewrite what a person asserted. A test
+    asserts consolidation writes no `Correction` and leaves `supersedes` untouched — that failure
+    would be an agent laundering away a stated fact.
+  - The keeper is chosen deterministically — strongest confidence, then newest, then smallest id —
+    and grouping does not depend on row order. Two runs give the same answer, including the last
+    tiebreak.
+  - Clustering is per scope in both directions: an ungranted scope yields nothing, and two scopes
+    with the same sentence are not duplicates of each other.
+  - `aletheia consolidate --scope <s> [--threshold T] [--mark] [--dry-run]`; the default is to
+    report, because a threshold that is wrong for a corpus is not obvious until you have seen what
+    it would have marked.
+  - Recall uses the marking: a marked duplicate yields its match slot to its keeper and is returned
+    as context, so both are visible and only one is treated as a match.
+- **`aletheia/retention.py` — windows as policy, purging through the erasure path (W2.6, slice 1).**
+  Schema version 10 adds `retention_policy` (one window per scope) and `retention_marks` (per
+  record). Deliberately side tables: an `expires_at` column on the record would make a policy change
+  a rewrite of history, and the record is the thing this substrate promises not to rewrite.
+  - Expiry is measured from a record's creation, not from when the policy was set, so a window
+    applied today does not silently extend the life of everything already stored.
+  - An existing mark is not moved by a later, shorter window unless `--overwrite` is passed.
+  - Expired records leave recall **before** they are deleted, and the receipt names the exclusion.
+    Hiding is reversible and free; deleting is neither.
+  - The sweep deletes through `Substrate.delete()`, the one path that cascades derived artifacts,
+    scrubs the index and WAL, and journals itself — asserted with a `Summary` citing the purged
+    record. `aletheia retention --sweep` reports unless `--confirm` is given.
+  - `aletheia retention --scope <s> [--set-days N] [--apply] [--sweep] [--confirm] [--overwrite]`.
+- **`aletheia/redaction.py` — shaped secrets are removed before the record exists (W2.6, slice 2).**
+  Ingestion redacts first, so the stored text, the FTS row and the vector are all built from what is
+  safe to keep. Redacting afterwards would mean either rewriting history or leaving the raw value in
+  the index while claiming otherwise — the second of which is the failure this slice exists to
+  prevent, and it is asserted by searching the index for the raw address and finding no token.
+  - Shapes covered: email, SSN, credit-card-shaped numbers with a **valid Luhn checksum**, common
+    credential shapes (OpenAI/GitHub/AWS/Slack), and phone numbers that are shaped like phone
+    numbers — a country code, a parenthesised area code, or two separator groups. A bare run of
+    digits is left alone, so years, order numbers and versions survive.
+  - The record records *that* something was removed (`provenance.redacted = {"email": 1}`) and never
+    *what*: a redaction log that quotes the value is a second copy of the value.
+  - Known limitation, asserted rather than hidden: a 4-3-4 grouped serial reads as a phone number.
+    Over-redaction is the accepted failure; a corpus nobody can read is a different failure, and
+    both are visible in the tests.
+  - `aletheia redact --scope <s>` reports shaped secrets already stored, and does not rewrite them:
+    a record is immutable, and a find-and-replace would leave the raw value in the journal, the WAL
+    and every backup. The erasure path is how such a record goes away.
+- **`aletheia/connectors.py` — batch import and one operator-named page (phase 12 / W2.4).**
+  `import_paths()` walks a file or directory in sorted order and gives **every** input an outcome:
+  `stored`, `refused` with the parser's reason, or `skipped` with why. One unreadable PDF does not
+  cost the other thirty-nine, and a truncation at `--limit` is reported rather than silently applied.
+  - `fetch_page()` reaches the network only for an address an operator typed and only when
+    `--allow-egress` is passed as well; every scheme except http/https is refused, so a `file://`
+    URL is a local read dressed as a fetch and is not allowed to look like one. Responses over 5 MiB
+    are refused rather than swallowed; the record keeps the *final* URL after redirects and the fetch
+    time, because "what I fetched" has to be the address the bytes came from.
+  - Markup is stripped without a parser dependency, script and style bodies first — a page's inline
+    JavaScript is the last thing anybody wants in a memory store.
+  - A fetched page is ingested through the ordinary document path, so observations, redaction and
+    content-hash deduplication all apply without a special case.
+  - `aletheia import --scope <s> --path P [--recursive] [--limit N] [--dry-run]` and
+    `aletheia fetch --scope <s> --url U --allow-egress`.
+  - No retry logic: ingest is idempotent by content hash, so re-running the import is the retry.
+
+### Fixed
+- **The provider's runtime requirements are declared where they are installed from.** `mlx`,
+  `mlx-embeddings` and `sentence-transformers` moved from `[project.optional-dependencies]` into
+  `[project.dependencies]`, each marked `sys_platform == 'darwin' and platform_machine == 'arm64'`.
+  Hermes installs a plugin from its declaration — `pyproject.toml` when one ships, `plugin.yaml`'s
+  `python_dependencies` only when it does not — so a requirement left in an extra is never installed
+  when the environment is rebuilt. The gateway then started normally, reported the memory provider
+  unavailable, and external memory was off for every session with nothing failing.
+  Verified by resolution, not by assertion, and the result is platform-dependent: with
+  `uv pip install --dry-run --python-platform linux`, `… --python-platform windows` and
+  `… --python-platform x86_64-apple-darwin`, the package resolves 7 packages with no torch, no mlx
+  and no CUDA wheels. The Apple-Silicon set is the opposite — 91 packages including torch,
+  sentence-transformers and mlx-vlm — because that is the platform the provider actually runs on.
+  uv cannot dry-run `aarch64-apple-darwin` for this project at all: it assumes a macOS 13.0
+  deployment target and `mlx==0.32.4` ships 14.0+ wheels. What is **not** verified is a fresh
+  environment built from this declaration: none has been rebuilt since the edit, and the checker
+  below exists so the next rebuild is judged rather than trusted.
+- The `local-embedding` and `local-recall` extras are no longer described as aliases. `local-recall`
+  now carries the same `>=3.0,<6` pin as core (it used to pin `sentence-transformers` unbounded plus
+  a separate unbounded `torch`), and it is the documented route to the reranker off Apple Silicon.
+  Asking for the reranker without it now raises an error naming the extra instead of a bare
+  `ModuleNotFoundError` from inside a recall transaction (`aletheia/reranking.py`).
+- `plugin.yaml` mirrors the three pins and says why it is a mirror rather than the install source.
+  It also gained the `mlx` requirement it was missing.
+
+### Added
+- `scripts/check_runtime_deps.py` — imports the required modules in the interpreter of the
+  environment the newest `installs/*/facts.json` names (isolated mode, scratch cwd, so neither
+  `PYTHONPATH` nor a directory in the caller's cwd can answer for an install), names what is missing
+  with its import error, and prints a `uv pip install --python …` repair that works in an
+  environment without pip. `--deep` is a different question and a different environment: it puts the
+  plugin source that environment would import on `PYTHONPATH` and loads the embedder and reranker
+  there, naming which copy it used. Exit codes: 0 healthy, 1 missing or not ready, 2 unknown —
+  including "the provider does not run on this platform", where nothing was checked.
+- `aletheia/runtime_deps.py` — the requirement set as data, judged as three separate questions:
+  the declaration (parsed with `packaging`, markers evaluated for the *target* platform, so a
+  `win32`-marked requirement counts as undeclared on arm64; a marker reading `os_name` or
+  `platform_release` is reported unknown rather than answered from the checker's own interpreter),
+  presence (`import`, not `find_spec`, which cannot see a wrong-arch wheel, a broken `__init__` or a
+  namespace directory — all three now report absent), and the resolved environment (`Environment`
+  carries a note when `facts.json` names one venv and resolves the lock in another — they have
+  disagreed on this machine, and only one of them had the models). A probe that answers about fewer
+  modules than it was asked about counts the rest missing, and an empty requirement set (any
+  non-Apple-Silicon platform) is reported as not judged rather than as satisfied.
+- `packaging>=23` as a core dependency, for reading the declaration correctly rather than by hand.
+
+### Changed
+- `scripts/deploy_local.sh` replaces the *resolved* environment's plugin-source member from the
+  staged plugin directory and re-installs its editable distribution (`uv pip install --reinstall -e`),
+  instead of only clearing snapshots. Clearing them left the gateway importing a copy that had been
+  deleted, and left the environment's dist metadata at whatever version it was last installed at —
+  which is why an environment running 2.1.0 source reported `ousia-aletheia 2.0.1`. Retired
+  environments' members are still removed. Dry run unchanged: the default prints every action.
+- `scripts/verify_deployed.py` has three verdicts instead of two. `drift` (exit 1) covers disagreeing
+  copies, a missing requirement, and a declaration that does not install one; `unknown` (exit 2)
+  covers an environment or interpreter it could not inspect, a declaration it could not read, and a
+  platform the provider cannot run on; `no drift` (exit 0) requires all of it to be answerable and
+  answered. The earlier version printed "no drift" for a venv with no interpreter in it, which is the
+  same silence as the bug. It also loads `runtime_deps` by path, so a report about one checkout
+  cannot be answered by another.
+- **The installed distribution was invisible to that check.** `_dist_versions` globbed
+  `aletheia-*.dist-info`, but this project installs as `ousia_aletheia-*.dist-info`, so an
+  environment holding 2.0.1 against a 2.1.0 checkout reported "no drift" with the dist copy simply
+  absent from the report. It now matches either name and filters on the `Name:` in METADATA.
+- Two copy classes are printed but not counted as drift: a copy in an environment `facts.json` does
+  not resolve to (a retired environment left on disk), and the dist-info of an **editable** install,
+  whose version is the one it was installed at while the code comes from the source tree its finder
+  maps to — which the `plugin_sources` entry already judges. Both are marked `-` in the report. A
+  check that fails on stale metadata forever is a check nobody reads.
+- A namespace directory no longer counts as an install, but a namespace package that is really
+  installed still does. `mlx` legitimately imports as a namespace directory holding extension
+  modules (`mlx/core*.so`), so "no `__file__`" alone would have reported the live environment as
+  missing its embedder; the probe now imports a canary submodule (`mlx.core`,
+  `mlx_embeddings.utils`) before calling a namespace directory empty.
+
+### Tests
+- `tests/test_runtime_deps.py` — 42 tests, including the cases two rounds of adversarial review
+  found missing: a requirement marked for another platform counts as undeclared; a URL-pinned
+  requirement is parsed rather than misread as absent; the probe reads an import error instead of a
+  spec lookup, survives non-UTF8 output, ignores banner noise, and cannot be answered by a folder in
+  the caller's cwd; the repair command works in an environment without pip; the checker's exit codes
+  are asserted through `main()` with a stand-in interpreter (0 present, 1 missing, 2 unprobeable);
+  `verify_deployed` is exercised end to end rather than monkeypatched, uses the repository it was
+  given, and treats an unloadable checker or an unresolvable environment as unknown rather than
+  clean.
+
+### Documentation
+- README named the wrong distribution (`pip install aletheia` is someone else's package) and pointed
+  at extras that no longer carry the requirement. It now names `ousia-aletheia`, says why the
+  requirements are dependencies, records that `mlx` needs macOS 14+, states that the checker scripts
+  ship with the repository rather than the wheel, and documents three exit codes instead of two.
+
+## [2.1.0] — 2026-11-08
+
+### Added
+- **One host store, many scopes.** The provider now opens
+  `<hermes_root>/aletheia/aletheia.sqlite3` for every profile and writes under `profile:<name>`.
+  Profiles are scopes inside one substrate, so a multiplexed gateway no longer runs N databases
+  that can never see each other (`aletheia/profile_identity.py`).
+- **Host-policy read grants.** `<hermes_root>/aletheia/policy.json` (0600, owner-checked) names which
+  profiles may read which scopes and who may use `shared` / write to it. A profile's own
+  `provider-config.json` can only *request* a grant; the policy decides. Reads run under a read
+  context, writes keep their own, so a read grant never confers write authority, and a configured
+  `scope` is ignored — identity is derived from the profile, never configured.
+- **`aletheia merge-store`** — copy one scope from another store into this one under a new scope.
+  The source is opened read-only and never migrated; the copy is additive (an existing id with
+  different content is refused by name, never overwritten); records the target's rules reject are
+  reported by id instead of zeroing the bundle; the result asserts
+  `exported = imported + present + skipped`.
+- **`aletheia rename-scope`** — rename a scope in place, moving records, journal, entity links, jobs,
+  the FTS index and the scope-keyed vector tables in one transaction. Receipts are not rewritten:
+  they record what was consulted at the time. Refuses to union two live scopes.
+- **`scripts/verify_deployed.py`** — reports the version in the repository, the profile's plugin
+  directory, every plugin-source snapshot and every installed distribution, and exits non-zero on
+  drift. This exists because the gateway was importing a 2.0.0 snapshot while the repo said 2.0.1.
+
+### Changed
+- **Identity comes from `agent_identity`.** Hermes passes the profile's own name
+  (`get_active_profile_name()`); the provider now uses it instead of the home directory's basename.
+  The default profile's scope was `profile-.hermes` and is now `profile:default`.
+- **`ScopeEngine.known_scopes` is the store's scope set**, not just the instance's own scope. A
+  shared store must register every scope or a grant is defeated by the unknown-scope rule.
+- **`hermes memory status` explains itself.** When the CLI interpreter cannot load the provider's
+  models, the status line names the missing module and says it may exist only in the gateway
+  environment, instead of reading as an outage.
+- Invalid `provider-config.json` values are normalised on save; `db_path` is still accepted as the
+  pre-2.1 name for `store_path`.
+
+### Migration
+- Nothing moves on startup. Records still carrying the old basename scope (`profile-.hermes`) are
+  reported with their count and the exact command; the operator runs
+  `aletheia rename-scope --from profile-.hermes --to profile:default`. A rename decided from a path,
+  applied to a shared store, is how one profile silently absorbs another's memory.
+- Per-profile stores written before this release are copied in explicitly with `aletheia merge-store
+  --from-db <profile store> --from-scope <old scope> --to-scope profile:<name>`.
+- Both commands exit non-zero when they moved nothing, so a typo'd scope cannot read as success.
+
+### Tests
+- `tests/test_profile_identity.py`, `tests/test_shared_store.py`, `tests/test_merge_store.py`,
+  `tests/test_hermes_multiprofile.py`, `tests/test_deploy_truth.py`.
+
 ## [2.0.1] — 2026-11-08
 
 ### Added

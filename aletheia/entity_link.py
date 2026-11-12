@@ -19,12 +19,32 @@ def _normalize(text: str) -> str:
     return re.sub(r"[^\w\s]", "", text.lower()).strip()
 
 
+#: Words a capitalised-token heuristic mistakes for entities. Without this the graph filled with
+#: `wow`, `thanks`, `that` and `they` — any sentence-initial capital qualified — which made co-mention
+#: look far more connected than it is: counting an entity mentioned in half the corpus as a bridge
+#: turned a 6.9% reachable share into an apparent 74% (see docs/benchmarks/results.md).
+_COMMON_WORDS = frozenset("""
+a about after again all also am an and any are as at be because been before being but by can could did
+do does doing done down during each even for from further had has have having he her here hers herself
+him himself his how i if in into is it its itself just me more most my myself no nor not now of off on
+once only or other our ours ourselves out over own same she should so some such than that the their
+theirs them themselves then there these they this those through to too under until up very was we were
+what when where which while who whom why will with would you your yours yourself
+thanks thank please hi hey hello okay ok yeah yes wow oh ah um well really maybe perhaps quite rather
+still yet already almost enough said says say told tell think thought know knew feel felt want wanted
+need needed like liked look looked going went gone come came get got make made take took give gave
+good great nice bad better best worse worst first last next another every few many much little lot
+today tomorrow yesterday morning evening night day week month year time
+""".split())
+
+
 def extract_entities(text: str) -> list[str]:
     """Return candidate entity mentions from *text*.
 
-    Simple heuristic: capitalized words longer than 2 chars, excluding
-    common interrogatives and question starters. Multi-word capitalized
-    sequences are also captured.
+    Heuristic: capitalised words longer than two characters that are not common English words, plus
+    multi-word capitalised sequences. The common-word filter is not cosmetic — without it the graph
+    contains discourse markers as entities, and anything reasoning over co-mention counts those as
+    bridges between unrelated records.
     """
     import re
     STOP = {
@@ -33,7 +53,7 @@ def extract_entities(text: str) -> list[str]:
         "during", "through", "about", "against", "between", "under",
         "over", "throughout", "within", "without", "again", "further",
         "then", "once", "here", "there", "today", "tomorrow", "yesterday",
-    }
+    } | set(_COMMON_WORDS)
     entities: list[str] = []
     # Single capitalized words (len > 2), excluding stop words
     for w in re.findall(r"\b([A-Z][a-zA-Z]{2,})\b", text):

@@ -1,0 +1,4159 @@
+{
+  "summary": {
+    "questions": 427,
+    "limit": 10,
+    "df_ceiling": 0.6,
+    "missed_gold_records": 913,
+    "reachable_by_comention": 676,
+    "share_reachable": 0.74,
+    "questions_with_any_reachable_miss": 310,
+    "by_category": {
+      "1": {
+        "n": 248,
+        "missed": 651,
+        "reachable": 495
+      },
+      "2": {
+        "n": 32,
+        "missed": 56,
+        "reachable": 39
+      },
+      "3": {
+        "n": 49,
+        "missed": 143,
+        "reachable": 107
+      },
+      "4": {
+        "n": 36,
+        "missed": 49,
+        "reachable": 26
+      },
+      "5": {
+        "n": 11,
+        "missed": 14,
+        "reachable": 9
+      },
+      "None": {
+        "n": 51,
+        "missed": 0,
+        "reachable": 0
+      }
+    },
+    "elapsed_s": 14.1,
+    "interpretation": "share_reachable is the fraction of missed gold records that mention an entity the top-k already mentions. That is the ceiling for co-mention traversal: if it is small, structured retrieval through entities cannot close the coverage gap and should not be built on this evidence."
+  },
+  "rows": [
+    {
+      "question_id": "locomo-conv-26-qa-2",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-7",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-11",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-13",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline",
+        "lgbtq"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-14",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-15",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-18",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-19",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-23",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-26-qa-24",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-27",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-32",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "caroline",
+        "lgbtq"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-34",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "caroline",
+        "lgbtq"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-37",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-38",
+      "category": "1",
+      "gold_n": 6,
+      "missed": 5,
+      "reachable": 4,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-39",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "caroline",
+        "lgbtq"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-40",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-26-qa-42",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-43",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "caroline",
+        "lgbtq"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-47",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-48",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-51",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-52",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-26-qa-55",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-59",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-60",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-26-qa-61",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-65",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-66",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-69",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "caroline",
+        "lgbtq",
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-70",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-26-qa-71",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "caroline"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-75",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-77",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-78",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "melanie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-81",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "caroline",
+        "friday"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-26-qa-144",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-26-qa-192",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-30-qa-2",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "dance",
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-3",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "gina",
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-4",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-5",
+      "gold_n": 3,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-30-qa-9",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "gina",
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-17",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "gina"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-18",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-23",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "gina"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-24",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "gina",
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-25",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-30-qa-27",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "gina"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-29",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-31",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-49",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "gina"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-56",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "gina",
+        "jon"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-30-qa-76",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-30-qa-89",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "gina"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-2",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-3",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-6",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-7",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-9",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-11",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-12",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-14",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-15",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-41-qa-18",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-19",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-20",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-21",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-23",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-41-qa-25",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-26",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-28",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-29",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-30",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-32",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-33",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-35",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-36",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-37",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-40",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-42",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-41-qa-44",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-45",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-47",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-49",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-50",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-52",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-41-qa-56",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-57",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-41-qa-60",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "maria",
+        "shadow"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-62",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "coco",
+        "maria",
+        "shadow"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-41-qa-63",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-41-qa-64",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "maria"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-1",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 6,
+      "reachable": 5,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-5",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-10",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-11",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-12",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-16",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-19",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-42-qa-22",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-23",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-27",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-42-qa-30",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-34",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna",
+        "little",
+        "little women",
+        "women"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-42",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-43",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-42-qa-46",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-47",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-42-qa-49",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-50",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-51",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-52",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-42-qa-53",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-55",
+      "category": "1",
+      "gold_n": 6,
+      "missed": 5,
+      "reachable": 5,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-56",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-58",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 6,
+      "reachable": 3,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-59",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-61",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-62",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-42-qa-63",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 5,
+      "bridge_entities": [
+        "counter",
+        "cyberpunk",
+        "global",
+        "global offensive",
+        "nate",
+        "offensive"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-66",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-67",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-68",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-69",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-70",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-71",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-74",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 7,
+      "reachable": 4,
+      "bridge_entities": [
+        "joanna",
+        "little",
+        "little women",
+        "nate",
+        "women"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-75",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-76",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-78",
+      "category": "1",
+      "gold_n": 9,
+      "missed": 7,
+      "reachable": 7,
+      "bridge_entities": [
+        "nate",
+        "valorant"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-79",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-80",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-81",
+      "category": "1",
+      "gold_n": 9,
+      "missed": 7,
+      "reachable": 7,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-82",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-83",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-84",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "joanna",
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-88",
+      "category": "4",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-89",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-93",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "fighter",
+        "nate",
+        "street",
+        "street fighter"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-94",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-95",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "nate"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-199",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-42-qa-203",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "fighter",
+        "nate",
+        "street",
+        "street fighter"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-42-qa-204",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "joanna"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-0",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-1",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-2",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-43-qa-3",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 7,
+      "reachable": 5,
+      "bridge_entities": [
+        "name",
+        "the name",
+        "tim",
+        "wind"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-7",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-8",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "armour",
+        "gatorade",
+        "nike",
+        "under armour"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-9",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-10",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-11",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-13",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-43-qa-14",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-16",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "harry",
+        "harry potter",
+        "potter",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-17",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-18",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 6,
+      "reachable": 4,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-19",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-20",
+      "category": "2",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "john",
+        "seattle",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-21",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-24",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "chicago",
+        "john",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-25",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "john",
+        "lebron"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-26",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-27",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-28",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "harry",
+        "harry potter",
+        "philosopher",
+        "potter",
+        "stone"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-29",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-30",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-34",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-35",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-36",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "john",
+        "lebron",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-38",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-41",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-42",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-43",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-43-qa-49",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-50",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "alchemist",
+        "john",
+        "the alchemist"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-52",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-53",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-55",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-43-qa-57",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-58",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-43-qa-59",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "english",
+        "john",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-61",
+      "category": "1",
+      "gold_n": 6,
+      "missed": 5,
+      "reachable": 4,
+      "bridge_entities": [
+        "alchemist",
+        "dune",
+        "frank",
+        "frank herbert",
+        "herbert",
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-62",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-65",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 3,
+      "bridge_entities": [
+        "harry",
+        "harry potter",
+        "potter",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-66",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "harry",
+        "harry potter",
+        "potter",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-67",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-70",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "harry",
+        "harry potter",
+        "potter",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-96",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "harry",
+        "harry potter",
+        "philosopher",
+        "potter",
+        "stone"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-103",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-43-qa-128",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-43-qa-132",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-43-qa-151",
+      "category": "4",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "english",
+        "john",
+        "tim"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-43-qa-215",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-44-qa-2",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-3",
+      "category": "1",
+      "gold_n": 8,
+      "missed": 6,
+      "reachable": 6,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-7",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-44-qa-9",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-12",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-14",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-15",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-17",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew",
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-18",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-19",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-20",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-21",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-23",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-24",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-26",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-27",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-28",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-29",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew",
+        "audrey",
+        "pixie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-31",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-32",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-44-qa-33",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-34",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "andrew",
+        "toby"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-35",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "andrew",
+        "toby"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-36",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-39",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-44-qa-40",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-41",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-42",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-44",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-45",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "andrew",
+        "toby"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-46",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew",
+        "toby"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-47",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-44-qa-48",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew",
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-49",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-50",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-51",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "andrew",
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-52",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-53",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-54",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 5,
+      "bridge_entities": [
+        "andrew",
+        "audrey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-56",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-44-qa-60",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "andrew"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-2",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-47-qa-3",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "james",
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-5",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "james",
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-8",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-9",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "james",
+        "ned"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-18",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-20",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-22",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-24",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-25",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-26",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "italy",
+        "james",
+        "john",
+        "mexico",
+        "turkey"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-27",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-30",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-31",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-34",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "james",
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-38",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-40",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 2,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-44",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-47-qa-45",
+      "gold_n": 3,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-48",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-47-qa-49",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-47-qa-51",
+      "category": "1",
+      "gold_n": 6,
+      "missed": 6,
+      "reachable": 4,
+      "bridge_entities": [
+        "john",
+        "rpg"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-53",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "james",
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-54",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-56",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "james"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-60",
+      "gold_n": 3,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-61",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "james",
+        "samantha"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-62",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-47-qa-64",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-72",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "john"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-93",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-141",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-142",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-143",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "james",
+        "mcgee",
+        "samantha"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-47-qa-182",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-183",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-47-qa-184",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "james",
+        "mcgee",
+        "samantha"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-1",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-6",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-8",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "deborah",
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-11",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-13",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-14",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-15",
+      "category": "4",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "seraphim",
+        "susie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-16",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "seraphim",
+        "susie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-19",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-20",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "battlefield",
+        "dead",
+        "jolene",
+        "walking",
+        "walking dead"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-23",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-24",
+      "gold_n": 3,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-25",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-36",
+      "category": "3",
+      "gold_n": 10,
+      "missed": 10,
+      "reachable": 9,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-39",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "deborah",
+        "eisenhower",
+        "eisenhower matrix",
+        "jolene",
+        "matrix"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-41",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "deborah",
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-42",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-46",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-53",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-54",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-55",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-58",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-59",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-61",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-62",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-63",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-64",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-67",
+      "category": "4",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-69",
+      "category": "4",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-73",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-74",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-77",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jolene",
+        "phuket"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-79",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-80",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-82",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 3,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-83",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-84",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-85",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "anna",
+        "deborah",
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-86",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 2,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-87",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-88",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 5,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-89",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "seraphim",
+        "susie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-90",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-91",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-92",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-93",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-94",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-95",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-96",
+      "category": "4",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-97",
+      "category": "4",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-48-qa-99",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-48-qa-191",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "seraphim",
+        "susie"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-192",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "jolene"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-193",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "deborah"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-48-qa-194",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-49-qa-0",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "prius"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-1",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-2",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "jasper",
+        "prius"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-3",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "evan",
+        "rockies"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-6",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "jasper"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-7",
+      "category": "1",
+      "gold_n": 10,
+      "missed": 6,
+      "reachable": 5,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-8",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-10",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "jasper"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-11",
+      "category": "1",
+      "gold_n": 19,
+      "missed": 17,
+      "reachable": 13,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-14",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-49-qa-16",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-49-qa-18",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-19",
+      "category": "3",
+      "gold_n": 11,
+      "missed": 11,
+      "reachable": 9,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-20",
+      "category": "3",
+      "gold_n": 17,
+      "missed": 17,
+      "reachable": 15,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-21",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-25",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-49-qa-26",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-28",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-29",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-49-qa-31",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-32",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-33",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-49-qa-34",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-49-qa-36",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-37",
+      "category": "1",
+      "gold_n": 7,
+      "missed": 5,
+      "reachable": 5,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-38",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-39",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-42",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-43",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-44",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 5,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-45",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-46",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-47",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-49-qa-48",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-49",
+      "category": "1",
+      "gold_n": 6,
+      "missed": 6,
+      "reachable": 6,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-50",
+      "category": "1",
+      "gold_n": 8,
+      "missed": 7,
+      "reachable": 6,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-51",
+      "category": "3",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 2,
+      "bridge_entities": [
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-52",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam",
+        "saturday"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-53",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-54",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-55",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-56",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-62",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-64",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-65",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-69",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "canada",
+        "canadian",
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-72",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-76",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-49-qa-77",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-78",
+      "category": "1",
+      "gold_n": 5,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-81",
+      "category": "1",
+      "gold_n": 11,
+      "missed": 6,
+      "reachable": 5,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-82",
+      "category": "1",
+      "gold_n": 6,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "evan",
+        "sam"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-49-qa-149",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-3",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-50-qa-4",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "boston",
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-5",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-6",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-11",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-12",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin",
+        "tokyo"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-15",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-50-qa-18",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-19",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "calvin",
+        "dave",
+        "tokyo"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-20",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-21",
+      "category": "3",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-22",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-50-qa-23",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-24",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave",
+        "working"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-28",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-29",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 3,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-30",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-31",
+      "category": "2",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-32",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave",
+        "san"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-33",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-50-qa-37",
+      "category": "3",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-40",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 1,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-41",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-45",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-46",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-47",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-49",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 3,
+      "reachable": 3,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-51",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-50-qa-53",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-54",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-50-qa-56",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave",
+        "francisco",
+        "san",
+        "san francisco"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-58",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "calvin",
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-59",
+      "category": "1",
+      "gold_n": 2,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "calvin",
+        "ferrari"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-60",
+      "category": "1",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-61",
+      "category": "2",
+      "gold_n": 3,
+      "missed": 1,
+      "reachable": 1,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-62",
+      "gold_n": 2,
+      "missed": 0,
+      "reachable": 0
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 3,
+      "reachable": 1,
+      "bridge_entities": [
+        "calvin"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-64",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 4,
+      "reachable": 4,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-66",
+      "category": "1",
+      "gold_n": 4,
+      "missed": 2,
+      "reachable": 2,
+      "bridge_entities": [
+        "dave"
+      ]
+    },
+    {
+      "question_id": "locomo-conv-50-qa-114",
+      "category": "4",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    },
+    {
+      "question_id": "locomo-conv-50-qa-181",
+      "category": "5",
+      "gold_n": 2,
+      "missed": 1,
+      "reachable": 0,
+      "bridge_entities": []
+    }
+  ]
+}

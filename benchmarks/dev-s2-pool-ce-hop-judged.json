@@ -1,0 +1,186 @@
+{
+  "artifact": "benchmarks/dev-s2-pool-ce-hop-reader.json",
+  "cases": 29,
+  "judged": 29,
+  "unusable_judgements": 0,
+  "correct": 14,
+  "accuracy": 0.4827586206896552,
+  "repeat": 2,
+  "agreement_n": 29,
+  "agreement_rate": 0.9310344827586207,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-134",
+      "gold": "Paying extra attention to detail",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "custom-made with an octopus design",
+      "judge_reason": "The system answer omits the shiny purple guitar from the reference."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "custom-made with an octopus design",
+      "judge_reason": "The answer omits the shiny purple guitar mentioned in the reference."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-125",
+      "gold": "Changed his diet and started walking regularly",
+      "predicted": "In 2021, he changed his diet and started walking regularly.",
+      "judge_reason": "The system answer adds an unsupported date not present in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "The system answer omits that flowers were part of Melanie's wedding decor."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-115",
+      "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+      "predicted": "They bring her joy and represent growth, beauty, and appreciating small moments.",
+      "judge_reason": "The system answer omits that flowers were part of her wedding decor."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "13 October 2023",
+      "judge_reason": "The system answer gives October 2023 instead of September 2023."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "13 October 2023",
+      "judge_reason": "The system answer gives a different date than the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "necklace, rainbow flag mural, painting 'Embracing Identity'",
+      "judge_reason": "It omits the transgender symbol and includes unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "necklace, rainbow flag mural, painting 'Embracing Identity'",
+      "judge_reason": "The system answer omits the transgender symbol and includes unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-130",
+      "gold": "weight training",
+      "predicted": "kickboxing",
+      "judge_reason": "The system answer names kickboxing instead of weight training."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-130",
+      "gold": "weight training",
+      "predicted": "kickboxing",
+      "judge_reason": "Kickboxing is a different activity from the reference answer weight training."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-133",
+      "gold": "interning at a well-known engineering firm",
+      "predicted": "interning at an engineering firm",
+      "judge_reason": "The system answer omits that the engineering firm is well-known."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+      "predicted": "A book on the power of friendship and loyalty, A Dance with Dragons, The Name of the Wind, The Hobbit, Harry Potter, Game of Thrones, a book about the history of castles in the UK",
+      "judge_reason": "The system answer omits The Alchemist and The Wheel of Time and includes unrelated vague book descriptions."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+      "predicted": "A book on the power of friendship and loyalty, A Dance with Dragons, The Name of the Wind, The Hobbit, Harry Potter, Game of Thrones, a book about the history of castles in the UK",
+      "judge_reason": "The system answer omits The Alchemist and The Wheel of Time and adds unrelated books."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-115",
+      "gold": "Go hiking",
+      "predicted": "Take their pets to a dog-friendly trail by the lake at a nearby national park",
+      "judge_reason": "The system answer describes taking pets to a trail, not going hiking as the reference states."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-115",
+      "gold": "Go hiking",
+      "predicted": "Take their pets to a dog-friendly trail by the lake at a nearby national park",
+      "judge_reason": "The system answer describes taking pets to a trail, not specifically going hiking."
+    }
+  ],
+  "elapsed_s": 204.4,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

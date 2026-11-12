@@ -1,0 +1,150 @@
+{
+  "artifact": "benchmarks/dev-s2-reader-max.json",
+  "cases": 29,
+  "judged": 29,
+  "unusable_judgements": 0,
+  "correct": 18,
+  "accuracy": 0.6206896551724138,
+  "repeat": 2,
+  "agreement_n": 29,
+  "agreement_rate": 1.0,
+  "judge_model": "openai-compatible:qwen3.8-flash",
+  "judge_prompt_version": "judge.v1",
+  "supportable": true,
+  "failures": [
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-63",
+      "gold": "custom-made yellow guitar with an octopus on it, shiny purple guitar",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-50-qa-1",
+      "gold": "mansion in Japan, luxury car Ferrari 488 GTB",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-49-qa-70",
+      "gold": "four months",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-73",
+      "gold": "September 2023",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "A rainbow flag mural, the painting 'Embracing Identity,' and a special necklace from her grandmother.",
+      "judge_reason": "The answer omits the transgender symbol."
+    },
+    {
+      "question_id": "locomo-conv-26-qa-56",
+      "gold": "Rainbow flag, transgender symbol",
+      "predicted": "A rainbow flag mural, the painting 'Embracing Identity,' and a special necklace from her grandmother.",
+      "judge_reason": "The system answer omits the transgender symbol and includes unrelated items."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-20",
+      "gold": "2022",
+      "predicted": "last year",
+      "judge_reason": "The system answer does not match the required date 2022."
+    },
+    {
+      "question_id": "locomo-conv-41-qa-20",
+      "gold": "2022",
+      "predicted": "last year",
+      "judge_reason": "\"last year\" does not explicitly match the reference year 2022."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-48-qa-48",
+      "gold": "Alaska",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-47-qa-33",
+      "gold": "Yes",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-48",
+      "gold": "around November 16, 2023",
+      "predicted": "last season",
+      "judge_reason": "The system answer does not provide the specified date."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-48",
+      "gold": "around November 16, 2023",
+      "predicted": "last season",
+      "judge_reason": "The answer does not specify the date around November 16, 2023."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+      "predicted": "The Name of the Wind by Patrick Rothfuss",
+      "judge_reason": "The system answer lists only one book instead of all books in the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-43-qa-4",
+      "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+      "predicted": "The Name of the Wind by Patrick Rothfuss",
+      "judge_reason": "The system answer lists only one of the books from the reference answer."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    },
+    {
+      "question_id": "locomo-conv-44-qa-43",
+      "gold": "Minnesota",
+      "predicted": "",
+      "judge_reason": "The system answer is empty."
+    }
+  ],
+  "elapsed_s": 178.3,
+  "note": "A judged number is published only with its judge model, prompt version and repeat agreement. Below 90% agreement the judge cannot support a one-point claim."
+}

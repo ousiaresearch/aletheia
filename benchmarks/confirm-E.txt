@@ -1,0 +1,33 @@
+
+locomo  lexical  k=10  120 questions, 15 errors
+-----------------------------------------------
+  hit@10 (gold evidence)  45/79 = 57.0%  95% CI 46.0%-67.3%
+  MRR 0.302
+  mean coverage 0.463   full recovery 39.2%   (gold unit: record)
+  answer-in-context (proxy)  57.0%  95% CI 46.0%-67.3%  over 79 graded
+  abstention  0/26 correct (0.0%)
+
+  reading (stage 2, openai-compatible:qwen3.8-max, reader.v4)
+    answered 72/105, abstained 33
+    exact match 19.0% (95% CI 11.9%-29.0%)  token F1 0.433
+    cited a gold record 50.6%
+    no LLM judge: not comparable to published answer-level scores
+  by category:
+    1                        n=23    hit@10 56.5%  coverage 0.283  full 8.7%
+    2                        n=14    hit@10 50.0%  coverage 0.464  full 42.9%
+    3                        n=5     hit@10 40.0%  coverage 0.117  full 0.0%
+    4                        n=37    hit@10 62.2%  coverage 0.622  full 62.2%
+  elapsed 4054.4s
+
+wrote benchmarks/confirm-E-max120.json
+benchmarks/confirm-E-max120.json
+  judge openai-compatible:qwen3.8-max  prompt judge.v1  repeat 2
+  judged 79/79 (0 unusable judgements)
+  judged accuracy 38/79 = 48.1%
+  repeat agreement 97.5% on 79 cases  -> supportable
+  40 of 80 judged-wrong examples stored (capped sample, not the full set), e.g.:
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted='different artistic styles'
+    locomo-conv-50-qa-63: gold='custom-made yellow guitar wi' predicted='different artistic styles'
+    locomo-conv-50-qa-1: gold='mansion in Japan, luxury car' predicted=''
+
+wrote benchmarks/E-judged-v.json

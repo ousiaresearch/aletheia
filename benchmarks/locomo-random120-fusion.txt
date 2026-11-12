@@ -1,0 +1,9 @@
+
+config           N    err  hit@10  95% CI         MRR     p50ms  coverage  full-recovery  vs lexical (lost/gained)
+lexical          120  0    0.667    57.8%-74.5%   0.410   20.3   0.595     52.5%          —
+vector           120  0    0.650    56.1%-72.9%   0.387   296.4  0.580     52.5%          17/15 of 120
+hybrid-noRerank  120  0    0.733    64.8%-80.4%   0.464   298.6  0.655     58.3%          7/15 of 120
+hybrid+rerank    120  0    0.733    64.8%-80.4%   0.443   2742.4 0.655     58.3%          7/15 of 120
+
+N is gold-bearing questions actually scored; err is gold-bearing questions that could not be scored. Elapsed 1044s across 120 questions in 10 conversation(s).
+wrote benchmarks/locomo-random120-fusion.json

@@ -1,0 +1,6 @@
+
+config   N    err  hit@10  95% CI         MRR     p50ms  coverage  full-recovery  vs lexical (lost/gained)
+lexical  1982 0    0.646    62.5%-66.7%   0.394   14.2   0.591     54.8%          —
+
+N is gold-bearing questions actually scored; err is gold-bearing questions that could not be scored. Elapsed 36s across 1986 questions in 10 conversation(s).
+wrote benchmarks/locomo-full-lexical-verified.json

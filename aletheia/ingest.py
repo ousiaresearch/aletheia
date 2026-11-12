@@ -171,7 +171,17 @@ class Ingestor:
         """
         role = turn_attribution(speaker, attribution)
         clean, changed = fence(text)
+        # Redaction happens before the record exists, so the stored text, the FTS row and the vector
+        # are all built from what is safe to keep. A redaction pass after the write would have to
+        # rewrite history — or leave the raw value in the index while claiming otherwise.
+        from aletheia.redaction import redact
+        redacted = redact(clean)
+        clean = redacted.text
         provenance = {"conversation_id": conversation_id, "speaker": speaker}
+        if redacted.changed:
+            # What was removed is counted, never quoted: a redaction log that names the value is a
+            # second copy of the value.
+            provenance["redacted"] = dict(redacted.findings)
         if changed:
             # D3-5: text that arrived carrying recall fences is tagged, and tagged content is never
             # citable as the user's own speech. The flag alone is not enough — the attribution is
@@ -200,13 +210,19 @@ class Ingestor:
         parsed, _ = fence(parsed)  # review G-P3-4: recall blocks never persist from documents
         if not parsed.strip():
             return Rejection(name, "empty_document")
+        from aletheia.redaction import redact
+        redacted_document = redact(parsed)
+        parsed = redacted_document.text
         content_hash = _digest(data)
         sid = "doc-" + hashlib.sha256(f"{scope}\0{content_hash}".encode()).hexdigest()[:24]
         paragraphs = _extract_paragraphs(parsed)
+        source_provenance = {"author": author, "document": name, "content_hash": content_hash}
+        if redacted_document.changed:
+            source_provenance["redacted"] = dict(redacted_document.findings)
         source = Record(
             record_id=sid, record_type="Source", scope=scope,
             payload={"text": parsed, "name": name}, attribution="document", source_ids=[],
-            provenance={"author": author, "document": name, "content_hash": content_hash},
+            provenance=source_provenance,
         )
         observations = [Record(
             record_id=f"{sid}-p{i:04d}", record_type="Observation", scope=scope,

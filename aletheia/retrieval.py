@@ -225,10 +225,24 @@ def _cosine(a, b):
     return dot / (na * nb)
 
 
-def _rerank(query: str, items, embedder, top_k: int):
-    """Re-score fused candidates by query–candidate cosine similarity with min-max normalisation."""
+#: Band width for a bi-encoder rerank, as a fraction of the slots being filled. A rerank that uses
+#: the same model that produced the vector scores cannot add information, so it may reorder near-ties
+#: inside a band and never lift a candidate out of its band. Measured on LongMemEval-S q201, an
+#: unconstrained bi-encoder rerank turned a lexical hit into a miss.
+RERANK_BAND_DIVISOR = 2
+RERANK_MIN_BAND = 2
+
+
+def _rerank(query: str, items, embedder, top_k: int, fused=None, band: int | None = None):
+    """Re-score candidates by cosine similarity, inside bands, keeping the fusion's block order.
+
+    ``fused`` present means the incoming order is a fused ranking worth protecting: only swaps within
+    a band of ``band`` slots are allowed. ``fused`` absent means vector-only recall, where the cosine
+    *is* the ranking and a full sort is correct.
+    """
     if embedder is None or not items:
         return items[:top_k]
+    width = max(1, band if band is not None else max(RERANK_MIN_BAND, top_k // RERANK_BAND_DIVISOR))
     try:
         q_emb = embedder.embed_query(query)
         texts = [it.text for it in items]
@@ -238,17 +252,14 @@ def _rerank(query: str, items, embedder, top_k: int):
             cand_embs = [embedder.embed_document(t) for t in texts]
         if len(cand_embs) != len(items):
             return items[:top_k]
-        scored = [(_cosine(q_emb, emb), it) for it, emb in zip(items, cand_embs)]
-        # Min-max normalise so a weak absolute cosine still yields a meaningful spread
-        if scored:
-            vals = [s for s, _ in scored]
-            lo, hi = min(vals), max(vals)
-            if hi > lo:
-                scored = [((s - lo) / (hi - lo), it) for s, it in scored]
-            else:
-                scored = [(1.0, it) for _, it in scored]
-        scored.sort(key=lambda x: (-x[0], x[1].record_id))
-        return [it for _, it in scored[:top_k]]
+        cosines = {it.record_id: _cosine(q_emb, emb) for it, emb in zip(items, cand_embs)}
+        if not fused:
+            return sorted(items, key=lambda it: (-cosines[it.record_id], it.record_id))[:top_k]
+        result = []
+        for start in range(0, len(items), width):
+            block = items[start:start + width]
+            result.extend(sorted(block, key=lambda it: (-cosines[it.record_id], it.record_id)))
+        return result[:top_k]
     except Exception:
         return items[:top_k]
 
@@ -264,9 +275,13 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         raise ValueError(f"unknown recall mode: {mode!r}")
     if mode != "lexical" and embedder is None:
         raise ValueError(f"mode {mode!r} needs an embedder")
-    # None means "auto": rerank is on for hybrid/vector where we have an embedder.
+    # None means "auto". Auto is OFF: a bi-encoder rerank re-scores with the model that already
+    # produced the vector scores, so it cannot add information, and on LongMemEval-S it demonstrably
+    # removed a hit that plain lexical recall had found (q201, see docs/design/recall-bolstering-plan.md).
+    # The reranker worth running is the cross-encoder, which is opt-in through `use_cross_encoder`.
+    # `rerank=True` remains available for measurement, blended so the fusion keeps the upper hand.
     if rerank is None:
-        rerank = mode in ("vector", "hybrid") and embedder is not None
+        rerank = False
     cross_encoder = CrossEncoderReranker() if use_cross_encoder else None
     
     # Optional query expansion: generate alternative phrasings and fuse results.
@@ -457,8 +472,45 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
         except Exception:
             neighbor_ids = set()
 
+        # Graph expansion: records one edge away from the top matches, added as CONTEXT exactly
+        # like neighbours. They never displace a matching record, they are capped, and every hop was
+        # authorised inside graph.neighbours — an edge is not a permission.
+        # Expired records stop being returned before they are purged: hiding is reversible and
+        # free, deleting is neither. The sweep is an explicit act (see aletheia.retention).
+        try:
+            from aletheia.retention import expired_among
+            expired_ids = expired_among(sub, list(candidate_ids))
+            if expired_ids:
+                candidate_ids = [rid for rid in candidate_ids if rid not in expired_ids]
+                receipt.exclusions.append(f"{len(expired_ids)} past its retention window")
+        except Exception:
+            pass
+
+        # A record consolidation has marked as a duplicate yields its slot to the record it
+        # duplicates: both are still returned, but only the keeper can occupy a match slot. This is
+        # the one place the marking pays off, and it is deliberately a demotion rather than a drop —
+        # a caller can still see that the duplicate was written.
+        duplicate_keepers: dict = {}
+        try:
+            for subject_id, keeper_id in sub._conn.execute(
+                    "SELECT subject, object FROM relations WHERE predicate = 'duplicate_of' "
+                    f"AND scope IN ({', '.join('?' for _ in readable)})", tuple(readable)).fetchall():
+                duplicate_keepers[subject_id] = keeper_id
+        except Exception:
+            duplicate_keepers = {}
+
+        graph_ids: set = set()
+        try:
+            from aletheia.graph import expand_candidates
+            reached = expand_candidates(sub, ctx, list(candidate_ids), hops=1, max_seeds=5, limit=10)
+            graph_ids = set(reached) - set(candidate_ids) - neighbor_ids
+            candidate_ids = candidate_ids + [rid for rid in reached if rid in graph_ids]
+        except Exception:
+            graph_ids = set()
+
         items: list[Item] = []
         seen_record_ids: set = set()
+        candidate_set = set(candidate_ids)
         for rid in candidate_ids:
             if len(items) >= pool:
                 break
@@ -476,8 +528,11 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             tier, shown = _pick_tier(text, terms)
             derived = bool(isinstance(rec.provenance, dict) and rec.provenance.get("machine_derived"))
             is_summary = rec.record_type == "Summary" or "-ss-" in rid or "summary" in rid.lower()
+            keeper = duplicate_keepers.get(rid)
+            demoted = (keeper is not None and keeper != rid
+                       and keeper in candidate_set | seen_record_ids)
             items.append(Item(rid, rec.scope, text, tier, derived, is_summary=is_summary,
-                              neighbor=rid in neighbor_ids))
+                              neighbor=rid in neighbor_ids or rid in graph_ids or demoted))
             receipt.selected.append(rid)
             if _TIER_ORDER[tier] > _TIER_ORDER[receipt.tier]:
                 receipt.tier = tier
@@ -499,7 +554,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
                 return cross_encoder.rerank(query, group, top_k=len(group))[:slots], applied
             # Skip bi-encoder when the cross-encoder already reranked: it is more accurate.
             if rerank and len(group) > slots:
-                return _rerank(query, group, embedder, slots), applied
+                return _rerank(query, group, embedder, slots, fused=fused), applied
             return group[:slots], applied
 
         matches, cross_encoder_applied = _order(matches, limit)
@@ -518,6 +573,7 @@ def recall(sub, query: str, ctx, scope_hint: str | None = None, limit: int = 5,
             "query_expansion" if len(expanded_queries) > 1 else None,
             "cross_encoder" if cross_encoder_applied else None,
             "graph_boost" if graph_applied else None,
+            "graph_expand" if graph_ids else None,
             "temporal_boost" if temporal_applied else None,
         ] if layer is not None
     ]
